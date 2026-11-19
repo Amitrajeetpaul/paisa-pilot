@@ -5,7 +5,7 @@ import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
 
 export function AccountMenu() {
-  const { sessionId, setSessionId, setSampleData, displayName, setDisplayName, sampleData } = useApp()
+  const { t, sessionId, setSessionId, setSampleData, displayName, setDisplayName, sampleData } = useApp()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -76,8 +76,8 @@ export function AccountMenu() {
           className="border-line animate-card-entrance absolute right-0 z-50 mt-2 w-72 rounded-2xl border bg-white p-2 shadow-xl"
         >
           <div className="px-3 py-2">
-            <p className="text-navy text-sm font-bold">{displayName || 'Your session'}</p>
-            <p className="text-muted text-xs">{sampleData ? 'Sample profile, no real data' : 'Your documents are deleted within 24 hours'}</p>
+            <p className="text-navy text-sm font-bold">{displayName || t('account.session')}</p>
+            <p className="text-muted text-xs">{sampleData ? t('account.sampleNote') : t('account.realNote')}</p>
           </div>
           <button
             role="menuitem"
@@ -87,7 +87,7 @@ export function AccountMenu() {
             }}
             className="text-navy hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
           >
-            <Icon name="upload" size={18} /> Add or replace documents
+            <Icon name="upload" size={18} /> {t('account.add')}
           </button>
           {!confirming ? (
             <button
@@ -95,14 +95,12 @@ export function AccountMenu() {
               onClick={() => setConfirming(true)}
               className="text-navy hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
             >
-              <Icon name="trash" size={18} /> {sampleData ? 'Start over' : 'Delete my data'}
+              <Icon name="trash" size={18} /> {sampleData ? t('account.startOver') : t('account.delete')}
             </button>
           ) : (
             <div className="bg-warning-card mx-1 mb-1 rounded-xl p-3">
               <p className="text-navy text-xs leading-relaxed">
-                {sampleData
-                  ? 'This clears the sample profile and takes you back to the start.'
-                  : 'This permanently deletes your uploads and every number you confirmed. It cannot be undone.'}
+                {sampleData ? t('account.confirmSample') : t('account.confirmReal')}
               </p>
               <div className="mt-2 flex gap-2">
                 <button
@@ -110,10 +108,10 @@ export function AccountMenu() {
                   disabled={busy}
                   className="bg-navy min-h-11 flex-1 rounded-xl text-sm font-semibold text-white disabled:opacity-60"
                 >
-                  {busy ? 'Deleting…' : 'Yes, delete'}
+                  {busy ? t('account.deleting') : t('account.yes')}
                 </button>
                 <button onClick={() => setConfirming(false)} className="text-navy min-h-11 flex-1 rounded-xl border text-sm font-semibold">
-                  Keep
+                  {t('account.keep')}
                 </button>
               </div>
             </div>

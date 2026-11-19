@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import uuid
 from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass, field
@@ -30,6 +31,7 @@ from google.genai import types
 
 logger = logging.getLogger(__name__)
 
+AGENT_TIMEOUT_SECONDS = float(os.environ.get("AGENT_TIMEOUT_SECONDS", "18"))
 AGENT_NAMES = ("money_finder", "leak_fixer", "consultant", "ca_assistant")
 Plan = Callable[[dict[str, dict], str], list[tuple[str, dict[str, Any]]]]
 Summarize = Callable[[list[tuple[str, dict[str, Any]]]], str]
@@ -337,9 +339,12 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
         raise ValueError(f"Unknown agent: {agent_name!r}")
     q = question or _default_question(agent_name)
     if mode == "live":
-        for attempt in (1, 2):
-            try:
-                return asyncio.run(_drive(_build(agent_name), agent_name, confirmed, q, "gemini"))
-            except Exception:
-                logger.exception("Gemini agent run failed (attempt %d) for %s", attempt, agent_name)
+        # One bounded attempt: a person is waiting on this card, so if Gemini is
+        # overloaded we answer from the built-in model rather than make them wait.
+        try:
+            return asyncio.run(
+                asyncio.wait_for(_drive(_build(agent_name), agent_name, confirmed, q, "gemini"), timeout=AGENT_TIMEOUT_SECONDS)
+            )
+        except Exception:
+            logger.exception("Gemini agent run failed or timed out for %s; using the built-in model", agent_name)
     return run_offline(agent_name, confirmed, q)

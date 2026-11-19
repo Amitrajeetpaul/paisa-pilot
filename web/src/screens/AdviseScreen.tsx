@@ -12,11 +12,11 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  'Which tax option is better for me?',
-  'Where should my spare ₹8,000 go? My goal is 3 years away.',
-  'How big should my emergency fund be?',
-  'What insurance do I need?',
-]
+  { key: 'advise.s1', question: 'Which tax option is better for me?' },
+  { key: 'advise.s2', question: 'Where should my spare ₹8,000 go? My goal is 3 years away.' },
+  { key: 'advise.s3', question: 'How big should my emergency fund be?' },
+  { key: 'advise.s4', question: 'What insurance do I need?' },
+] as const
 
 export function AdviseScreen() {
   const { t, sessionId } = useApp()
@@ -60,12 +60,12 @@ export function AdviseScreen() {
             <div className="mt-2 flex flex-wrap gap-2">
               {SUGGESTIONS.map((q) => (
                 <button
-                  key={q}
+                  key={q.key}
                   type="button"
-                  onClick={() => handleSend(q)}
+                  onClick={() => handleSend(q.question)}
                   className="border-line text-navy min-h-11 rounded-full border bg-white px-4 text-left text-sm font-medium hover:bg-black/[0.03]"
                 >
-                  {q}
+                  {t(q.key)}
                 </button>
               ))}
             </div>
