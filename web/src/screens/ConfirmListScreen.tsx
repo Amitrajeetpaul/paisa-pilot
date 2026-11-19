@@ -4,7 +4,7 @@ import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
 import { ReadWarning } from '../components/ReadWarning'
-import { api } from '../lib/api'
+import { api, ApiError } from '../lib/api'
 import { track } from '../lib/track'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
@@ -182,15 +182,15 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
   }
 
   async function handleConfirm() {
-    if (!sessionId) return
+    if (!sessionId || rows.length === 0) return
     setSubmitting(true)
     setError(null)
     try {
       await api.confirmDocument(sessionId, documentType, schema.build(header, rows))
       track('document_confirmed', documentType)
       navigate('/app/home')
-    } catch {
-      setError('Could not save. Please check the values and try again.')
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Could not save. Please check the values and try again.')
     } finally {
       setSubmitting(false)
     }
@@ -277,7 +277,12 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
           <Icon name="lock" size={16} className="text-teal" />
           {t('confirm.lockLine')}
         </div>
-        <Button variant="primary" className="w-full" loading={submitting} onClick={handleConfirm}>
+        {rows.length === 0 && (
+          <p className="text-sm text-white/90" role="status">
+            Nothing was read from this file. Upload a clearer copy.
+          </p>
+        )}
+        <Button variant="primary" className="w-full" loading={submitting} disabled={rows.length === 0} onClick={handleConfirm}>
           {t('confirm.confirmButton')}
         </Button>
       </div>

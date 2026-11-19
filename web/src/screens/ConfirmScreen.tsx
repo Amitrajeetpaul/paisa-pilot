@@ -4,7 +4,7 @@ import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
 import { ReadWarning } from '../components/ReadWarning'
-import { api } from '../lib/api'
+import { api, ApiError } from '../lib/api'
 import { track } from '../lib/track'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
@@ -68,8 +68,12 @@ function FieldConfirmScreen() {
     [fieldOrder, fields],
   )
 
+  // A document with no gross salary is a document we could not read (or the wrong file).
+  const requiredKey = documentType === 'form16' ? 'gross_salary_annual' : 'monthly_gross_salary'
+  const hasData = Number(values[requiredKey]) > 0
+
   async function handleConfirm() {
-    if (!sessionId) return
+    if (!sessionId || !hasData) return
     setSubmitting(true)
     setError(null)
     try {
@@ -92,8 +96,8 @@ function FieldConfirmScreen() {
       await api.confirmDocument(sessionId, documentType, payload)
       track('document_confirmed', documentType)
       navigate('/app/home')
-    } catch {
-      setError('Could not save. Please try again.')
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Could not save. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -163,7 +167,12 @@ function FieldConfirmScreen() {
           <Icon name="lock" size={16} className="text-teal" />
           {t('confirm.lockLine')}
         </div>
-        <Button variant="primary" className="w-full" loading={submitting} onClick={handleConfirm}>
+        {!hasData && (
+          <p className="text-sm text-white/90" role="status">
+            Nothing was read from this file. Type the values from your document above, or upload a clearer copy.
+          </p>
+        )}
+        <Button variant="primary" className="w-full" loading={submitting} disabled={!hasData} onClick={handleConfirm}>
           {t('confirm.confirmButton')}
         </Button>
         <button onClick={() => navigate('/app/consent')} className="text-sm font-medium text-white/80 underline">

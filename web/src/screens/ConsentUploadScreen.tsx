@@ -17,7 +17,7 @@ const DOCUMENT_TYPES = [
 ] as const
 
 export function ConsentUploadScreen() {
-  const { t, language, setLanguage, sessionId, setSessionId, setSampleData } = useApp()
+  const { t, language, setLanguage, sessionId, setSessionId, sampleData, setSampleData, setDisplayName } = useApp()
   const navigate = useNavigate()
   const [consentChecked, setConsentChecked] = useState(false)
   const [consenting, setConsenting] = useState(false)
@@ -33,6 +33,7 @@ export function ConsentUploadScreen() {
       const { session_id } = await api.giveConsent(true)
       setSessionId(session_id)
       setSampleData(false)
+      setDisplayName('') // the sample profile's name must not follow you into your own session
       track('consent_given')
     } catch {
       setError('Could not start a session. Please try again.')
@@ -90,9 +91,14 @@ export function ConsentUploadScreen() {
         </button>
       </div>
 
-      {!sessionId && (
+      {(!sessionId || sampleData) && (
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
           <h1 className="text-navy text-2xl font-extrabold">{t('consent.title')}</h1>
+          {sampleData && (
+            <p className="bg-warning-card text-navy mt-3 rounded-xl p-3 text-sm">
+              You are viewing the sample profile. Continuing starts a fresh, empty session for your own documents, so sample numbers never mix with yours.
+            </p>
+          )}
           <p className="text-muted mt-3 text-sm leading-relaxed">{t('consent.body')}</p>
           <p className="text-muted mt-2 text-xs">
             <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/terms" className="underline">Terms</Link>
@@ -127,7 +133,7 @@ export function ConsentUploadScreen() {
         </div>
       )}
 
-      {sessionId && (
+      {sessionId && !sampleData && (
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
           <h2 className="text-navy text-xl font-bold">{t('consent.uploadTitle')}</h2>
           <p className="text-muted mt-1 text-sm">{t('consent.uploadHint')}</p>
