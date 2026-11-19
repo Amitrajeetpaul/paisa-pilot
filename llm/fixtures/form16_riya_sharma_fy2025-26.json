@@ -1,0 +1,73 @@
+{
+  "document_type": "form16",
+  "extraction_version": "1.0",
+  "warnings": [],
+  "fields": {
+    "employer_name": {
+      "value": "TechNova Solutions Pvt Ltd",
+      "confidence": 0.97,
+      "raw_text": "Employer: TechNova Solutions Pvt Ltd",
+      "notes": null
+    },
+    "employee_name": {
+      "value": "Riya Sharma",
+      "confidence": 0.97,
+      "raw_text": "Employee name: Riya Sharma",
+      "notes": null
+    },
+    "pan": {
+      "value": "ABCDE1234F",
+      "confidence": 0.97,
+      "raw_text": "PAN: ABCDE1234F",
+      "notes": null
+    },
+    "financial_year": {
+      "value": "2025-26",
+      "confidence": 0.97,
+      "raw_text": "FY 2025-26 / AY 2026-27",
+      "notes": null
+    },
+    "gross_salary_annual": {
+      "value": 1000000,
+      "confidence": 0.97,
+      "raw_text": "Gross salary (annual): Rs. 1,000,000",
+      "notes": null
+    },
+    "standard_deduction": {
+      "value": 75000,
+      "confidence": 0.97,
+      "raw_text": "Standard deduction: Rs. 75,000",
+      "notes": null
+    },
+    "deductions_chapter_via_total": {
+      "value": 150000,
+      "confidence": 0.85,
+      "raw_text": "Chapter VI-A: Section 80C Rs. 130,000 + Section 80D Rs. 20,000",
+      "notes": null
+    },
+    "taxable_income": {
+      "value": 775000,
+      "confidence": 0.97,
+      "raw_text": "Total taxable income: Rs. 775,000",
+      "notes": null
+    },
+    "tax_regime_opted": {
+      "value": "old",
+      "confidence": 0.97,
+      "raw_text": "Tax regime opted with employer: OLD",
+      "notes": null
+    },
+    "tax_computed_annual": {
+      "value": 72800,
+      "confidence": 0.97,
+      "raw_text": "Tax on total income: Rs. 72,800",
+      "notes": null
+    },
+    "tds_deducted_annual": {
+      "value": 90000,
+      "confidence": 0.97,
+      "raw_text": "Total TDS deducted (annual): Rs. 90,000",
+      "notes": null
+    }
+  }
+}

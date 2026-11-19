@@ -1,0 +1,54 @@
+{
+  "document_type": "pf_passbook",
+  "extraction_version": "1.0",
+  "warnings": [],
+  "member": {
+    "member_name": {
+      "value": "Riya Sharma",
+      "confidence": 0.97,
+      "raw_text": "Member name: Riya Sharma",
+      "notes": null
+    },
+    "uan": {
+      "value": "101234567890",
+      "confidence": 0.97,
+      "raw_text": "UAN: 101234567890",
+      "notes": null
+    }
+  },
+  "accounts": [
+    {
+      "employer_name": "TechNova Solutions Pvt Ltd",
+      "member_id": "KN/BNG/0098765/000/1234567",
+      "period_from": "2024-06-01",
+      "period_to": null,
+      "balance": 185000,
+      "status_as_printed": "Active",
+      "confidence": 0.97,
+      "raw_text": "TechNova Solutions Pvt Ltd  Member ID: KN/BNG/0098765/000/1234567  Period: 2024-06-01 to present  Balance: Rs. 185,000  Status: ACTIVE",
+      "notes": null
+    },
+    {
+      "employer_name": "BrightEdge Analytics Pvt Ltd",
+      "member_id": "MH/PUN/0054321/000/0098765",
+      "period_from": "2021-08-01",
+      "period_to": "2023-05-31",
+      "balance": 68400,
+      "status_as_printed": null,
+      "confidence": 0.97,
+      "raw_text": "BrightEdge Analytics Pvt Ltd  Member ID: MH/PUN/0054321/000/0098765  Period: 2021-08-01 to 2023-05-31  Balance: Rs. 68,400",
+      "notes": "No status line printed for this account."
+    },
+    {
+      "employer_name": "QuickServe Retail Solutions Pvt Ltd",
+      "member_id": "KA/BNG/0012345/000/0054321",
+      "period_from": "2019-11-01",
+      "period_to": "2021-07-31",
+      "balance": 42900,
+      "status_as_printed": null,
+      "confidence": 0.97,
+      "raw_text": "QuickServe Retail Solutions Pvt Ltd  Member ID: KA/BNG/0012345/000/0054321  Period: 2019-11-01 to 2021-07-31  Balance: Rs. 42,900",
+      "notes": "No status line printed for this account."
+    }
+  ]
+}

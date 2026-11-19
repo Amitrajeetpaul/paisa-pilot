@@ -137,7 +137,11 @@ def build_pf_passbook() -> None:
         row(pdf, "Member ID", acc["member_id"])
         row(pdf, "Period", f"{acc['period_from']} to {acc['period_to'] or 'present'}")
         row(pdf, "Balance", rupees(acc["balance"]))
-        row(pdf, "Status", acc["status"].upper())
+        if acc["status"] == "active":
+            row(pdf, "Status", "ACTIVE")
+        # No "Status" row for old accounts: a real EPFO passbook doesn't
+        # print a dormancy verdict -- that judgement is rules_engine's job
+        # (rules_engine/pf.py), not something to bake into the sample doc.
     pdf.output(str(HERE / "pf_passbook_riya_sharma.pdf"))
 
 

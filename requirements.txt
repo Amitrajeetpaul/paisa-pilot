@@ -4,3 +4,4 @@
 
 PyYAML==6.0.3
 pydantic==2.14.3
+google-genai==3.6.1

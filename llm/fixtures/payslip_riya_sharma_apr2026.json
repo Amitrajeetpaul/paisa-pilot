@@ -1,0 +1,79 @@
+{
+  "document_type": "payslip",
+  "extraction_version": "1.0",
+  "warnings": [],
+  "fields": {
+    "employer_name": {
+      "value": "TechNova Solutions Pvt Ltd",
+      "confidence": 0.97,
+      "raw_text": "TechNova Solutions Pvt Ltd -- Payslip",
+      "notes": null
+    },
+    "employee_name": {
+      "value": "Riya Sharma",
+      "confidence": 0.97,
+      "raw_text": "Employee name: Riya Sharma",
+      "notes": null
+    },
+    "uan": {
+      "value": "101234567890",
+      "confidence": 0.97,
+      "raw_text": "UAN: 101234567890",
+      "notes": null
+    },
+    "pay_period": {
+      "value": "2026-04",
+      "confidence": 0.97,
+      "raw_text": "Pay period: 2026-04",
+      "notes": null
+    },
+    "monthly_gross_salary": {
+      "value": 83333,
+      "confidence": 0.97,
+      "raw_text": "Gross monthly salary: Rs. 83,333",
+      "notes": null
+    },
+    "basic_pay": {
+      "value": 41667,
+      "confidence": 0.97,
+      "raw_text": "Basic pay: Rs. 41,667",
+      "notes": null
+    },
+    "hra": {
+      "value": 16667,
+      "confidence": 0.97,
+      "raw_text": "House rent allowance: Rs. 16,667",
+      "notes": null
+    },
+    "special_allowance": {
+      "value": 24999,
+      "confidence": 0.97,
+      "raw_text": "Special allowance: Rs. 24,999",
+      "notes": null
+    },
+    "pf_employee_deduction": {
+      "value": 5000,
+      "confidence": 0.97,
+      "raw_text": "Provident fund (employee): Rs. 5,000",
+      "notes": null
+    },
+    "professional_tax": {
+      "value": 200,
+      "confidence": 0.97,
+      "raw_text": "Professional tax: Rs. 200",
+      "notes": null
+    },
+    "tds_deducted": {
+      "value": 7500,
+      "confidence": 0.97,
+      "raw_text": "Income tax (TDS): Rs. 7,500",
+      "notes": null
+    },
+    "net_pay": {
+      "value": 70633,
+      "confidence": 0.97,
+      "raw_text": "Net pay credited: Rs. 70,633",
+      "notes": null
+    }
+  }
+}
