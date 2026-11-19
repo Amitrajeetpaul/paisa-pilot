@@ -49,6 +49,7 @@ const hi: Record<TranslationKey, string> = {
   'upload.payslip': 'पेस्लिप',
   'upload.form16': 'फॉर्म 16',
   'upload.bankStatement': 'बैंक स्टेटमेंट',
+  'upload.reading': 'आपका दस्तावेज़ पढ़ा जा रहा है। इसमें एक मिनट तक लग सकता है।',
   'upload.pfPassbook': 'PF पासबुक',
   'upload.ais': 'AIS (कर विवरण)',
   'upload.choose': 'फ़ाइल चुनें',

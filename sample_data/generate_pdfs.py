@@ -145,9 +145,31 @@ def build_pf_passbook() -> None:
     pdf.output(str(HERE / "pf_passbook_riya_sharma.pdf"))
 
 
+def build_ais() -> None:
+    d = load("ais_riya_sharma_fy2025-26.json")
+    pdf = new_pdf("Annual Information Statement (AIS)")
+    row(pdf, "Name", d["taxpayer_name"])
+    row(pdf, "PAN", d["pan"])
+    row(pdf, "Financial Year", d["financial_year"])
+    section(pdf, "TDS / TCS information")
+    pdf.set_font("Helvetica", "B", 9)
+    for w, h in ((70, "Deductor name"), (25, "Section"), (45, "Amount paid"), (40, "TDS deducted")):
+        pdf.cell(w, 7, h, border=1)
+    pdf.ln()
+    pdf.set_font("Helvetica", "", 9)
+    for e in d["tds_entries"]:
+        pdf.cell(70, 7, e["deductor_name"], border=1)
+        pdf.cell(25, 7, e["section"], border=1)
+        pdf.cell(45, 7, rupees(e["amount_paid"]), border=1)
+        pdf.cell(40, 7, rupees(e["tds_deducted"]), border=1)
+        pdf.ln()
+    pdf.output(str(HERE / "ais_riya_sharma_fy2025-26.pdf"))
+
+
 if __name__ == "__main__":
     build_payslip()
     build_form16()
     build_bank_statement()
     build_pf_passbook()
-    print("Generated 4 sample PDFs in", HERE)
+    build_ais()
+    print("Generated 5 sample PDFs in", HERE)

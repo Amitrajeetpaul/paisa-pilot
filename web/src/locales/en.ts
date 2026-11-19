@@ -43,6 +43,7 @@ const en = {
   'upload.payslip': 'Payslip',
   'upload.form16': 'Form 16',
   'upload.bankStatement': 'Bank statement',
+  'upload.reading': 'Reading your document. This can take up to a minute.',
   'upload.pfPassbook': 'PF passbook',
   'upload.ais': 'AIS (tax statement)',
   'upload.choose': 'Choose file',

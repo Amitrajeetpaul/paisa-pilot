@@ -147,6 +147,11 @@ export function ConsentUploadScreen() {
               </div>
             ))}
           </div>
+          {uploadingType && (
+            <p className="text-muted mt-4 text-sm" role="status" aria-live="polite">
+              {t('upload.reading')}
+            </p>
+          )}
         </div>
       )}
 

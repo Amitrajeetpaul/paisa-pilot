@@ -1,0 +1,21 @@
+{
+  "_comment": "Ground truth for sample_data/ais_riya_sharma_fy2025-26.pdf. Sample data only.",
+  "document_type": "ais",
+  "taxpayer_name": "Riya Sharma",
+  "pan": "ABCDE1234F",
+  "financial_year": "2025-26",
+  "tds_entries": [
+    {
+      "deductor_name": "TechNova Solutions Pvt Ltd",
+      "section": "192",
+      "amount_paid": 1000000,
+      "tds_deducted": 90000
+    },
+    {
+      "deductor_name": "State Bank of India",
+      "section": "194A",
+      "amount_paid": 25000,
+      "tds_deducted": 2500
+    }
+  ]
+}
