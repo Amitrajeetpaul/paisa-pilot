@@ -5,6 +5,7 @@ import { StatusChip } from '../components/Chip'
 import { api } from '../lib/api'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
+import { ConfirmListScreen, LIST_DOCUMENT_TYPES } from './ConfirmListScreen'
 
 const CONFIDENCE_OK_THRESHOLD = 0.8
 
@@ -38,7 +39,7 @@ function fieldLabelKey(documentType: string, field: string): TranslationKey {
   return `confirm.field.${field}` as TranslationKey
 }
 
-export function ConfirmScreen() {
+function FieldConfirmScreen() {
   const { documentType = 'payslip' } = useParams<{ documentType: string }>()
   const location = useLocation()
   const navigate = useNavigate()
@@ -162,5 +163,14 @@ export function ConfirmScreen() {
         <button className="text-sm font-medium text-white/80 underline">{t('confirm.reupload')}</button>
       </div>
     </div>
+  )
+}
+
+export function ConfirmScreen() {
+  const { documentType = 'payslip' } = useParams<{ documentType: string }>()
+  return LIST_DOCUMENT_TYPES.includes(documentType) ? (
+    <ConfirmListScreen documentType={documentType} />
+  ) : (
+    <FieldConfirmScreen />
   )
 }

@@ -42,6 +42,10 @@ const hi: Record<TranslationKey, string> = {
 
   'confirm.stepLabel': 'चरण 3 of 6 · पुष्टि करें',
   'confirm.title': 'अपनी पेस्लिप जाँचें',
+  'confirm.title.pf_passbook': 'अपने PF खाते जाँचें',
+  'confirm.title.bank_statement': 'अपने लेन-देन जाँचें',
+  'confirm.title.ais': 'अपनी TDS प्रविष्टियाँ जाँचें',
+  'confirm.removeRow': 'हटाएँ',
   'confirm.calm':
     'हमने ये आंकड़े आपकी फोटो से पढ़े हैं। जो गलत लगे उसे ठीक करें। जब तक आप पुष्टि नहीं करते, कुछ भी कैलकुलेट नहीं होता।',
   'confirm.helperBlurry': 'यहाँ फोटो धुंधली है। अपनी पेस्लिप से मिलान करें।',

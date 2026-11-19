@@ -40,6 +40,10 @@ const en = {
 
   'confirm.stepLabel': 'Step 3 of 6 · Confirm',
   'confirm.title': 'Check your payslip',
+  'confirm.title.pf_passbook': 'Check your PF accounts',
+  'confirm.title.bank_statement': 'Check your transactions',
+  'confirm.title.ais': 'Check your TDS entries',
+  'confirm.removeRow': 'Remove',
   'confirm.calm':
     'We read these values from your photo. Fix anything that looks wrong. Nothing is calculated until you confirm.',
   'confirm.helperBlurry': 'The photo is blurry here. Compare with your payslip.',
