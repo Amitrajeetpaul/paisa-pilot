@@ -62,6 +62,12 @@ export const api = {
   calculateLeakFixer: (sessionId: string) =>
     request<LeakFixerResult>(`/sessions/${sessionId}/calculate/leak-fixer`, { method: 'POST' }),
 
+  runAgent: (sessionId: string, agent: 'money_finder' | 'leak_fixer' | 'consultant', question?: string) =>
+    request<AgentRunResult>(`/sessions/${sessionId}/agents/${agent}/run`, {
+      method: 'POST',
+      body: JSON.stringify({ question: question ?? null }),
+    }),
+
   getSourceTrail: (sessionId: string, cardId: string) =>
     request<SourceTrailEntry>(`/sessions/${sessionId}/source-trail/${cardId}`),
 
@@ -120,4 +126,18 @@ export interface ConsultantAnswer {
   answer: string
   guardrail_flagged: boolean
   source_chip: string
+}
+
+export interface AgentToolCall {
+  tool: string
+  args: Record<string, unknown>
+  result: Record<string, unknown> | null
+}
+
+export interface AgentRunResult {
+  agent: string
+  engine: 'gemini' | 'offline'
+  answer: string
+  guardrail_flagged: boolean
+  tool_calls: AgentToolCall[]
 }

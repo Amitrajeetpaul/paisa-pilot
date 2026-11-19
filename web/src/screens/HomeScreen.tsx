@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AgentActivity } from '../components/AgentActivity'
 import { CountUp } from '../components/CountUp'
 import { ResultCard } from '../components/ResultCard'
 import { SampleDataTag } from '../components/Chip'
@@ -81,6 +82,8 @@ export function HomeScreen() {
           />
         ))}
       </div>
+
+      {sessionId && <AgentActivity sessionId={sessionId} agent="money_finder" />}
 
       <p className="text-muted mt-6 text-center text-xs">{t('home.feeNote')}</p>
 

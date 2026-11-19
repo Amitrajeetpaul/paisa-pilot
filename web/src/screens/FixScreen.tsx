@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AgentActivity } from '../components/AgentActivity'
 import { Button } from '../components/Button'
 import { SourceChip } from '../components/Chip'
 import { LeakBarChart } from '../components/LeakBarChart'
@@ -93,6 +94,8 @@ export function FixScreen() {
           </div>
         ))}
       </div>
+
+      {sessionId && <AgentActivity sessionId={sessionId} agent="leak_fixer" />}
 
       <SourceDrawer entry={drawer.entry} loading={drawer.loading} onClose={drawer.close} />
     </div>
