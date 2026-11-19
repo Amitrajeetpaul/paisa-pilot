@@ -192,7 +192,7 @@ export function LandingScreen() {
               <span className="tabular text-navy text-base font-extrabold">₹75,400</span>
             </div>
           </div>
-          <div className="card float-soft absolute -left-4 bottom-10 hidden items-center gap-2 px-3 py-2 sm:flex md:-left-12" style={{ animationDelay: '1s' }}>
+          <div className="card float-soft absolute -bottom-3 -left-4 hidden items-center gap-2 px-3 py-2 sm:flex md:-left-12" style={{ animationDelay: '1s' }}>
             <Icon name="check" size={16} className="text-teal" />
             <span className="text-navy text-xs font-bold">Every number shows its source</span>
           </div>
