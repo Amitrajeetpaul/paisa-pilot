@@ -1,4 +1,9 @@
-const BASE = '/api'
+// Local dev: Vite's dev-server proxy (vite.config.ts) forwards "/api" to
+// the FastAPI server, so the default is enough. Production (Cloud Run):
+// the web and api services get separate URLs with no shared domain by
+// default, so the built bundle needs the api service's URL baked in at
+// build time -- see infra/web.Dockerfile and infra/deploy.md.
+const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
