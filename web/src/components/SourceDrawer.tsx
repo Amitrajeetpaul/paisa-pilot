@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../state/AppContext'
-import type { SourceTrailEntry } from '../lib/api'
+import { api, type SourceTrailEntry } from '../lib/api'
 import { formatInputValue, humanizeKey } from '../lib/plain'
-import { Button } from './Button'
 
 interface SourceDrawerProps {
   entry: SourceTrailEntry | null
@@ -14,6 +13,26 @@ export function SourceDrawer({ entry, loading, onClose }: SourceDrawerProps) {
   const { t } = useApp()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const open = entry !== null || loading
+  const { sessionId } = useApp()
+  const [reporting, setReporting] = useState(false)
+  const [note, setNote] = useState('')
+  const [sent, setSent] = useState(false)
+
+  useEffect(() => {
+    setReporting(false)
+    setNote('')
+    setSent(false)
+  }, [entry?.card_id])
+
+  async function sendReport() {
+    if (!entry || !note.trim()) return
+    try {
+      await api.reportWrongNumber(entry.card_id, note.trim(), sessionId)
+      setSent(true)
+    } catch {
+      /* leave the form open so the person can try again */
+    }
+  }
 
   useEffect(() => {
     if (open) closeButtonRef.current?.focus()
@@ -96,9 +115,38 @@ export function SourceDrawer({ entry, loading, onClose }: SourceDrawerProps) {
                 </a>
               </div>
             )}
-            <Button variant="outline" className="mt-2">
-              {t('common.reportWrongNumber')}
-            </Button>
+            {sent ? (
+              <p className="text-teal mt-2 text-sm font-semibold" role="status">Thanks, we will look into it.</p>
+            ) : reporting ? (
+              <div className="mt-2 flex flex-col gap-2">
+                <label htmlFor="wrong-note" className="text-navy text-sm font-semibold">What looks wrong?</label>
+                <textarea
+                  id="wrong-note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  maxLength={500}
+                  rows={3}
+                  className="border-line text-navy rounded-xl border p-3 text-sm outline-none"
+                  placeholder="For example: my gross salary is different"
+                />
+                <button
+                  type="button"
+                  onClick={sendReport}
+                  disabled={!note.trim()}
+                  className="bg-navy min-h-11 rounded-[18px] text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  Send
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setReporting(true)}
+                className="border-line text-navy hover:border-coral mt-2 min-h-11 rounded-[18px] border-2 px-4 text-sm font-semibold"
+              >
+                {t('common.reportWrongNumber')}
+              </button>
+            )}
           </div>
         )}
       </div>

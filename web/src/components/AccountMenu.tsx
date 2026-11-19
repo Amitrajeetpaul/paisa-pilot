@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
+import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
 
@@ -48,6 +49,7 @@ export function AccountMenu() {
     if (!sessionId) return leave()
     setBusy(true)
     try {
+      track('data_deleted')
       await api.deleteMyData(sessionId)
     } catch {
       /* session may already be gone (expired); clearing locally is still right */

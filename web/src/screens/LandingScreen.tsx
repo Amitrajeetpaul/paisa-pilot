@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ApiError, api } from '../lib/api'
+import { track } from '../lib/track'
 import { Button } from '../components/Button'
 import { Icon, type IconName } from '../components/Icon'
 import { Wordmark } from '../components/Logo'
@@ -45,7 +48,59 @@ const COMPETITION = [
   ['Next step', 'Show a chart, you work out what to do', 'Drafts the form or message, you just send it'],
 ]
 
+function WaitlistForm() {
+  const [email, setEmail] = useState('')
+  const [agree, setAgree] = useState(false)
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle')
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setState('sending')
+    setError(null)
+    try {
+      await api.joinWaitlist(email, agree)
+      track('waitlist_joined')
+      setState('done')
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
+      setState('idle')
+    }
+  }
+
+  if (state === 'done') return <p className="text-teal mt-6 font-semibold">Thanks, you are on the pilot list. We will be in touch.</p>
+  return (
+    <form onSubmit={submit} className="mx-auto mt-8 max-w-md text-left">
+      <p className="text-center text-sm font-semibold text-white/90">Want to try it with your own documents? Join the pilot list.</p>
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@email.com"
+          aria-label="Email address"
+          className="text-navy min-h-11 flex-1 rounded-[18px] border-0 bg-white px-4 outline-none"
+        />
+        <Button type="submit" variant="primary" loading={state === 'sending'} disabled={!agree}>
+          Join the list
+        </Button>
+      </div>
+      <label className="mt-3 flex items-start gap-2 text-xs text-white/80">
+        <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#2EC4B6]" />
+        <span>
+          I agree to be contacted about the pilot. See the <Link to="/privacy" className="underline">Privacy notice</Link>.
+        </span>
+      </label>
+      {error && <p className="mt-2 text-sm font-medium text-[#FFB4AB]" role="alert">{error}</p>}
+    </form>
+  )
+}
+
 export function LandingScreen() {
+  useEffect(() => {
+    track('landing_view')
+  }, [])
 
   return (
     <div className="text-navy">
@@ -231,10 +286,12 @@ export function LandingScreen() {
             <Button variant="outline">Use my own documents</Button>
           </Link>
         </div>
+        <WaitlistForm />
       </section>
 
       <footer className="text-muted px-6 py-8 text-center text-xs">
-        © 2026 Paisa Pilot · git_happens · Sample data shown throughout this demo.
+        © 2026 Paisa Pilot · git_happens · Sample data shown throughout this demo. ·{' '}
+        <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/terms" className="underline">Terms</Link>
       </footer>
     </div>
   )

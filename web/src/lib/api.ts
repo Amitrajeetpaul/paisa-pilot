@@ -3,7 +3,7 @@
 // the web and api services get separate URLs with no shared domain by
 // default, so the built bundle needs the api service's URL baked in at
 // build time -- see infra/web.Dockerfile and infra/deploy.md.
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 /** The friendly message the API sends for expected problems (locked PDF, unreadable file, ...). */
 export class ApiError extends Error {
@@ -85,6 +85,18 @@ export const api = {
     request<AgentRunResult>(`/sessions/${sessionId}/agents/${agent}/run`, {
       method: 'POST',
       body: JSON.stringify({ question: question ?? null }),
+    }),
+
+  joinWaitlist: (email: string, consentToContact: boolean) =>
+    request<{ joined: boolean }>('/waitlist', {
+      method: 'POST',
+      body: JSON.stringify({ email, consent_to_contact: consentToContact }),
+    }),
+
+  reportWrongNumber: (cardId: string, note: string, sessionId: string | null) =>
+    request<{ received: boolean }>('/feedback', {
+      method: 'POST',
+      body: JSON.stringify({ card_id: cardId, note, session_id: sessionId }),
     }),
 
   deleteMyData: (sessionId: string) =>

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { api, type SourceTrailEntry } from './api'
+import { track } from './track'
 
 export function useSourceDrawer(sessionId: string | null) {
   const [entry, setEntry] = useState<SourceTrailEntry | null>(null)
@@ -9,6 +10,7 @@ export function useSourceDrawer(sessionId: string | null) {
     async (cardId: string) => {
       if (!sessionId) return
       setLoading(true)
+      track('source_opened')
       try {
         const result = await api.getSourceTrail(sessionId, cardId)
         setEntry(result)

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { buildDraftText } from '../lib/drafts'
 import type { MoneyFinderCard } from '../lib/api'
+import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
 
 export function DraftsScreen() {
@@ -15,6 +16,9 @@ export function DraftsScreen() {
   const initial = card ? buildDraftText(card) : { heading: cardId ?? 'Draft', body: '' }
   const [text, setText] = useState(initial.body)
   const [copied, setCopied] = useState(false)
+  useEffect(() => {
+    track('draft_opened')
+  }, [])
 
   async function handleCopy() {
     await navigator.clipboard.writeText(text)

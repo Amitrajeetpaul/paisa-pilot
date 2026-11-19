@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Button } from '../components/Button'
 import { api } from '../lib/api'
+import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
 
 interface Message {
@@ -32,6 +33,7 @@ export function AdviseScreen() {
   async function handleSend(preset?: string) {
     const question = (preset ?? input).trim()
     if (!question || !sessionId) return
+    track('advise_question')
     setMessages((prev) => [...prev, { role: 'user', text: question }])
     setInput('')
     setSending(true)

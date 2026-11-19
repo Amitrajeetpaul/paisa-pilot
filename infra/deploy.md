@@ -133,3 +133,19 @@ gcloud run services update-traffic paisa-pilot-api --to-revisions=PREVIOUS_REVIS
 - CI/CD (this is a manual deploy sequence; wiring it into GitHub Actions
   or Cloud Build triggers is a roadmap item, see `docs/ROADMAP.md`).
 - Sub-day upload TTL precision (see `infra/cloud_storage_lifecycle.json`).
+
+
+## Automatic deletion of stored session data (Firestore TTL)
+
+The app stamps an `expire_at` time (7 days by default, `SESSION_TTL_DAYS`) on every
+session, confirmed-document and source-trail record. Turn on Firestore's TTL so
+Google deletes them when that time passes. Run once per project:
+
+```bash
+for g in sessions confirmed_fields source_trail; do
+  gcloud firestore fields ttls update expire_at --collection-group=$g --enable-ttl --project="$PROJECT_ID" --async
+done
+```
+
+Uploaded files are removed by the bucket lifecycle rule (see step 1). The privacy
+page promises both, so keep these in place.

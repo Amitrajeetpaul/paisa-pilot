@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { Link } from 'react-router-dom'
+import { track } from '../lib/track'
 import { Icon } from '../components/Icon'
 import { Wordmark } from '../components/Logo'
 import { api, ApiError } from '../lib/api'
@@ -31,6 +33,7 @@ export function ConsentUploadScreen() {
       const { session_id } = await api.giveConsent(true)
       setSessionId(session_id)
       setSampleData(false)
+      track('consent_given')
     } catch {
       setError('Could not start a session. Please try again.')
     } finally {
@@ -45,6 +48,7 @@ export function ConsentUploadScreen() {
       const result = await api.createSampleSession()
       setSessionId(result.session_id)
       setSampleData(true)
+      track('sample_started')
       navigate('/app/home')
     } catch {
       setError('Could not load sample data. Please try again.')
@@ -61,6 +65,7 @@ export function ConsentUploadScreen() {
       const { upload_key } = await api.uploadDocument(sessionId, documentType, file)
       setUploadedKeys((prev) => ({ ...prev, [documentType]: upload_key }))
       const readResult = await api.readDocument(sessionId, documentType, upload_key)
+      track('document_uploaded', documentType)
       navigate(`/app/confirm/${documentType}`, { state: { readResult } })
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Upload failed. Please try again.')
@@ -89,6 +94,9 @@ export function ConsentUploadScreen() {
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
           <h1 className="text-navy text-2xl font-extrabold">{t('consent.title')}</h1>
           <p className="text-muted mt-3 text-sm leading-relaxed">{t('consent.body')}</p>
+          <p className="text-muted mt-2 text-xs">
+            <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/terms" className="underline">Terms</Link>
+          </p>
 
           <label className="mt-5 flex min-h-11 items-start gap-3 text-sm">
             <input
@@ -134,7 +142,7 @@ export function ConsentUploadScreen() {
                 {uploadedKeys[doc.type] ? (
                   <span className="text-teal text-sm font-semibold">✓ {t('upload.uploaded')}</span>
                 ) : (
-                  <label className="bg-coral-button text-navy inline-flex min-h-11 cursor-pointer items-center rounded-[18px] px-4 text-sm font-semibold">
+                  <label className="bg-coral-button text-navy inline-flex min-h-11 cursor-pointer items-center whitespace-nowrap rounded-[18px] px-3 text-sm font-semibold sm:px-4">
                     {uploadingType === doc.type ? t('common.loading') : t('upload.choose')}
                     <input
                       type="file"

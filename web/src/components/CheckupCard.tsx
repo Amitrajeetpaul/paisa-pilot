@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { formatINR } from '../lib/format'
 import { Icon } from './Icon'
+import { track } from '../lib/track'
 import { api, type AgentRunResult } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
@@ -64,6 +66,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
       .then((r) => {
         cache.set(key, r)
         setRun(r)
+        track('checkup_viewed', kind)
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false))
@@ -75,58 +78,66 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
   const parsed = run ? parseAnswer(run.answer) : null
 
-  function downloadActionPlan() {
-    if (!run) return
-    const content =
-      `==================================================\n` +
-      `PAISA PILOT: CA PRE-FILING AUDIT & DECISION BRIEF\n` +
-      `Financial Year: 2025-26 | Assessment Year: 2026-27\n` +
-      `==================================================\n\n` +
-      `EXECUTIVE DECISIONS TAKEN BY CA ASSISTANT:\n` +
-      run.answer.replace(/•\s*/g, '- ') +
-      `\n\n` +
-      `RECOMMENDED ACTION STEPS FOR FILING:\n` +
-      `1. Declare New Tax Regime via Form 12BB to employer to optimize monthly take-home pay.\n` +
-      `2. Claim uncredited TDS observed in AIS during ITR-1 filing.\n` +
-      `3. Verify Bank interest certificates against AIS statement before submission.\n` +
-      `4. Hand this brief over to your chartered accountant for final sign-off.\n\n` +
-      `Generated automatically by Paisa Pilot CA Agent.`
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
+  function result(tool: string): Record<string, unknown> | null {
+    return run?.tool_calls.find((c) => c.tool === tool)?.result ?? null
+  }
+
+  function saveTextFile(filename: string, content: string) {
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/plain' }))
     const a = document.createElement('a')
     a.href = url
-    a.download = `Paisa_Pilot_CA_Decision_Brief.txt`
+    a.download = filename
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  function downloadForm12BB() {
-    const content =
-      `==================================================\n` +
-      `FORM NO. 12BB: INVESTMENT DECLARATION & REGIME CHOICE\n` +
-      `[Under Section 192 of the Income-tax Act, 1961]\n` +
-      `Financial Year: 2025-26\n` +
-      `==================================================\n\n` +
-      `To: The Payroll & Human Resources Team\n\n` +
-      `Subject: Intimation of Tax Regime Option for FY 2025-26\n\n` +
-      `Dear Team,\n\n` +
-      `In accordance with Section 115BAC(6) of the Income-tax Act, 1961, I hereby intimate that I opt to be assessed under the NEW TAX REGIME for Financial Year 2025-26.\n\n` +
-      `Please calculate and deduct TDS from my monthly salary based on the revised tax slabs of the New Tax Regime.\n\n` +
-      `Audit Verification Summary:\n` +
-      `• Annual Net Tax Savings: ₹75,400\n` +
-      `• Form 16 Gross Income: Analyzed and verified\n` +
-      `• Applicable Filing Category: ITR-1 (Sahaj)\n\n` +
-      `Name: [Employee Name]\n` +
-      `PAN: [Employee PAN]\n` +
-      `Date: ${new Date().toLocaleDateString('en-IN')}\n\n` +
-      `Verified via Paisa Pilot Autonomous CA Engine.`
-    const blob = new Blob([content], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `Form_12BB_Regime_Declaration.txt`
-    a.click()
-    URL.revokeObjectURL(url)
+  const regimeResult = run ? (result('compare_tax_regimes') as { recommended_regime?: string; annual_saving_if_switch?: number } | null) : null
+
+  /** A brief for the person's CA. Every step comes from this person's own results. */
+  function downloadActionPlan() {
+    if (!run) return
+    const steps: string[] = []
+    if (regimeResult?.recommended_regime === 'new') {
+      steps.push('Ask your employer\'s payroll team to calculate your TDS under the new tax regime. Confirm with them how to submit your choice.')
+    } else if (regimeResult?.recommended_regime === 'old') {
+      steps.push('Your current regime is already the cheaper one. Keep it, and keep your deduction proofs ready.')
+    }
+    const tds = result('tds_reconciliation_tool') as { claimable_extra_tds?: number; missing_from_ais?: number } | null
+    if (tds?.claimable_extra_tds) steps.push(`Claim ${formatINR(tds.claimable_extra_tds)} of tax already deducted (shown in your AIS) as credit when you file.`)
+    if (tds?.missing_from_ais) steps.push(`Ask your employer whether ${formatINR(tds.missing_from_ais)} of deducted tax was deposited; it is missing from your AIS.`)
+    const itr = result('itr_form_tool') as { form?: string } | null
+    if (itr?.form) steps.push(`Likely ITR form: ${itr.form} (assuming salary and interest income only; tell your CA about anything else).`)
+    const docs = result('filing_readiness_tool') as { missing_descriptions?: string[] } | null
+    if (docs?.missing_descriptions?.length) steps.push(`Gather: ${docs.missing_descriptions.join('; ')}.`)
+    steps.push('Take this brief to your chartered accountant for review before you file anything.')
+
+    saveTextFile(
+      'Paisa_Pilot_Tax_Checkup_Brief.txt',
+      `PAISA PILOT: TAX CHECK-UP BRIEF (FY 2025-26)\n` +
+        `Prepared from the documents you confirmed. This is a preparation aid, not a chartered accountant.\n` +
+        `The figures are unverified until a CA signs them off, and nothing has been filed.\n\n` +
+        `WHAT WE FOUND\n${run.answer.replace(/•\s*/g, '- ')}\n\n` +
+        `SUGGESTED NEXT STEPS\n${steps.map((x, i) => `${i + 1}. ${x}`).join('\n')}\n`,
+    )
+  }
+
+  /** A draft the person edits and sends themselves; nothing is sent for them. */
+  function downloadRegimeMessage() {
+    if (!regimeResult?.recommended_regime) return
+    const regime = regimeResult.recommended_regime === 'new' ? 'new' : 'old'
+    const saving = regimeResult.annual_saving_if_switch
+    saveTextFile(
+      'Draft_message_to_employer_tax_regime.txt',
+      `DRAFT: review it, edit it, and send it yourself.\n\n` +
+        `Subject: Tax regime for FY 2025-26\n\n` +
+        `Dear Payroll team,\n\n` +
+        `I would like TDS on my salary for FY 2025-26 to be calculated under the ${regime} tax regime. ` +
+        `Please confirm the process and any form you need from me.\n\n` +
+        (regime === 'new' && saving
+          ? `My own estimate suggests this could reduce my yearly tax by about ${formatINR(saving)}. I will confirm this with my CA.\n\n`
+          : '') +
+        `Name: [Your name]\nEmployee ID: [Your ID]\nDate: ${new Date().toLocaleDateString('en-IN')}\n`,
+    )
   }
 
   async function copy() {
@@ -165,13 +176,16 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
       {parsed && run && !loading && (
         <div className="mt-4 flex flex-col gap-3">
-          {kind === 'tax' && (
+          {kind === 'tax' && regimeResult?.recommended_regime && (
             <div className="bg-teal-tint/50 border-line mb-1 flex items-start gap-3 rounded-2xl border p-3.5">
-              <span className="bg-teal flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">✓</span>
+              <Icon name="check" size={18} className="text-teal mt-0.5 shrink-0" />
               <div>
-                <p className="text-teal text-[11px] font-bold uppercase tracking-wider">Automated CA Decision</p>
+                <p className="text-teal text-[11px] font-bold uppercase tracking-wider">Our check suggests</p>
                 <p className="text-navy mt-0.5 text-sm font-semibold">
-                  Recommendation: Switch to New Regime to save ₹75,400/yr & File ITR-1 (Sahaj)
+                  {regimeResult.recommended_regime === 'new'
+                    ? `The new tax regime looks cheaper for you${regimeResult.annual_saving_if_switch ? `, by about ${formatINR(regimeResult.annual_saving_if_switch)} a year` : ''}.`
+                    : 'Your current tax regime looks like the cheaper one.'}{' '}
+                  Confirm with your CA before you act on it.
                 </p>
               </div>
             </div>
@@ -211,15 +225,17 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                   className="bg-coral text-navy min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
                 >
                   <Icon name="check" size={16} />
-                  Download CA Action Plan
+                  Download brief for my CA
                 </button>
-                <button
-                  type="button"
-                  onClick={downloadForm12BB}
-                  className="border-line text-navy min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
-                >
-                  Form 12BB Declaration
-                </button>
+                {regimeResult?.recommended_regime && (
+                  <button
+                    type="button"
+                    onClick={downloadRegimeMessage}
+                    className="border-line text-navy min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
+                  >
+                    Draft message to employer
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={copy}

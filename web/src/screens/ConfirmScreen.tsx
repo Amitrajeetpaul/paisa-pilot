@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
 import { ReadWarning } from '../components/ReadWarning'
 import { api } from '../lib/api'
+import { track } from '../lib/track'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
 import { ConfirmListScreen, LIST_DOCUMENT_TYPES } from './ConfirmListScreen'
@@ -89,6 +90,7 @@ function FieldConfirmScreen() {
         payload.tax_regime_opted = fields.tax_regime_opted?.value ?? null
       }
       await api.confirmDocument(sessionId, documentType, payload)
+      track('document_confirmed', documentType)
       navigate('/app/home')
     } catch {
       setError('Could not save. Please try again.')
@@ -124,7 +126,7 @@ function FieldConfirmScreen() {
       <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-teal/25 bg-teal/5 p-3.5 text-xs text-navy shadow-xs">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-white font-bold text-xs">✨</span>
         <div className="leading-snug">
-          <span className="font-bold text-teal">Blur-Proof Vision Active:</span> Smartphone photos are automatically pre-processed (contrast enhancement, unsharp mask sharpening, and deductive arithmetic cross-checking) to recover smudged or blurry numbers.
+          <span className="font-bold text-teal">Photo sharpening on:</span> we sharpen phone photos before reading them and check that the numbers add up. Please still double-check every value against your document.
         </div>
       </div>
       <ReadWarning

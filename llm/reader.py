@@ -16,6 +16,7 @@ from google.genai import types
 from pydantic import BaseModel
 
 from llm.client import generate_structured, reader_model
+from llm.consistency import apply_consistency_checks
 from llm.image_enhancer import enhance_document_image
 from llm.prompts import load_reader_prompt
 from llm.schemas import READER_OUTPUT_MODELS
@@ -62,12 +63,14 @@ def _read_live(document_type: str, file_bytes: bytes, mime_type: str, model_cls:
     active_mime = "image/jpeg" if was_enhanced else (mime_type or "application/octet-stream")
     system_prompt = load_reader_prompt(document_type) + "\n\n" + _BLUR_RECOVERY_INSTRUCTION
     file_part = types.Part.from_bytes(data=enhanced_bytes, mime_type=active_mime)
-    return generate_structured(
+    result = generate_structured(
         model=reader_model(),
         system_instruction=system_prompt,
         parts=[file_part],
         response_schema=model_cls,
     )
+    # Never trust a read blindly: flag anything whose arithmetic does not add up.
+    return apply_consistency_checks(document_type, result)
 
 
 def read_document(

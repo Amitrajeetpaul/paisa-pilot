@@ -40,3 +40,8 @@ class AppDatabase(ABC):
     @abstractmethod
     def delete_session(self, session_id: str) -> None:
         """Permanently remove the session and everything saved under it."""
+
+    @abstractmethod
+    def save_record(self, kind: str, record: dict, key: str | None = None) -> None:
+        """Append a small non-session record ("waitlist", "events", "feedback").
+        With a key, saving the same key again replaces it (used to dedupe emails)."""

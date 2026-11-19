@@ -1,5 +1,7 @@
 # Paisa Pilot
 
+[![Test and deploy](https://github.com/Amitrajeetpaul/paisa-pilot/actions/workflows/deploy.yml/badge.svg)](https://github.com/Amitrajeetpaul/paisa-pilot/actions/workflows/deploy.yml) ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
 An AI money co-pilot that **finds your money, fixes your leaks, and
 advises you with proof.** Built by **git_happens** for the Google Startup
 Buildathon India 2026.

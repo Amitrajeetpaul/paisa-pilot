@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS confirmed_fields (
     fields_json TEXT NOT NULL,
     PRIMARY KEY (session_id, document_type)
 );
+CREATE TABLE IF NOT EXISTS records (
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    record_json TEXT NOT NULL,
+    PRIMARY KEY (kind, key)
+);
 CREATE TABLE IF NOT EXISTS source_trail (
     session_id TEXT NOT NULL,
     card_id TEXT NOT NULL,
@@ -109,4 +116,13 @@ class SqliteDatabase(AppDatabase):
         with self._lock:
             for table, col in (("source_trail", "session_id"), ("confirmed_fields", "session_id"), ("sessions", "id")):
                 self._conn.execute(f"DELETE FROM {table} WHERE {col} = ?", (session_id,))
+            self._conn.commit()
+
+    def save_record(self, kind: str, record: dict, key: str | None = None) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO records (kind, key, record_json) VALUES (?, ?, ?) "
+                "ON CONFLICT (kind, key) DO UPDATE SET record_json = excluded.record_json",
+                (kind, key or str(uuid.uuid4()), json.dumps(record)),
+            )
             self._conn.commit()
