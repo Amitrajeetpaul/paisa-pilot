@@ -27,11 +27,11 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
     >
       <IconTile icon={icon} tone={tone} />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
-          <p className="text-ink text-[14px] sm:text-[15px] font-semibold leading-snug line-clamp-2">{title}</p>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <p className="text-ink text-[13px] sm:text-[14px] font-semibold leading-tight truncate">{title}</p>
           {badge && (
             <span
-              className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+              className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${
                 badgeTone === 'ok' ? 'bg-teal-tint text-ink' : 'bg-yellow text-ink'
               }`}
             >
@@ -39,7 +39,7 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
             </span>
           )}
         </div>
-        <p className="text-muted mt-0.5 truncate text-[12px] sm:text-[13px] leading-tight">{subtitle}</p>
+        <p className="text-muted mt-0.5 truncate text-[11px] sm:text-[12px] leading-tight">{subtitle}</p>
       </div>
       <div className="shrink-0 text-right pl-1.5">
         <p className="tabular text-ink text-[14px] sm:text-[15px] font-bold leading-tight">{formatINR(amount)}</p>

@@ -12,7 +12,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <SideNav />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-line sticky top-0 z-30 flex items-center justify-between border-b bg-white px-4 py-3 md:hidden">
+        <header
+          className="border-line sticky top-0 z-30 flex items-center justify-between border-b bg-white px-4 py-3 md:hidden"
+          style={{ paddingTop: 'max(env(safe-area-inset-top), 0.75rem)' }}
+        >
           <Wordmark />
           <div className="flex items-center gap-2">
             <ThemeToggle className="h-9 w-9 border-0" />

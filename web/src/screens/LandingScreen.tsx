@@ -105,7 +105,10 @@ export function LandingScreen() {
 
   return (
     <div className="text-ink">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+      <header
+        className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6"
+        style={{ paddingTop: 'max(env(safe-area-inset-top), 1.5rem)' }}
+      >
         <Wordmark />
         <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
           <a href="#problems" className="hover:text-coral">

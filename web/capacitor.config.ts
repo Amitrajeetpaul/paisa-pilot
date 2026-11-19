@@ -4,9 +4,8 @@ const config: CapacitorConfig = {
   appId: 'com.paisapilot.app',
   appName: 'Paisa Pilot',
   webDir: 'dist',
-  server: {
-    url: 'https://paisa-pilot-web-316611436028.asia-south1.run.app',
-    cleartext: true,
+  android: {
+    backgroundColor: '#0F172A',
   },
 };
 
