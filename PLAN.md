@@ -171,4 +171,10 @@ external account, or sending/publishing anything outside this repo.
 
 ---
 
-**Waiting for "go" to start Milestone 1.**
+**Status: all four milestones built.** M1 (AI Studio prompts/schemas/test
+cases + sample data), M2 (rules_engine, llm/, api/, web/), M3 (skills/,
+agents/, guardrail, number-provenance test), and M4 (infra/ deploy
+artifacts) are all committed. Cloud resources have not actually been
+provisioned (needs the team's go-ahead + a real GCP project -- see
+`infra/deploy.md`). See `LIMITATIONS.md` for what's stubbed or
+unverified, and `README.md` for how to run the demo.
