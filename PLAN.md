@@ -48,12 +48,13 @@ paisa_pilot/
 │   ├── consultant/
 │   └── guardrail.py              category-only enforcement, pre/post output check
 ├── skills/                       Google Agent Skills (SKILL.md + references/)
-│   ├── tax_regime/SKILL.md
+│   ├── tax-regime/SKILL.md
 │   ├── tds/SKILL.md
-│   ├── pf_transfer/SKILL.md
+│   ├── pf-transfer/SKILL.md
 │   ├── refunds/SKILL.md
-│   ├── upi_autopay/SKILL.md
-│   └── savings_basics/SKILL.md
+│   ├── upi-autopay/SKILL.md
+│   └── savings-basics/SKILL.md   (ADK requires lowercase kebab-case skill
+│                                   names matching their directory -- see DECISIONS.md)
 ├── api/                          FastAPI backend
 │   ├── main.py, routers/, deps/, storage/ (local-disk | Cloud Storage), db/ (SQLite | Firestore)
 │   └── tests/

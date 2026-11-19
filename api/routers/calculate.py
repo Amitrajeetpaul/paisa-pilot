@@ -176,7 +176,12 @@ def calculate_leak_fixer(session_id: str) -> dict:
     monthly_total = monthly_leak_total(charges)
 
     cards = []
+    monthly_breakdown: dict[str, float] = {}
     for charge in charges:
+        if charge.category in ("subscription", "autopay"):
+            for month in charge.months_seen:
+                monthly_breakdown[month] = round(monthly_breakdown.get(month, 0) + charge.monthly_amount, 2)
+
         if charge.category == "subscription":
             cards.append({
                 "card_id": f"subscription_{charge.description}",
@@ -187,6 +192,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
                 "status_label": charge.status_label,
                 "source_chip": "Source: bank statement",
                 "action_label": "Cancel",
+                "months_seen": charge.months_seen,
             })
         elif charge.category == "autopay":
             cards.append({
@@ -198,6 +204,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
                 "status_label": charge.status_label,
                 "source_chip": "Source: bank statement",
                 "action_label": "Draft message",
+                "months_seen": charge.months_seen,
             })
         elif charge.category == "loan_emi":
             cards.append({
@@ -209,6 +216,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
                 "status_label": None,
                 "source_chip": "Source: bank statement",
                 "action_label": "Check switch saving",
+                "months_seen": charge.months_seen,
             })
 
     _save_trail(
@@ -217,7 +225,11 @@ def calculate_leak_fixer(session_id: str) -> dict:
         "rules_engine.leaks.detect_recurring_charges + monthly_leak_total (subscription + AutoPay only, excludes loan EMIs)",
     )
 
-    return {"monthly_leak_total": monthly_total, "cards": cards}
+    return {
+        "monthly_leak_total": monthly_total,
+        "cards": cards,
+        "monthly_breakdown": dict(sorted(monthly_breakdown.items())),
+    }
 
 
 class LoanSwitchRequest(BaseModel):

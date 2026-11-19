@@ -93,6 +93,9 @@ def test_leak_fixer_detects_subscription_and_autopay(client):
     assert any("CLOUDNOTES" in t for t in titles)
     assert any("FITZONE" in t for t in titles)
 
+    # Chart data: real months only (Aug/Sep/Oct 2026), never padded/invented.
+    assert body["monthly_breakdown"] == {"2026-08": 648, "2026-09": 648, "2026-10": 648}
+
 
 def test_loan_switch_calculation(client):
     session_id = _sample_session(client)

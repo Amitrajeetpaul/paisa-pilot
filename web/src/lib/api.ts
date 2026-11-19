@@ -1,0 +1,118 @@
+const BASE = '/api'
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`${res.status} ${res.statusText}: ${body}`)
+  }
+  return res.json() as Promise<T>
+}
+
+export const api = {
+  giveConsent: (consentGiven: boolean) =>
+    request<{ session_id: string }>('/consent', {
+      method: 'POST',
+      body: JSON.stringify({ consent_given: consentGiven }),
+    }),
+
+  createSampleSession: () =>
+    request<{ session_id: string; sample_data: boolean; confirmed: Record<string, unknown> }>(
+      '/demo/sample-session',
+      { method: 'POST' },
+    ),
+
+  uploadDocument: async (sessionId: string, documentType: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${BASE}/sessions/${sessionId}/documents/${documentType}/upload`, {
+      method: 'POST',
+      body: form,
+    })
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    return res.json() as Promise<{ upload_key: string }>
+  },
+
+  readDocument: (sessionId: string, documentType: string, uploadKey: string) =>
+    request<Record<string, unknown>>(`/sessions/${sessionId}/documents/${documentType}/read`, {
+      method: 'POST',
+      body: JSON.stringify({ upload_key: uploadKey }),
+    }),
+
+  confirmDocument: (sessionId: string, documentType: string, fields: Record<string, unknown>) =>
+    request<{ status: string }>(`/sessions/${sessionId}/documents/${documentType}/confirm`, {
+      method: 'POST',
+      body: JSON.stringify(fields),
+    }),
+
+  getConfirmed: (sessionId: string, documentType: string) =>
+    request<Record<string, unknown>>(`/sessions/${sessionId}/documents/${documentType}/confirmed`),
+
+  calculateMoneyFinder: (sessionId: string) =>
+    request<MoneyFinderResult>(`/sessions/${sessionId}/calculate/money-finder`, { method: 'POST' }),
+
+  calculateLeakFixer: (sessionId: string) =>
+    request<LeakFixerResult>(`/sessions/${sessionId}/calculate/leak-fixer`, { method: 'POST' }),
+
+  getSourceTrail: (sessionId: string, cardId: string) =>
+    request<SourceTrailEntry>(`/sessions/${sessionId}/source-trail/${cardId}`),
+
+  askConsultant: (sessionId: string, question: string) =>
+    request<ConsultantAnswer>(`/sessions/${sessionId}/consultant/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    }),
+}
+
+export interface MoneyFinderCard {
+  card_id: string
+  title: string
+  detail: string
+  amount: number
+  unit_label: string
+  source_chip: string
+  action_label: string
+}
+
+export interface MoneyFinderResult {
+  total_found: number
+  yearly_total: number
+  one_time_total: number
+  cards: MoneyFinderCard[]
+}
+
+export interface LeakFixerCard {
+  card_id: string
+  title: string
+  detail: string
+  amount: number
+  unit_label: string
+  status_label: string | null
+  source_chip: string
+  action_label: string
+  months_seen: string[]
+}
+
+export interface LeakFixerResult {
+  monthly_leak_total: number
+  cards: LeakFixerCard[]
+  monthly_breakdown: Record<string, number>
+}
+
+export interface SourceTrailEntry {
+  card_id: string
+  label: string
+  inputs_used: Record<string, unknown>
+  rule_or_formula: string
+  config_version: string | null
+  source_url: string | null
+}
+
+export interface ConsultantAnswer {
+  answer: string
+  guardrail_flagged: boolean
+  source_chip: string
+}

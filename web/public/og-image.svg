@@ -1,0 +1,29 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8f3" />
+      <stop offset="100%" stop-color="#ffeee6" />
+    </linearGradient>
+    <linearGradient id="tile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5A5F" />
+      <stop offset="100%" stop-color="#FF7B6B" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <g transform="translate(120,130)">
+    <rect width="120" height="120" rx="32" fill="url(#tile)" />
+    <g transform="translate(20,20) scale(2.1)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#FFFFFF" stroke-opacity="0.7" stroke-width="2.4">
+        <path d="M5 11l7 5" /><path d="M4 19l8 2" /><path d="M7 27h5" />
+        <path d="M35 11l-7 5" /><path d="M36 19l-8 2" /><path d="M33 27h-5" />
+      </g>
+      <g stroke="#FFFFFF" stroke-width="2.8">
+        <path d="M14 12h12" /><path d="M14 17h12" /><path d="M14 12h5a5 5 0 0 1 0 10h-5" /><path d="M15 22l9 10" />
+      </g>
+    </g>
+  </g>
+  <text x="120" y="330" font-family="Inter, sans-serif" font-weight="800" font-size="64" fill="#22223B">Paisa Pilot</text>
+  <text x="120" y="390" font-family="Inter, sans-serif" font-weight="500" font-size="30" fill="#5B5B73">
+    Finds your money, fixes your leaks, advises you with proof.
+  </text>
+</svg>

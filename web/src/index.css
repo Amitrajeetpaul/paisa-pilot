@@ -1,0 +1,144 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-coral: #ff5a5f;
+  --color-coral-dark: #e8484d;
+  --color-navy: #22223b;
+  --color-navy-light: #30305a;
+  --color-cream: #fff8f3;
+  --color-yellow: #ffc94d;
+  --color-teal: #2ec4b6;
+  --color-rose: #f2b8b5;
+  --color-muted: #5b5b73;
+  --color-coral-tint: #ffe9e4;
+  --color-teal-tint: #d5f3ef;
+  --color-line: #f0e4dc;
+  --color-warn-tint: #fff3d1;
+
+  --font-sans: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+
+  --radius-card: 20px;
+  --radius-hero: 28px;
+  --radius-button: 18px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  font-size: 16px;
+}
+
+html[data-text-size='large'] {
+  font-size: 20px; /* ~125% scale, cascades through every rem-based size */
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: linear-gradient(180deg, #fff8f3 0%, #ffeee6 60%, #fff8f3 100%);
+  color: var(--color-navy);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Visible focus ring everywhere, never suppressed */
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.bg-hero-card {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 90, 95, 0.38), transparent 55%),
+    radial-gradient(circle at 10% 100%, rgba(46, 196, 182, 0.24), transparent 55%),
+    linear-gradient(145deg, #30305a, #22223b);
+}
+
+.bg-bottom-panel {
+  background:
+    radial-gradient(circle at 85% 0%, rgba(255, 90, 95, 0.35), transparent 55%),
+    linear-gradient(145deg, #2a2a4d, #22223b);
+}
+
+.bg-coral-button {
+  background: linear-gradient(135deg, #ff5a5f, #ff7b6b);
+}
+
+.bg-source-chip {
+  background: linear-gradient(135deg, #d5f3ef, #eafaf7);
+}
+
+.bg-icon-tile {
+  background: linear-gradient(135deg, #ffe3dd, #fff3ee);
+}
+
+.bg-warning-card {
+  background: linear-gradient(135deg, #fff0c7, #fff9e6);
+}
+
+.bg-leak-hero {
+  background: linear-gradient(135deg, #ffc94d, #ff5a5f);
+}
+
+/* Purposeful motion only -- count-up, entrance, drawer slide. */
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-entrance {
+  animation: card-entrance 0.35s ease-out both;
+}
+
+@keyframes drawer-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-drawer-slide-up {
+  animation: drawer-slide-up 0.25s ease-out both;
+}
