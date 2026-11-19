@@ -2,8 +2,17 @@ import { formatINR } from './format'
 
 const MONEY_WORDS = ['amount', 'salary', 'income', 'tax', 'tds', 'balance', 'deduction', 'saving', 'pay', 'emi', 'principal', 'cover']
 
+const KEY_LABELS: Record<string, string> = {
+  gross_salary_annual: 'Yearly gross salary',
+  deductions_chapter_via_total: 'Deductions you claim (80C, 80D and similar)',
+  tds_deducted_annual: 'Tax your employer deducted (TDS)',
+  taxable_income: 'Taxable income',
+  regime: 'Tax regime you filed under',
+}
+
 /** "tds_credited_in_your_ais" -> "TDS credited in your AIS" */
 export function humanizeKey(key: string): string {
+  if (KEY_LABELS[key]) return KEY_LABELS[key]
   const words = key.replace(/_/g, ' ').trim()
   const spaced = words.charAt(0).toUpperCase() + words.slice(1)
   return spaced.replace(/\b(tds|ais|pf|emi|itr|pan)\b/gi, (m) => m.toUpperCase())
