@@ -40,7 +40,8 @@ export function AccountMenu() {
     setDisplayName('')
     setOpen(false)
     setConfirming(false)
-    navigate('/')
+    // Full navigation: avoids the app redirecting a session-less page to the upload screen first.
+    window.location.assign('/')
   }
 
   async function deleteEverything() {
