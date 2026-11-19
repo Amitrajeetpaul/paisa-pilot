@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paisapilot.app/schema/form16_reader_output.schema.json",
+  "title": "Form16ReaderOutput",
+  "description": "LOCKED. Output contract for the Gemini 3.8 Flash Form 16 (Part B) reader. Same per-field {value, confidence, raw_text, notes} envelope as the payslip schema -- never flattened. Mirrors llm/reader.py's Pydantic model 1:1.",
+  "type": "object",
+  "required": ["document_type", "extraction_version", "fields", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "document_type": { "const": "form16" },
+    "extraction_version": { "const": "1.0" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "employer_name", "employee_name", "financial_year",
+        "gross_salary_annual", "standard_deduction", "deductions_chapter_via_total",
+        "taxable_income", "tax_regime_opted", "tds_deducted_annual"
+      ],
+      "properties": {
+        "employer_name": { "$ref": "#/$defs/string_field" },
+        "employee_name": { "$ref": "#/$defs/string_field" },
+        "pan": { "$ref": "#/$defs/string_field" },
+        "financial_year": { "$ref": "#/$defs/string_field", "description": "Normalize to YYYY-YY, e.g. '2025-26'." },
+        "gross_salary_annual": { "$ref": "#/$defs/number_field" },
+        "standard_deduction": { "$ref": "#/$defs/number_field" },
+        "deductions_chapter_via_total": { "$ref": "#/$defs/number_field", "description": "Sum of all Chapter VI-A deductions (80C, 80D, etc) as printed. Do not compute -- read the printed total; if only a breakdown is printed and no total, sum the lines and set confidence lower with a note." },
+        "taxable_income": { "$ref": "#/$defs/number_field" },
+        "tax_regime_opted": {
+          "allOf": [{ "$ref": "#/$defs/string_field" }],
+          "description": "value must be exactly 'old', 'new', or null if not stated anywhere on the form."
+        },
+        "tax_computed_annual": { "$ref": "#/$defs/number_field" },
+        "tds_deducted_annual": { "$ref": "#/$defs/number_field" }
+      }
+    }
+  },
+  "$defs": {
+    "string_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["string", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "number_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

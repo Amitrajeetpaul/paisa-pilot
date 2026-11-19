@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paisapilot.app/schema/payslip_reader_output.schema.json",
+  "title": "PayslipReaderOutput",
+  "description": "LOCKED. Output contract for the Gemini 3.8 Flash payslip reader. One object per field: the model NEVER collapses this to a bare value. Every numeric/string field must carry its own confidence so the Confirm screen can highlight low-confidence fields automatically. This schema is the single source of truth for both ai_studio/reader_prompts/payslip_reader.md and the Pydantic model in llm/reader.py (Milestone 2) -- keep them identical.",
+  "type": "object",
+  "required": ["document_type", "extraction_version", "fields", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "document_type": { "const": "payslip" },
+    "extraction_version": { "const": "1.0" },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Document-level issues: blurry regions, cropped edges, unreadable sections, mixed currency symbols, etc."
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "employer_name", "employee_name", "pay_period",
+        "monthly_gross_salary", "basic_pay", "pf_employee_deduction",
+        "professional_tax", "tds_deducted", "net_pay"
+      ],
+      "properties": {
+        "employer_name": { "$ref": "#/$defs/string_field" },
+        "employee_name": { "$ref": "#/$defs/string_field" },
+        "uan": { "$ref": "#/$defs/string_field", "description": "12-digit Universal Account Number if printed on the payslip, else value: null." },
+        "pay_period": { "$ref": "#/$defs/string_field", "description": "Normalize to YYYY-MM." },
+        "monthly_gross_salary": { "$ref": "#/$defs/number_field" },
+        "basic_pay": { "$ref": "#/$defs/number_field" },
+        "hra": { "$ref": "#/$defs/number_field" },
+        "special_allowance": { "$ref": "#/$defs/number_field" },
+        "pf_employee_deduction": { "$ref": "#/$defs/number_field" },
+        "professional_tax": { "$ref": "#/$defs/number_field" },
+        "tds_deducted": { "$ref": "#/$defs/number_field" },
+        "net_pay": { "$ref": "#/$defs/number_field" }
+      }
+    }
+  },
+  "$defs": {
+    "string_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["string", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"], "description": "Exact text snippet the model read this value from, verbatim." },
+        "notes": { "type": ["string", "null"], "description": "Set only when ambiguous/unreadable; otherwise null." }
+      }
+    },
+    "number_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["number", "null"], "description": "Plain number, no currency symbol, no commas." },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

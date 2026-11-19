@@ -1,0 +1,32 @@
+{
+  "_comment": "Ground truth for sample_data/pf_passbook_riya_sharma.pdf. Feeds the Money Finder 'old PF account found' feature. Two old-employer accounts are dormant/untransferred -- the detection + transfer-claim draft logic lives in rules_engine + agents/money_finder (Milestone 2/3), not in the reader.",
+  "document_type": "pf_passbook",
+  "member_name": "Riya Sharma",
+  "uan": "101234567890",
+  "accounts": [
+    {
+      "employer_name": "TechNova Solutions Pvt Ltd",
+      "member_id": "KN/BNG/0098765/000/1234567",
+      "period_from": "2024-06-01",
+      "period_to": null,
+      "balance": 185000,
+      "status": "active"
+    },
+    {
+      "employer_name": "BrightEdge Analytics Pvt Ltd",
+      "member_id": "MH/PUN/0054321/000/0098765",
+      "period_from": "2021-08-01",
+      "period_to": "2023-05-31",
+      "balance": 68400,
+      "status": "dormant"
+    },
+    {
+      "employer_name": "QuickServe Retail Solutions Pvt Ltd",
+      "member_id": "KA/BNG/0012345/000/0054321",
+      "period_from": "2019-11-01",
+      "period_to": "2021-07-31",
+      "balance": 42900,
+      "status": "dormant"
+    }
+  ]
+}

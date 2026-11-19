@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paisapilot.app/schema/bank_statement_reader_output.schema.json",
+  "title": "BankStatementReaderOutput",
+  "description": "LOCKED. Output contract for the Gemini 3.8 Flash bank statement reader. Account-level fields use the same {value, confidence, raw_text, notes} envelope as the other readers. Each transaction instead carries ONE row-level confidence (not per-sub-field) because a bank statement row is read as a unit off one printed line -- splitting confidence per column would be noise the model can't actually back up. The reader extracts facts only: it must NOT classify a transaction as 'idle subscription', 'double debit', or 'failed/unreversed' -- that classification is rules_engine's job (Milestone 2, against rules_engine_expected_flags in sample_data ground truth).",
+  "type": "object",
+  "required": ["document_type", "extraction_version", "account", "transactions", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "document_type": { "const": "bank_statement" },
+    "extraction_version": { "const": "1.0" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account_holder_name", "account_number_last4", "statement_period_from", "statement_period_to"],
+      "properties": {
+        "account_holder_name": { "$ref": "#/$defs/string_field" },
+        "account_number_last4": { "$ref": "#/$defs/string_field" },
+        "statement_period_from": { "$ref": "#/$defs/string_field", "description": "Normalize to YYYY-MM-DD." },
+        "statement_period_to": { "$ref": "#/$defs/string_field", "description": "Normalize to YYYY-MM-DD." },
+        "opening_balance": { "$ref": "#/$defs/number_field" },
+        "closing_balance": { "$ref": "#/$defs/number_field" }
+      }
+    },
+    "transactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "description", "amount", "type", "confidence", "raw_text"],
+        "properties": {
+          "date": { "type": "string", "description": "Normalize to YYYY-MM-DD." },
+          "description": { "type": "string", "description": "Verbatim merchant/narration text, uppercase as printed." },
+          "amount": { "type": "number", "description": "Positive number, no sign, no currency symbol." },
+          "type": { "enum": ["debit", "credit"] },
+          "running_balance": { "type": ["number", "null"] },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "raw_text": { "type": "string", "description": "The full printed line this row was read from." },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "string_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["string", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "number_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["number", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

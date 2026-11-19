@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paisapilot.app/schema/pf_passbook_reader_output.schema.json",
+  "title": "PfPassbookReaderOutput",
+  "description": "LOCKED. Output contract for the Gemini 3.8 Flash EPFO member passbook reader. Account-level fields use the same {value, confidence, raw_text, notes} envelope; each PF account entry carries one row-level confidence for the same reason as bank_statement_schema.json. The reader reports 'status' exactly as printed on the passbook (e.g. a passbook literally marking an account 'Transfer-in-progress' or leaving period_to blank for the current job) -- it must NOT infer 'dormant' itself; that dormancy judgement (no activity for N months, not yet transferred) belongs to rules_engine (Milestone 2).",
+  "type": "object",
+  "required": ["document_type", "extraction_version", "member", "accounts", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "document_type": { "const": "pf_passbook" },
+    "extraction_version": { "const": "1.0" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["member_name", "uan"],
+      "properties": {
+        "member_name": { "$ref": "#/$defs/string_field" },
+        "uan": { "$ref": "#/$defs/string_field", "description": "12-digit Universal Account Number." }
+      }
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["employer_name", "member_id", "period_from", "period_to", "balance", "status_as_printed", "confidence", "raw_text"],
+        "properties": {
+          "employer_name": { "type": "string" },
+          "member_id": { "type": "string" },
+          "period_from": { "type": ["string", "null"], "description": "Normalize to YYYY-MM-DD." },
+          "period_to": { "type": ["string", "null"], "description": "Normalize to YYYY-MM-DD, or null if the passbook shows no end date (current employer)." },
+          "balance": { "type": ["number", "null"] },
+          "status_as_printed": { "type": ["string", "null"], "description": "Verbatim status text if the passbook prints one (e.g. 'Active', 'Settled', 'Transfer-in-progress'); null if nothing is printed." },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "raw_text": { "type": "string" },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "string_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "raw_text"],
+      "properties": {
+        "value": { "type": ["string", "null"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "raw_text": { "type": ["string", "null"] },
+        "notes": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

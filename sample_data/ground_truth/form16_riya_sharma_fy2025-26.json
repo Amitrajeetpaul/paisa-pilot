@@ -1,0 +1,23 @@
+{
+  "_comment": "Ground truth for sample_data/form16_riya_sharma_fy2025-26.pdf. Sample data only. Standard deduction / 80C figures here are illustrative placeholders for the demo, NOT verified tax law -- real slabs and deduction limits come from config/rules/<fy>.yaml in Milestone 2, sourced from incometax.gov.in and marked UNVERIFIED until a CA reviews them. Riya's employer computed TDS under the OLD regime; this is what lets Money Finder show a 'switch to new regime' saving.",
+  "document_type": "form16",
+  "employer_name": "TechNova Solutions Pvt Ltd",
+  "employer_tan": "BLRT12345E",
+  "employee_name": "Riya Sharma",
+  "pan": "ABCDE1234F",
+  "financial_year": "2025-26",
+  "assessment_year": "2026-27",
+  "gross_salary_annual": 1000000,
+  "standard_deduction": 75000,
+  "deductions_chapter_via_total": 150000,
+  "deductions_chapter_via_breakdown": {
+    "section_80c": 130000,
+    "section_80d": 20000
+  },
+  "taxable_income": 775000,
+  "tax_regime_opted": "old",
+  "tax_computed_annual": 72800,
+  "cess_annual": 2912,
+  "total_tax_payable_annual": 75712,
+  "tds_deducted_annual": 90000
+}

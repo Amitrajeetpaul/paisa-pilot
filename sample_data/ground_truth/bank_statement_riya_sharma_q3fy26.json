@@ -1,0 +1,70 @@
+{
+  "_comment": "Ground truth for sample_data/bank_statement_riya_sharma_q3fy26.pdf. The 'transactions' array is what the DOCUMENT READER (Gemini 3.8 Flash) is expected to extract -- plain facts only. The 'rules_engine_expected_flags' section is NOT reader output: it is what rules_engine/leaks.py and rules_engine/refund_hunter.py (Milestone 2) must derive from these transactions, kept here so both layers can be tested against one source of truth.",
+  "document_type": "bank_statement",
+  "account_holder_name": "Riya Sharma",
+  "bank_name": "Horizon National Bank",
+  "account_number_last4": "4521",
+  "statement_period_from": "2026-08-01",
+  "statement_period_to": "2026-10-31",
+  "opening_balance": 52300,
+  "closing_balance": 192605,
+  "transactions": [
+    {"date": "2026-08-01", "description": "SALARY-TECHNOVA SOLUTIONS", "amount": 83133, "type": "credit", "running_balance": 135433},
+    {"date": "2026-08-02", "description": "UPI-CLOUDNOTES PREMIUM-cloudnotes@upi", "amount": 199, "type": "debit", "running_balance": 135234},
+    {"date": "2026-08-03", "description": "UPI AUTOPAY-FITZONE GYM-fitzone@upi", "amount": 449, "type": "debit", "running_balance": 134785},
+    {"date": "2026-08-05", "description": "NEFT-QUICKCASH LOANS EMI-LN00988123", "amount": 12000, "type": "debit", "running_balance": 122785},
+    {"date": "2026-08-06", "description": "UPI-P2M-BIGBASKET-bigbasket@upi", "amount": 1850, "type": "debit", "running_balance": 120935},
+    {"date": "2026-08-12", "description": "BILLDESK-ELECTRICITY BOARD-BESCOM", "amount": 2400, "type": "debit", "running_balance": 118535},
+    {"date": "2026-08-18", "description": "UPI-P2M-RELIANCE FRESH-reliancefresh@upi", "amount": 950, "type": "debit", "running_balance": 117585},
+    {"date": "2026-08-22", "description": "ATM WDL-HNB ATM MG ROAD", "amount": 15000, "type": "debit", "running_balance": 102585},
+    {"date": "2026-09-01", "description": "SALARY-TECHNOVA SOLUTIONS", "amount": 83133, "type": "credit", "running_balance": 185718},
+    {"date": "2026-09-02", "description": "UPI-CLOUDNOTES PREMIUM-cloudnotes@upi", "amount": 199, "type": "debit", "running_balance": 185519},
+    {"date": "2026-09-03", "description": "UPI AUTOPAY-FITZONE GYM-fitzone@upi", "amount": 449, "type": "debit", "running_balance": 185070},
+    {"date": "2026-09-05", "description": "NEFT-QUICKCASH LOANS EMI-LN00988123", "amount": 12000, "type": "debit", "running_balance": 173070},
+    {"date": "2026-09-09", "description": "UPI-P2M-BIGBASKET-bigbasket@upi", "amount": 2100, "type": "debit", "running_balance": 170970},
+    {"date": "2026-09-14", "description": "BILLDESK-ELECTRICITY BOARD-BESCOM", "amount": 2550, "type": "debit", "running_balance": 168420},
+    {"date": "2026-09-20", "description": "ATM WDL-HNB ATM MG ROAD", "amount": 18000, "type": "debit", "running_balance": 150420},
+    {"date": "2026-10-01", "description": "SALARY-TECHNOVA SOLUTIONS", "amount": 83133, "type": "credit", "running_balance": 233553},
+    {"date": "2026-10-02", "description": "UPI-CLOUDNOTES PREMIUM-cloudnotes@upi", "amount": 199, "type": "debit", "running_balance": 233354},
+    {"date": "2026-10-03", "description": "UPI AUTOPAY-FITZONE GYM-fitzone@upi", "amount": 449, "type": "debit", "running_balance": 232905},
+    {"date": "2026-10-05", "description": "NEFT-QUICKCASH LOANS EMI-LN00988123", "amount": 12000, "type": "debit", "running_balance": 220905},
+    {"date": "2026-10-07", "description": "UPI-P2M-RAJESH ELECTRONICS-rajesh@upi", "amount": 3200, "type": "debit", "running_balance": 217705},
+    {"date": "2026-10-07", "description": "UPI-P2M-RAJESH ELECTRONICS-rajesh@upi", "amount": 3200, "type": "debit", "running_balance": 214505},
+    {"date": "2026-10-09", "description": "UPI-P2M-CITY GROCERS-citygrocers@upi FAILED", "amount": 1500, "type": "debit", "running_balance": 213005},
+    {"date": "2026-10-11", "description": "UPI-P2M-BIGBASKET-bigbasket@upi", "amount": 1700, "type": "debit", "running_balance": 211305},
+    {"date": "2026-10-16", "description": "BILLDESK-ELECTRICITY BOARD-BESCOM", "amount": 2700, "type": "debit", "running_balance": 208605},
+    {"date": "2026-10-24", "description": "ATM WDL-HNB ATM MG ROAD", "amount": 16000, "type": "debit", "running_balance": 192605}
+  ],
+  "rules_engine_expected_flags": {
+    "idle_subscription": {
+      "merchant": "CLOUDNOTES PREMIUM",
+      "monthly_amount": 199,
+      "months_seen": ["2026-08", "2026-09", "2026-10"],
+      "label": "idle"
+    },
+    "live_autopay": {
+      "merchant": "FITZONE GYM",
+      "monthly_amount": 449,
+      "months_seen": ["2026-08", "2026-09", "2026-10"],
+      "label": "active"
+    },
+    "high_interest_loan": {
+      "lender_reference": "QUICKCASH LOANS EMI-LN00988123",
+      "monthly_emi": 12000,
+      "note": "Interest rate and outstanding principal are not visible on a bank statement -- see sample_data/ground_truth/loan_details_riya_sharma.json for the supplementary facts the user would enter manually."
+    },
+    "double_debit": {
+      "merchant": "RAJESH ELECTRONICS",
+      "date": "2026-10-07",
+      "amount_each": 3200,
+      "occurrences": 2,
+      "reversal_found": false
+    },
+    "failed_unreversed_transaction": {
+      "merchant": "CITY GROCERS",
+      "date": "2026-10-09",
+      "amount": 1500,
+      "reversal_found": false
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "_comment": "Ground truth for sample_data/payslip_riya_sharma_apr2026.pdf. Sample data only — not verified tax/PF figures. Used as the expected-output fixture for llm/tests contract tests and for ai_studio reader prompt validation.",
+  "document_type": "payslip",
+  "employer_name": "TechNova Solutions Pvt Ltd",
+  "employee_name": "Riya Sharma",
+  "employee_id": "TNS-EMP-2219",
+  "uan": "101234567890",
+  "pan_last4": "234F",
+  "pay_period": "2026-04",
+  "monthly_gross_salary": 83333,
+  "basic_pay": 41667,
+  "hra": 16667,
+  "special_allowance": 24999,
+  "pf_employee_deduction": 5000,
+  "professional_tax": 200,
+  "tds_deducted": 7500,
+  "net_pay": 70633
+}
