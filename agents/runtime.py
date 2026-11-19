@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 import uuid
 from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass, field
@@ -30,6 +31,7 @@ from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
 from agents.provenance import check_provenance
+from llm.client import _model_chain, explainer_model
 
 logger = logging.getLogger(__name__)
 
@@ -365,17 +367,25 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
         raise ValueError(f"Unknown agent: {agent_name!r}")
     q = question or _default_question(agent_name)
     if mode == "live":
-        # One bounded attempt: a person is waiting on this card, so if Gemini is
-        # overloaded we answer from the built-in model rather than make them wait.
-        try:
-            run = asyncio.run(
-                asyncio.wait_for(_drive(_build(agent_name), agent_name, confirmed, q, "gemini"), timeout=AGENT_TIMEOUT_SECONDS)
-            )
+        # A person is waiting, so there is one total time budget. Within it, walk the model
+        # chain: a 429 (quota) or 503 on one model says nothing about the next one. If every
+        # model fails, or one invents a number, answer from the built-in model instead.
+        deadline = time.monotonic() + AGENT_TIMEOUT_SECONDS
+        for candidate in _model_chain(explainer_model()):
+            remaining = deadline - time.monotonic()
+            if remaining < 2:
+                break
+            try:
+                run = asyncio.run(
+                    asyncio.wait_for(_drive(_build(agent_name, model=candidate), agent_name, confirmed, q, "gemini"), timeout=remaining)
+                )
+            except Exception:
+                logger.warning("Gemini model %s failed for %s; trying the next", candidate, agent_name, exc_info=True)
+                continue
             problems = check_provenance(run.tool_calls, run.answer, confirmed, q)
             if not problems:
                 return run
             # The model used a number nobody gave it: never show that answer.
             logger.warning("Discarding Gemini answer for %s (number provenance): %s", agent_name, "; ".join(problems))
-        except Exception:
-            logger.exception("Gemini agent run failed or timed out for %s; using the built-in model", agent_name)
+            break
     return run_offline(agent_name, confirmed, q)

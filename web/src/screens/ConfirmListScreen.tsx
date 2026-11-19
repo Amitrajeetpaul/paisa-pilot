@@ -213,12 +213,6 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
 
       <h1 className="text-navy mt-5 text-2xl font-extrabold">{t(schema.titleKey)}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
-      <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-teal/25 bg-teal/5 p-3.5 text-xs text-navy shadow-xs">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-white font-bold text-xs">✨</span>
-        <div className="leading-snug">
-          <span className="font-bold text-teal">Photo sharpening on:</span> we sharpen phone photos before reading them and check that the numbers add up. Please still double-check every value against your document.
-        </div>
-      </div>
       <ReadWarning warnings={(readResult?.warnings as string[] | undefined) ?? []} nothingRead={parsed.rows.length === 0} />
       {checkCount > 0 && (
         <p className="text-navy bg-warning-card border-yellow mt-3 rounded-2xl border p-3 text-sm">

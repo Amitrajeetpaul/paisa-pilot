@@ -45,3 +45,26 @@ def test_run_agent_discards_a_gemini_answer_with_an_invented_number(monkeypatch)
     run = rt.run_agent("consultant", CONFIRMED, "How big should my emergency fund be?", mode="live")
     assert run.engine == "offline"
     assert "2,700,000" not in run.answer and "423,798" in run.answer
+
+
+def test_run_agent_falls_through_to_the_next_model_when_one_is_out_of_quota(monkeypatch):
+    seen: list[str] = []
+    real_build = rt._build
+    real_drive = rt._drive
+    monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "second-model")
+
+    def build(name, model=None):
+        seen.append(str(model))
+        return real_build(name, model=model if not isinstance(model, str) else None) if model is None else object()
+
+    async def drive(agent, name, confirmed, question, engine):
+        if engine != "gemini":
+            return await real_drive(agent, name, confirmed, question, engine)
+        if len(seen) == 1:  # first model: quota exhausted
+            raise RuntimeError("429 RESOURCE_EXHAUSTED")
+        return rt.AgentRun(agent=name, engine="gemini", answer="Done.", tool_calls=[])
+
+    monkeypatch.setattr(rt, "_build", build)
+    monkeypatch.setattr(rt, "_drive", drive)
+    run = rt.run_agent("consultant", CONFIRMED, "hello", mode="live")
+    assert run.engine == "gemini" and len(seen) == 2

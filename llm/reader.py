@@ -23,15 +23,14 @@ from llm.schemas import READER_OUTPUT_MODELS
 
 FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures"
 
-_BLUR_RECOVERY_INSTRUCTION = """
-IMPORTANT - BLURRED & SMARTPHONE SCAN RESOLUTION:
-If a digit or character is faint, smudged, or partially blurred by camera shake, glare, or paper creases, use the document's internal mathematical relationships to reconstruct it with 100% certainty:
-- In Payslips: Basic Pay + HRA + Allowances = Gross Pay; Gross Pay - Deductions = Net Pay.
-- In Form 16: Gross Salary - Standard Deduction - Chapter VI-A Deductions = Taxable Income. Total TDS = Sum of Quarters.
-- In Bank Statements: Previous Balance +/- Transaction Amount = Running Balance.
-- In PF Passbooks: Opening Balance + Monthly Contributions + Interest = Closing Balance.
-Never guess; always verify the reconstructed digits against the document's arithmetic totals.
-"""
+# Photo sharpening is OFF by default. In a controlled test (3 runs per photo) it made
+# blurry digits worse, not better, and it must never be paired with a prompt that asks
+# the model to "reconstruct" digits: that yields confident, self-consistent, WRONG numbers
+# that the arithmetic cross-check (llm/consistency.py) cannot detect. Set ENHANCE_PHOTOS=1
+# to experiment.
+def _enhance_enabled() -> bool:
+    return os.environ.get("ENHANCE_PHOTOS", "0") == "1"
+
 
 FIXTURE_FILES = {
     "payslip": "payslip_riya_sharma_apr2026.json",
@@ -59,9 +58,11 @@ def _read_fixture(document_type: str, model_cls: type[BaseModel]) -> BaseModel:
 
 
 def _read_live(document_type: str, file_bytes: bytes, mime_type: str, model_cls: type[BaseModel]) -> BaseModel:
-    enhanced_bytes, was_enhanced = enhance_document_image(file_bytes, mime_type or "")
+    enhanced_bytes, was_enhanced = (
+        enhance_document_image(file_bytes, mime_type or "") if _enhance_enabled() else (file_bytes, False)
+    )
     active_mime = "image/jpeg" if was_enhanced else (mime_type or "application/octet-stream")
-    system_prompt = load_reader_prompt(document_type) + "\n\n" + _BLUR_RECOVERY_INSTRUCTION
+    system_prompt = load_reader_prompt(document_type)
     file_part = types.Part.from_bytes(data=enhanced_bytes, mime_type=active_mime)
     result = generate_structured(
         model=reader_model(),
