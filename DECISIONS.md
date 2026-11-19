@@ -109,6 +109,46 @@ by then, update this log.
   local dev never silently assumes paid-tier Gemini 4 Argon access it
   doesn't have.
 
+### 2026-11-19 — web/, skills/, agents/ implementation choices (Milestones 2-3)
+- Renamed `skills/tax_regime` → `skills/tax-regime` (and `pf_transfer`,
+  `upi_autopay`, `savings_basics` likewise) after `load_skill_from_dir`
+  rejected the underscore names at runtime: ADK's `Frontmatter` model
+  requires the `name:` field to be lowercase kebab-case, and
+  `load_skill_from_dir` separately requires it to match the directory name
+  exactly. Found by actually constructing the agents, not by reading docs
+  -- the kind of drift the brief warned Google tool specifics are prone to.
+- `agents/consultant.py`'s live mode calls the explainer model directly
+  (same grounding contract as `consultant_explainer.md`) rather than
+  driving a full `google.adk.runners.Runner` session loop end to end.
+  **Why:** wiring an async ADK Runner with session state correctly is a
+  meaningfully bigger task than the rest of this slice, and the
+  `build_consultant_agent()` function already defines a correct ADK
+  `Agent` (tools + skills + model) that's ready for that wiring --
+  finishing it is a clearly-scoped next step, not a redesign. Logged in
+  LIMITATIONS.md too.
+- The AI Consultant's `answer_question()` fixture mode is a small
+  deterministic, template-based responder (keyword-matched intents calling
+  the same `agents/tools.py` functions), not a second LLM. **Why:** the
+  brief requires local dev to work with zero cloud account, which a
+  real ADK+Gemini agent can't do -- this mirrors `llm/reader.py`'s
+  fixture-mode pattern so the whole app (including the AI Consultant) has
+  one working end-to-end path with no network calls, which is also what
+  made the number-provenance test automatable in CI.
+- `agents/guardrail.py`'s deterministic pre-filter uses a short, explicitly
+  non-exhaustive list of known fund/stock/policy name patterns. **Why:**
+  catching every possible product name with regex isn't realistic; the
+  LLM-based second pass (`check_guardrail_live`, using the locked
+  `guardrail_output_check.md` prompt) is the actual catch-all and is what
+  production should rely on. The deterministic layer exists so the
+  mechanism is provably wired and testable without a live API key.
+- The Leak Fixer's bar chart (brief: "a 6-month leak bar chart") plots
+  only the months actually present in the confirmed bank statement (3, for
+  the Riya Sharma sample data covering Aug-Oct 2026), not padded to a
+  fixed 6 bars. **Why:** padding with empty/invented months would violate
+  the brief's "never show invented money-recovered statistics" principle
+  extended to chart data -- better to show real data for however many
+  months exist than fabricate placeholders to hit a specific bar count.
+
 ---
 
 ## Things I will NOT decide unilaterally (will check first)
