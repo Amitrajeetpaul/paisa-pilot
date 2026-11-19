@@ -13,6 +13,12 @@ Buildathon India 2026.
 > act on. See `LIMITATIONS.md` for the full list of what's stubbed,
 > unverified, or out of scope.
 
+**Live demo:** https://paisa-pilot-web-316611436028.asia-south1.run.app (click *Try with sample data*, no sign-up)
+
+| Landing | Find: money you are owed | Fix: money that leaks |
+|---|---|---|
+| ![Landing page](docs/screenshots/landing.jpg) | ![Home with money found](docs/screenshots/home.jpg) | ![Leak Fixer](docs/screenshots/fix.jpg) |
+
 ## What this is
 
 Three modules, one trust story:
