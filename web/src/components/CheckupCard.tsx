@@ -151,7 +151,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
   }
 
   return (
-    <section className="border-line mt-6 rounded-[20px] border bg-white p-5" aria-label={t(`checkup.${kind}.title`)}>
+    <section className="card mt-6 p-5" aria-label={t(`checkup.${kind}.title`)}>
       <h2 className="text-navy text-base font-bold">{t(`checkup.${kind}.title`)}</h2>
       <p className="text-muted mt-0.5 text-xs">{t(`checkup.${kind}.sub`)}</p>
 

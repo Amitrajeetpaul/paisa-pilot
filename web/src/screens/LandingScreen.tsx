@@ -122,55 +122,83 @@ export function LandingScreen() {
         </Link>
       </header>
 
-      <section className="mx-auto max-w-4xl px-6 py-16 text-center">
-        <h1 className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
-          Finds your money. Fixes your leaks. <span className="text-coral">Advises you with proof.</span>
-        </h1>
-        <p className="text-muted mx-auto mt-6 max-w-2xl text-lg">
-          Many Indians, working or retired, young, middle-aged and old, manage money without anyone checking whether
-          they are making the most of it.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Link to="/app/consent">
-            <Button variant="primary">Try with sample data</Button>
-          </Link>
-          <a href="#problems">
-            <Button variant="outline">See the problem</Button>
-          </a>
-        </div>
-        <p className="text-muted mt-4 flex items-center justify-center gap-2 text-sm">
-          <Icon name="lock" size={14} /> No sign-up. Nothing is filed or sent without you. Delete your data anytime.
-        </p>
-
-        <div className="mx-auto mt-12 max-w-md text-left" aria-label="Product preview">
-          <div className="bg-hero-card rounded-[28px] p-6 text-white shadow-2xl">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-white/80">Money found for you</span>
-              <span className="bg-yellow text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">SAMPLE</span>
-            </div>
-            <div className="mt-2 text-5xl font-extrabold tracking-tight">₹2,13,700</div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-white/10 p-3">
-                <div className="text-lg font-bold">₹75,400</div>
-                <div className="text-xs text-white/70">every year</div>
-              </div>
-              <div className="rounded-2xl bg-white/10 p-3">
-                <div className="text-lg font-bold">₹1,38,300</div>
-                <div className="text-xs text-white/70">one-time, if confirmed</div>
-              </div>
-            </div>
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-12 md:grid-cols-2 md:py-20">
+        <div className="text-center md:text-left">
+          <span className="bg-teal-tint text-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold">
+            <Icon name="shield" size={14} className="text-teal" /> Built for India. Nothing filed without you.
+          </span>
+          <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+            Finds your money. Fixes your leaks. <span className="text-coral">Advises you with proof.</span>
+          </h1>
+          <p className="text-muted mx-auto mt-5 max-w-xl text-lg md:mx-0">
+            Upload a payslip, Form 16 or bank statement. In a minute you see the PF you forgot, the tax you overpaid and the
+            subscriptions quietly draining you, each with its proof.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
+            <Link to="/app/consent">
+              <Button variant="primary">Try with sample data</Button>
+            </Link>
+            <a href="#problems">
+              <Button variant="outline">See the problem</Button>
+            </a>
           </div>
-          <div className="border-line -mt-3 mx-4 rounded-[20px] border bg-white p-4 shadow-lg">
-            <div className="flex items-center gap-3">
-              <span className="bg-icon-tile text-coral-dark flex h-10 w-10 items-center justify-center rounded-xl">
+          <p className="text-muted mt-4 flex items-center justify-center gap-2 text-sm md:justify-start">
+            <Icon name="lock" size={14} /> No sign-up. Delete your data anytime.
+          </p>
+          <div className="text-muted mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold md:justify-start">
+            <span>Built on</span>
+            <span className="text-navy">Google Cloud</span>
+            <span className="text-navy">Gemini</span>
+            <span className="text-navy">Google ADK</span>
+          </div>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[330px]" aria-label="Product preview">
+          <div className="float-soft border-navy bg-cream relative rounded-[42px] border-[7px] p-3 shadow-[0_40px_80px_-30px_rgba(34,34,59,0.55)]">
+            <div className="bg-navy mx-auto mb-3 h-1.5 w-16 rounded-full" />
+            <p className="text-muted px-1 text-xs font-medium">Good morning</p>
+            <p className="text-navy px-1 text-lg font-extrabold">Riya</p>
+            <div className="bg-hero-card hero-shine mt-2 rounded-3xl p-4 text-white">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-white/75">
+                <span>Money found for you</span>
+                <span className="bg-yellow text-navy rounded-full px-2 py-0.5 text-[10px] font-bold">SAMPLE</span>
+              </div>
+              <div className="tabular mt-1 text-4xl font-extrabold">₹2,13,700</div>
+              <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full">
+                <div className="w-[35%] rounded-l-full" style={{ background: '#5b5bd6' }} />
+                <div className="w-[9%]" style={{ background: '#2ec4b6' }} />
+                <div className="w-[52%]" style={{ background: '#f5a524' }} />
+                <div className="w-[4%] rounded-r-full" style={{ background: '#ff5a5f' }} />
+              </div>
+            </div>
+            <div className="card mt-3 flex items-center gap-3 p-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: '#fff1d6', color: '#c47f0a' }}>
                 <Icon name="book" size={20} />
               </span>
               <div className="flex-1">
-                <p className="text-navy text-sm font-bold">Old PF account found</p>
-                <p className="text-muted text-xs">2 accounts from past employers, not transferred</p>
+                <p className="text-navy text-[13px] font-bold">Old PF account found</p>
+                <p className="text-muted text-[11px]">2 accounts not transferred</p>
               </div>
-              <span className="text-navy text-lg font-extrabold">₹1,11,300</span>
+              <span className="tabular text-navy text-base font-extrabold">₹1,11,300</span>
             </div>
+            <div className="card mt-2.5 mb-1 flex items-center gap-3 p-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: '#ececfb', color: '#4a4ac0' }}>
+                <Icon name="receipt" size={20} />
+              </span>
+              <div className="flex-1">
+                <p className="text-navy text-[13px] font-bold">Switch to new tax option</p>
+                <p className="text-muted text-[11px]">Source: your Form 16</p>
+              </div>
+              <span className="tabular text-navy text-base font-extrabold">₹75,400</span>
+            </div>
+          </div>
+          <div className="card float-soft absolute -left-4 bottom-10 hidden items-center gap-2 px-3 py-2 sm:flex md:-left-12" style={{ animationDelay: '1s' }}>
+            <Icon name="check" size={16} className="text-teal" />
+            <span className="text-navy text-xs font-bold">Every number shows its source</span>
+          </div>
+          <div className="card float-soft absolute -right-3 top-6 hidden items-center gap-2 px-3 py-2 sm:flex md:-right-10" style={{ animationDelay: '2s' }}>
+            <Icon name="lock" size={16} className="text-teal" />
+            <span className="text-navy text-xs font-bold">Auto-deleted</span>
           </div>
         </div>
       </section>

@@ -121,3 +121,14 @@ def test_leak_fixer_requires_confirmed_bank_statement(client):
     session_id = r.json()["session_id"]
     r = client.post(f"/sessions/{session_id}/calculate/leak-fixer")
     assert r.status_code == 400
+
+
+def test_leak_fixer_reports_the_yearly_cost_of_the_monthly_leak():
+    from fastapi.testclient import TestClient
+
+    from api.main import app
+
+    c = TestClient(app)
+    sid = c.post("/demo/sample-session").json()["session_id"]
+    r = c.post(f"/sessions/{sid}/calculate/leak-fixer").json()
+    assert r["annual_leak_total"] == round(r["monthly_leak_total"] * 12, 2) == 7776

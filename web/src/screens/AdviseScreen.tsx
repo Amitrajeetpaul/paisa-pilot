@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Button } from '../components/Button'
+import { Icon } from '../components/Icon'
 import { api } from '../lib/api'
 import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
@@ -52,7 +53,7 @@ export function AdviseScreen() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col py-6" style={{ minHeight: 'calc(100vh - 7rem)' }}>
-      <h1 className="text-navy text-xl font-bold">{t('advise.title')}</h1>
+      <h1 className="text-navy text-2xl font-extrabold tracking-tight">{t('advise.title')}</h1>
 
       <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto">
         {messages.length === 0 && (
@@ -74,21 +75,39 @@ export function AdviseScreen() {
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`stagger flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {m.role === 'assistant' && (
+              <span className="bg-coral-button text-navy flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-sm" aria-hidden="true">
+                <Icon name="chat" size={16} />
+              </span>
+            )}
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                m.role === 'user' ? 'bg-coral-tint text-navy' : 'border-line border bg-white text-navy'
+              className={`max-w-[82%] px-4 py-3 text-sm leading-relaxed shadow-sm ${
+                m.role === 'user'
+                  ? 'bg-navy rounded-[20px] rounded-br-md text-white'
+                  : 'card text-navy rounded-[20px] rounded-bl-md'
               }`}
             >
-              <p>{m.text}</p>
+              <p className="whitespace-pre-line">{m.text}</p>
               {m.role === 'assistant' && /education, not/i.test(m.text) && (
                 <p className="bg-warn-tint text-navy mt-2 rounded-lg px-2 py-1 text-xs">{t('advise.guardrailNote')}</p>
               )}
-              {m.sourceChip && <p className="text-muted mt-1 text-xs">{m.sourceChip}</p>}
+              {m.sourceChip && <p className="text-muted mt-1.5 text-[11px] font-medium">{m.sourceChip}</p>}
             </div>
           </div>
         ))}
-        {sending && <p className="text-muted text-sm">{t('common.loading')}</p>}
+        {sending && (
+          <div className="flex items-end gap-2" role="status" aria-label="Thinking">
+            <span className="bg-coral-button text-navy flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-sm" aria-hidden="true">
+              <Icon name="chat" size={16} />
+            </span>
+            <div className="card flex items-center gap-1.5 rounded-[20px] rounded-bl-md px-4 py-3.5">
+              <span className="typing-dot" />
+              <span className="typing-dot" style={{ animationDelay: '0.15s' }} />
+              <span className="typing-dot" style={{ animationDelay: '0.3s' }} />
+            </div>
+          </div>
+        )}
       </div>
 
       <form
@@ -96,7 +115,7 @@ export function AdviseScreen() {
           e.preventDefault()
           handleSend()
         }}
-        className="border-line sticky bottom-20 mt-4 flex items-center gap-2 rounded-full border bg-white p-1.5 md:bottom-4"
+        className="glass border-line sticky bottom-24 mt-4 flex items-center gap-2 rounded-full border p-1.5 shadow-[0_8px_24px_-12px_rgba(34,34,59,0.3)] md:bottom-4"
       >
         <input
           value={input}

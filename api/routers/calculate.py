@@ -248,6 +248,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
 
     return {
         "monthly_leak_total": monthly_total,
+        "annual_leak_total": round(monthly_total * 12, 2),  # the same recurring charges over twelve months
         "cards": cards,
         "monthly_breakdown": dict(sorted(monthly_breakdown.items())),
     }

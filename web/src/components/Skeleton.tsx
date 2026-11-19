@@ -1,6 +1,6 @@
 export function CardSkeleton() {
   return (
-    <div className="border-line rounded-[20px] border bg-white p-5" role="status" aria-label="Loading">
+    <div className="card p-5" role="status" aria-label="Loading">
       <div className="flex items-start gap-3">
         <div className="bg-line h-11 w-11 animate-pulse rounded-2xl" />
         <div className="flex-1">

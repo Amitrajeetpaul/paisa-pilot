@@ -143,6 +143,7 @@ export interface LeakFixerCard {
 
 export interface LeakFixerResult {
   monthly_leak_total: number
+  annual_leak_total: number
   cards: LeakFixerCard[]
   monthly_breakdown: Record<string, number>
 }

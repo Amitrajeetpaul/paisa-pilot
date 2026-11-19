@@ -50,7 +50,7 @@ export function DocumentsCard({ sessionId, refreshKey }: { sessionId: string; re
   }
 
   return (
-    <section className="border-line mt-5 rounded-[20px] border bg-white p-5" aria-label="Your documents">
+    <section className="card mt-5 p-5" aria-label="Your documents">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-navy text-base font-bold">{t('docs.title')}</h2>
         <span className="text-muted text-xs font-semibold">

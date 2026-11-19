@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CardSkeleton } from '../components/Skeleton'
+import { BreakdownBar, type Segment } from '../components/BreakdownBar'
 import { CheckupCard } from '../components/CheckupCard'
-import { Button } from '../components/Button'
-import { SourceChip } from '../components/Chip'
 import { LeakBarChart } from '../components/LeakBarChart'
+import { ResultCard } from '../components/ResultCard'
+import { CardSkeleton } from '../components/Skeleton'
 import { SourceDrawer } from '../components/SourceDrawer'
+import { TrustStrip } from '../components/TrustStrip'
+import type { IconName } from '../components/Icon'
+import type { Tone } from '../components/tones'
 import { api, type LeakFixerResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 import { prettyMerchant } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
 import { useApp } from '../state/AppContext'
+
+function look(cardId: string): { icon: IconName; tone: Tone; label: string } {
+  if (cardId.startsWith('subscription_')) return { icon: 'repeat', tone: 'violet', label: 'Subscriptions' }
+  if (cardId.startsWith('autopay_')) return { icon: 'wallet', tone: 'amber', label: 'AutoPay' }
+  return { icon: 'bank', tone: 'slate', label: 'Loan EMI' }
+}
 
 export function FixScreen() {
   const { t, sessionId } = useApp()
@@ -32,27 +41,51 @@ export function FixScreen() {
       .finally(() => setLoading(false))
   }, [sessionId, navigate])
 
+  // The leak total counts subscriptions and AutoPay only; loan EMIs are shown but not counted.
+  const leakCards = (result?.cards ?? []).filter((c) => !c.card_id.startsWith('loan_'))
+  const segments: Segment[] = leakCards.map((c) => ({ label: prettyMerchant(c.title), amount: c.amount, tone: look(c.card_id).tone }))
+
   return (
-    <div className="mx-auto max-w-2xl py-6">
-      <div className="bg-leak-hero animate-card-entrance rounded-[28px] p-6 text-navy">
-        <span className="text-sm font-semibold">{t('fix.heroTitle')}</span>
-        <div className="mt-2 text-5xl font-extrabold tracking-tight">
-          {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
+    <div className="mx-auto max-w-2xl py-5 sm:py-7">
+      <p className="text-muted text-sm font-medium">Fix</p>
+      <h1 className="text-navy text-2xl font-extrabold leading-tight tracking-tight">Stop the leaks</h1>
+
+      <div className="bg-leak-hero hero-shine animate-card-entrance text-navy mt-4 rounded-[28px] p-5 shadow-[0_20px_40px_-22px_rgba(255,90,95,0.8)] sm:p-6">
+        <span className="text-sm font-bold opacity-80">{t('fix.heroTitle')}</span>
+        <div className="mt-1 flex items-end gap-2">
+          <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
+            {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
+          </div>
+          <span className="pb-1.5 text-sm font-bold opacity-80">{t('fix.monthLabel')}</span>
         </div>
-        <span className="text-sm font-semibold">{t('fix.monthLabel')}</span>
+        {result && result.annual_leak_total > 0 && (
+          <p className="mt-2 inline-block rounded-full bg-white/35 px-3 py-1 text-xs font-bold">
+            That is {formatINR(result.annual_leak_total)} a year
+          </p>
+        )}
 
         {result && result.cards.length > 0 && (
           <div className="mt-5">
             <LeakBarChart data={result.monthly_breakdown} />
           </div>
         )}
+        {segments.length > 1 && (
+          <div className="mt-5 rounded-2xl bg-white/30 p-3">
+            <BreakdownBar segments={segments} />
+          </div>
+        )}
       </div>
 
-      <p className="text-muted mt-6 text-xs font-bold uppercase tracking-wide">
-        {t('fix.sectionLabel')} · {result?.cards.length ?? 0}
-      </p>
+      <TrustStrip />
 
-      <div className="mt-3 flex flex-col gap-4">
+      <div className="mt-6 flex items-center justify-between">
+        <h2 className="text-navy text-lg font-extrabold tracking-tight">Things to fix</h2>
+        {result && result.cards.length > 0 && (
+          <span className="bg-coral-tint text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
+        )}
+      </div>
+
+      <div className="mt-3 flex flex-col gap-3">
         {loading && (
           <>
             <CardSkeleton />
@@ -61,45 +94,27 @@ export function FixScreen() {
         )}
         {errorMessage && <p className="text-muted text-sm">{errorMessage}</p>}
         {!loading && result && result.cards.length === 0 && <p className="text-muted text-sm">{t('fix.empty')}</p>}
-        {result?.cards.map((card) => (
-          <div key={card.card_id} className="border-line animate-card-entrance rounded-[20px] border bg-white p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-navy text-base font-bold">{prettyMerchant(card.title)}</h3>
-                <p className="text-muted mt-0.5 text-sm">{card.detail}</p>
-              </div>
-              {card.status_label && (
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
-                    card.status_label === 'idle' ? 'bg-yellow text-navy' : 'bg-teal-tint text-navy'
-                  }`}
-                >
-                  {card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')}
-                </span>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => drawer.open(card.card_id)}
-              className="mt-2 flex items-baseline gap-2 rounded-lg text-left"
-            >
-              <span className="text-navy text-2xl font-extrabold">{formatINR(card.amount)}</span>
-              <span className="text-muted text-sm font-medium">{card.unit_label}</span>
-            </button>
-
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <SourceChip label={card.source_chip} onClick={() => drawer.open(card.card_id)} />
-              <Button
-                variant="primary"
-                onClick={() => navigate(`/app/drafts/${card.card_id}`, { state: { card } })}
-                className="min-h-11"
-              >
-                {card.action_label}
-              </Button>
-            </div>
-          </div>
-        ))}
+        {result?.cards.map((card, i) => {
+          const l = look(card.card_id)
+          return (
+            <ResultCard
+              key={card.card_id}
+              index={i}
+              icon={l.icon}
+              tone={l.tone}
+              title={prettyMerchant(card.title)}
+              detail={card.detail}
+              amount={card.amount}
+              unitLabel={card.unit_label}
+              sourceLabel={card.source_chip}
+              actionLabel={card.action_label}
+              statusLabel={card.status_label ? (card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')) : null}
+              statusTone={card.status_label === 'idle' ? 'warn' : 'ok'}
+              onAction={() => navigate(`/app/drafts/${card.card_id}`, { state: { card } })}
+              onTapAmount={() => drawer.open(card.card_id)}
+            />
+          )
+        })}
       </div>
 
       {sessionId && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="leaks" />}

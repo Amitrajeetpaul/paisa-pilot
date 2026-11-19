@@ -1,10 +1,11 @@
 import { Icon, type IconName } from './Icon'
+import { TONE, type Tone } from './tones'
 
-export function IconTile({ icon, size = 44 }: { icon: IconName; size?: number }) {
+export function IconTile({ icon, size = 44, tone = 'coral' }: { icon: IconName; size?: number; tone?: Tone }) {
   return (
     <div
-      className="bg-icon-tile text-coral-dark flex shrink-0 items-center justify-center rounded-2xl"
-      style={{ width: size, height: size }}
+      className="flex shrink-0 items-center justify-center rounded-2xl"
+      style={{ width: size, height: size, background: TONE[tone].bg, color: TONE[tone].fg }}
       aria-hidden="true"
     >
       <Icon name={icon} size={Math.round(size * 0.5)} />
