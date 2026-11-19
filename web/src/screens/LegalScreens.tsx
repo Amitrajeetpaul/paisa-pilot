@@ -6,7 +6,7 @@ const REPO = 'https://github.com/Amitrajeetpaul/paisa-pilot'
 
 function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="text-navy mx-auto max-w-2xl px-6 py-10">
+    <div className="text-ink mx-auto max-w-2xl px-6 py-10">
       <Link to="/" aria-label="Back to home">
         <Wordmark />
       </Link>

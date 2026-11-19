@@ -10,6 +10,8 @@ interface AppContextValue {
   setLanguage: (l: Language) => void
   displayName: string
   setDisplayName: (n: string) => void
+  theme: 'light' | 'dark'
+  toggleTheme: () => void
   largeText: boolean
   setLargeText: (v: boolean) => void
   t: (key: TranslationKey) => string
@@ -22,6 +24,7 @@ const SAMPLE_KEY = 'paisa_pilot_sample_data'
 const LANG_KEY = 'paisa_pilot_language'
 const TEXT_SIZE_KEY = 'paisa_pilot_large_text'
 const NAME_KEY = 'paisa_pilot_display_name'
+const THEME_KEY = 'paisa_pilot_theme'
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [sessionId, setSessionIdState] = useState<string | null>(() => localStorage.getItem(SESSION_KEY))
@@ -30,6 +33,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [largeText, setLargeTextState] = useState<boolean>(() => localStorage.getItem(TEXT_SIZE_KEY) === '1')
 
   const [displayName, setDisplayNameState] = useState<string>(() => localStorage.getItem(NAME_KEY) ?? '')
+
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem(THEME_KEY)
+    if (saved === 'light' || saved === 'dark') return saved
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  })
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+
+  const toggleTheme = useCallback(() => {
+    setThemeState((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      localStorage.setItem(THEME_KEY, next)
+      return next
+    })
+  }, [])
 
   useEffect(() => {
     document.documentElement.lang = language
@@ -65,8 +86,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const t = useCallback((key: TranslationKey) => translate(language, key), [language])
 
   const value = useMemo(
-    () => ({ sessionId, setSessionId, sampleData, setSampleData, language, setLanguage, displayName, setDisplayName, largeText, setLargeText, t }),
-    [sessionId, setSessionId, sampleData, setSampleData, language, setLanguage, displayName, setDisplayName, largeText, setLargeText, t],
+    () => ({ sessionId, setSessionId, sampleData, setSampleData, language, setLanguage, displayName, setDisplayName, theme, toggleTheme, largeText, setLargeText, t }),
+    [sessionId, setSessionId, sampleData, setSampleData, language, setLanguage, displayName, setDisplayName, theme, toggleTheme, largeText, setLargeText, t],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

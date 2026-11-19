@@ -67,7 +67,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
           <div className="min-w-0">
             <p className="section-label">{headline?.title ?? entry?.label ?? t('common.source')}</p>
             {headline && (
-              <p className="tabular text-navy mt-1 text-3xl font-extrabold leading-none">
+              <p className="tabular text-ink mt-1 text-3xl font-extrabold leading-none">
                 {formatINR(headline.amount)} <span className="text-muted text-sm font-medium">{headline.unit}</span>
               </p>
             )}
@@ -88,7 +88,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
             <div className="flex flex-col gap-5">
               <section>
                 <h4 className="section-label">How we worked it out</h4>
-                <p className="text-navy mt-1.5 text-sm leading-relaxed">{entry.rule_or_formula}</p>
+                <p className="text-ink mt-1.5 text-sm leading-relaxed">{entry.rule_or_formula}</p>
               </section>
               {Object.keys(entry.inputs_used).length > 0 && (
                 <section>
@@ -97,7 +97,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
                     {Object.entries(entry.inputs_used).map(([key, value]) => (
                       <div key={key} className="flex justify-between gap-3 px-3 py-2.5">
                         <dt className="text-muted">{humanizeKey(key)}</dt>
-                        <dd className="text-navy text-right font-semibold">{formatInputValue(key, value)}</dd>
+                        <dd className="text-ink text-right font-semibold">{formatInputValue(key, value)}</dd>
                       </div>
                     ))}
                   </dl>
@@ -106,7 +106,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
               {(entry.config_version || entry.source_url) && (
                 <section>
                   <h4 className="section-label">Rules used</h4>
-                  <p className="text-navy mt-1.5 text-sm">
+                  <p className="text-ink mt-1.5 text-sm">
                     {entry.config_version && <>Financial year {entry.config_version.replace(/^fy/i, '')}. </>}
                     {entry.source_url && (
                       <a href={entry.source_url} target="_blank" rel="noreferrer" className="text-teal underline">
@@ -122,7 +122,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
                 </p>
               ) : reporting ? (
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="wrong-note" className="text-navy text-sm font-semibold">
+                  <label htmlFor="wrong-note" className="text-ink text-sm font-semibold">
                     What looks wrong?
                   </label>
                   <textarea
@@ -131,7 +131,7 @@ export function SourceDrawer({ entry, loading, onClose, headline, primaryAction 
                     onChange={(e) => setNote(e.target.value)}
                     maxLength={500}
                     rows={3}
-                    className="border-line text-navy rounded-xl border p-3 text-sm outline-none"
+                    className="border-line text-ink rounded-xl border p-3 text-sm outline-none"
                     placeholder="For example: my gross salary is different"
                   />
                   <button

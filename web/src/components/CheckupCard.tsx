@@ -153,7 +153,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
   return (
     <section className="card mt-6 p-5" aria-label={t(`checkup.${kind}.title`)}>
-      <h2 className="text-navy text-base font-bold">{t(`checkup.${kind}.title`)}</h2>
+      <h2 className="text-ink text-base font-bold">{t(`checkup.${kind}.title`)}</h2>
       <p className="text-muted mt-0.5 text-xs">{t(`checkup.${kind}.sub`)}</p>
 
       {loading && (
@@ -168,7 +168,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
       {error && !loading && (
         <p className="text-muted mt-3 text-sm">
           {t('checkup.error')}{' '}
-          <button type="button" onClick={load} className="text-navy font-semibold underline">
+          <button type="button" onClick={load} className="text-ink font-semibold underline">
             {t('common.tryAgain')}
           </button>
         </p>
@@ -181,7 +181,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
               <Icon name="check" size={18} className="text-teal mt-0.5 shrink-0" />
               <div>
                 <p className="text-teal text-[11px] font-bold uppercase tracking-wider">Our check suggests</p>
-                <p className="text-navy mt-0.5 text-sm font-semibold">
+                <p className="text-ink mt-0.5 text-sm font-semibold">
                   {regimeResult.recommended_regime === 'new'
                     ? `The new tax regime looks cheaper for you${regimeResult.annual_saving_if_switch ? `, by about ${formatINR(regimeResult.annual_saving_if_switch)} a year` : ''}.`
                     : 'Your current tax regime looks like the cheaper one.'}{' '}
@@ -195,7 +195,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
             {parsed.points.map((p, i) => (
               <li key={i} className="flex gap-2 text-sm leading-relaxed">
                 <Icon name="check" size={16} className="text-teal mt-1 shrink-0" />
-                <span className="text-navy">
+                <span className="text-ink">
                   {p.label && <strong className="font-bold">{p.label}: </strong>}
                   {p.text}
                 </span>
@@ -203,7 +203,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
             ))}
           </ul>
 
-          {parsed.closing && <p className="bg-warning-card text-navy whitespace-pre-line rounded-xl px-3 py-2 text-xs leading-relaxed">{parsed.closing}</p>}
+          {parsed.closing && <p className="bg-warning-card text-ink whitespace-pre-line rounded-xl px-3 py-2 text-xs leading-relaxed">{parsed.closing}</p>}
 
           {run.tool_calls.length > 0 && (
             <details className="text-sm">
@@ -222,7 +222,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                 <button
                   type="button"
                   onClick={downloadActionPlan}
-                  className="bg-coral text-navy min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
+                  className="bg-coral text-ink min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
                 >
                   <Icon name="check" size={16} />
                   Download my tax summary
@@ -231,7 +231,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                   <button
                     type="button"
                     onClick={downloadRegimeMessage}
-                    className="border-line text-navy min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
+                    className="border-line text-ink min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
                   >
                     Draft message to employer
                   </button>
@@ -239,7 +239,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                 <button
                   type="button"
                   onClick={copy}
-                  className="border-line text-navy min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
+                  className="border-line text-ink min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
                 >
                   {copied ? t('checkup.copied') : t('checkup.copy')}
                 </button>
@@ -249,7 +249,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
               <button
                 type="button"
                 onClick={copy}
-                className="border-line text-navy min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
+                className="border-line text-ink min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
               >
                 {copied ? t('checkup.copied') : t('checkup.copy')}
               </button>

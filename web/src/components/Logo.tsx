@@ -42,7 +42,7 @@ export function Wordmark({ withTile = true }: { withTile?: boolean }) {
   return (
     <div className="flex items-center gap-2">
       {withTile && <LogoTile />}
-      <span className="text-navy text-lg font-extrabold tracking-tight">Paisa Pilot</span>
+      <span className="text-ink text-lg font-extrabold tracking-tight">Paisa Pilot</span>
     </div>
   )
 }

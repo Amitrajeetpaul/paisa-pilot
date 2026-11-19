@@ -14,10 +14,10 @@ const base =
 
 const variants: Record<Variant, string> = {
   // Coral gradient with NAVY text -- white-on-coral fails 4.5:1 contrast (brief rule).
-  primary: 'bg-coral-button text-navy shadow-sm hover:brightness-105',
+  primary: 'bg-coral-button text-ink shadow-sm hover:brightness-105',
   secondary: 'bg-navy text-cream hover:bg-navy-light',
-  outline: 'border-2 border-line bg-white text-navy hover:border-coral',
-  ghost: 'text-muted hover:text-navy',
+  outline: 'border-2 border-line bg-white text-ink hover:border-coral',
+  ghost: 'text-muted hover:text-ink',
 }
 
 export function Button({ variant = 'primary', loading = false, disabled, children, className = '', ...rest }: ButtonProps) {

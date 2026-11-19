@@ -93,9 +93,9 @@ export function ConsentUploadScreen() {
 
       {(!sessionId || sampleData) && (
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
-          <h1 className="text-navy text-2xl font-extrabold">{t('consent.title')}</h1>
+          <h1 className="text-ink text-2xl font-extrabold">{t('consent.title')}</h1>
           {sampleData && (
-            <p className="bg-warning-card text-navy mt-3 rounded-xl p-3 text-sm">
+            <p className="bg-warning-card text-ink mt-3 rounded-xl p-3 text-sm">
               You are viewing the sample profile. Continuing starts a fresh, empty session for your own documents, so sample numbers never mix with yours.
             </p>
           )}
@@ -111,7 +111,7 @@ export function ConsentUploadScreen() {
               onChange={(e) => setConsentChecked(e.target.checked)}
               className="mt-0.5 h-5 w-5 shrink-0 accent-[#2EC4B6]"
             />
-            <span className="text-navy font-medium">{t('consent.checkbox')}</span>
+            <span className="text-ink font-medium">{t('consent.checkbox')}</span>
           </label>
 
           <Button
@@ -135,7 +135,7 @@ export function ConsentUploadScreen() {
 
       {sessionId && !sampleData && (
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
-          <h2 className="text-navy text-xl font-bold">{t('consent.uploadTitle')}</h2>
+          <h2 className="text-ink text-xl font-bold">{t('consent.uploadTitle')}</h2>
           <p className="text-muted mt-1 text-sm">{t('consent.uploadHint')}</p>
 
           <div className="mt-5 flex flex-col gap-3">
@@ -143,12 +143,12 @@ export function ConsentUploadScreen() {
               <div key={doc.type} className="border-line flex items-center justify-between gap-3 rounded-2xl border p-3">
                 <div className="flex items-center gap-3">
                   <span className="bg-icon-tile text-coral-dark flex h-10 w-10 items-center justify-center rounded-xl"><Icon name={doc.icon} size={20} /></span>
-                  <span className="text-navy text-sm font-semibold">{t(doc.labelKey)}</span>
+                  <span className="text-ink text-sm font-semibold">{t(doc.labelKey)}</span>
                 </div>
                 {uploadedKeys[doc.type] ? (
                   <span className="text-teal text-sm font-semibold">✓ {t('upload.uploaded')}</span>
                 ) : (
-                  <label className="bg-coral-button text-navy inline-flex min-h-11 cursor-pointer items-center whitespace-nowrap rounded-[18px] px-3 text-sm font-semibold sm:px-4">
+                  <label className="bg-coral-button text-ink inline-flex min-h-11 cursor-pointer items-center whitespace-nowrap rounded-[18px] px-3 text-sm font-semibold sm:px-4">
                     {uploadingType === doc.type ? t('common.loading') : t('upload.choose')}
                     <input
                       type="file"

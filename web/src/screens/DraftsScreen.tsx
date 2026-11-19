@@ -54,7 +54,7 @@ export function DraftsScreen() {
         >
           ←
         </button>
-        <h1 className="text-navy text-xl font-bold">{initial.heading}</h1>
+        <h1 className="text-ink text-xl font-bold">{initial.heading}</h1>
       </div>
 
       <p className="text-muted text-sm">{t('drafts.editable')}</p>
@@ -63,7 +63,7 @@ export function DraftsScreen() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={12}
-        className="border-line rounded-[20px] border bg-white p-4 text-sm leading-relaxed text-navy outline-none focus-visible:border-teal"
+        className="border-line rounded-[20px] border bg-white p-4 text-sm leading-relaxed text-ink outline-none focus-visible:border-teal"
       />
 
       <div className="flex flex-wrap gap-3">

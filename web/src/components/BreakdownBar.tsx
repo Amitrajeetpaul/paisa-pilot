@@ -30,7 +30,7 @@ export function BreakdownBar({ segments, dark = false }: { segments: Segment[]; 
               <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: SOLID[s.tone] }} />
               <span className="truncate">{s.label}</span>
             </span>
-            <span className={`tabular font-semibold ${dark ? 'text-white' : 'text-navy'}`}>{formatINR(s.amount)}</span>
+            <span className={`tabular font-semibold ${dark ? 'text-white' : 'text-ink'}`}>{formatINR(s.amount)}</span>
           </li>
         ))}
       </ul>

@@ -4,6 +4,7 @@
   --color-coral: #e23d43;
   --color-coral-dark: #c9292f;
   --color-navy: #14152e;
+  --color-ink: #14152e;
   --color-navy-light: #30305a;
   --color-cream: #f5f6f8;
   --color-yellow: #ffc94d;
@@ -43,7 +44,7 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   background: #f5f6f8;
-  color: var(--color-navy);
+  color: var(--color-ink);
   min-height: 100vh;
 }
 
@@ -215,4 +216,90 @@ button:disabled {
   border-radius: 9999px;
   background: var(--color-muted);
   animation: typing-dot 1.1s infinite ease-in-out;
+}
+
+
+/* ---- Dark theme ------------------------------------------------------
+   Text uses --color-ink (flips light); `bg-navy` stays a dark surface. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-ink: #eceef8;
+  --color-muted: #a3a9c1;
+  --color-line: #2b2d49;
+  --color-cream: #0d0e1c;
+  --color-coral-tint: rgba(226, 61, 67, 0.18);
+  --color-teal-tint: rgba(18, 165, 148, 0.2);
+  --color-warn-tint: rgba(255, 201, 77, 0.16);
+  --color-teal: #2bc4b0;
+  --color-coral-dark: #ff7a7f;
+}
+
+[data-theme='dark'] body {
+  background: #0d0e1c;
+}
+
+[data-theme='dark'] .bg-white,
+[data-theme='dark'] .card,
+[data-theme='dark'] .glass {
+  background: #171830;
+}
+
+[data-theme='dark'] .card {
+  border-color: #2b2d49;
+  box-shadow: none;
+}
+
+[data-theme='dark'] .bg-white\/80 {
+  background: rgba(23, 24, 48, 0.88);
+}
+
+[data-theme='dark'] .bg-warning-card {
+  background: rgba(255, 201, 77, 0.14);
+}
+
+[data-theme='dark'] .bg-source-chip {
+  background: #23253f;
+}
+
+[data-theme='dark'] .bg-icon-tile {
+  background: rgba(226, 61, 67, 0.18);
+}
+
+[data-theme='dark'] .bg-navy {
+  background: #25274f;
+}
+
+[data-theme='dark'] .bg-hero-card {
+  background: linear-gradient(160deg, #23255a 0%, #15162f 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .bg-leak-hero {
+  background: linear-gradient(160deg, #4a2036 0%, #15162f 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .bg-yellow {
+  color: #14152e;
+}
+
+[data-theme='dark'] .press:active {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .bg-navy\/\[0\.06\] {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] input,
+[data-theme='dark'] textarea {
+  color: var(--color-ink);
+}
+
+[data-theme='dark'] ::placeholder {
+  color: #7d839b;
+}
+
+[data-theme='dark'] .bg-bottom-panel {
+  background: #1d1e40;
 }

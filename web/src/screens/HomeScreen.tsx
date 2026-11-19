@@ -71,7 +71,7 @@ export function HomeScreen() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-muted text-sm font-medium">{t(`home.greeting.${greetingForNow()}`)}</p>
-          <p className="text-navy text-2xl font-extrabold leading-tight tracking-tight">{displayName || 'Welcome'}</p>
+          <p className="text-ink text-2xl font-extrabold leading-tight tracking-tight">{displayName || 'Welcome'}</p>
         </div>
         {sampleData && <SampleDataTag />}
       </div>
@@ -106,7 +106,7 @@ export function HomeScreen() {
       <div className="mt-6 flex items-center justify-between">
         <h2 className="section-label">Found for you</h2>
         {result && result.cards.length > 0 && (
-          <span className="bg-coral-tint text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
+          <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
         )}
       </div>
 

@@ -43,7 +43,7 @@ export function DocumentsCard({ sessionId, refreshKey }: { sessionId: string; re
 
   if (missing.length === 0) {
     return (
-      <div className="bg-teal-tint text-navy mt-5 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
+      <div className="bg-teal-tint text-ink mt-5 flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold">
         <Icon name="shield" size={18} className="text-teal" /> {t('docs.all')}
       </div>
     )
@@ -52,7 +52,7 @@ export function DocumentsCard({ sessionId, refreshKey }: { sessionId: string; re
   return (
     <section className="card mt-5 p-5" aria-label="Your documents">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-navy text-base font-bold">{t('docs.title')}</h2>
+        <h2 className="text-ink text-base font-bold">{t('docs.title')}</h2>
         <span className="text-muted text-xs font-semibold">
           {t('docs.count').replace('{n}', String(count))}
         </span>
@@ -67,7 +67,7 @@ export function DocumentsCard({ sessionId, refreshKey }: { sessionId: string; re
               <span className="bg-icon-tile text-coral-dark flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
                 <Icon name={d.icon} size={18} />
               </span>
-              <p className="text-navy min-w-0 text-sm">
+              <p className="text-ink min-w-0 text-sm">
                 <span className="font-semibold">{t(d.label)}</span>
                 <span className="text-muted"> {t(d.unlocks)}</span>
               </p>
@@ -75,7 +75,7 @@ export function DocumentsCard({ sessionId, refreshKey }: { sessionId: string; re
             <button
               type="button"
               onClick={() => navigate('/app/consent')}
-              className="border-line text-navy hover:border-coral inline-flex min-h-11 shrink-0 items-center gap-1 rounded-[18px] border-2 px-3 text-sm font-semibold"
+              className="border-line text-ink hover:border-coral inline-flex min-h-11 shrink-0 items-center gap-1 rounded-[18px] border-2 px-3 text-sm font-semibold"
             >
               <Icon name="plus" size={16} /> {t('docs.add')}
             </button>

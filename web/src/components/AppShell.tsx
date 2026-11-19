@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useApp } from '../state/AppContext'
 import { AccountMenu } from './AccountMenu'
+import { ThemeToggle } from './ThemeToggle'
 import { Wordmark } from './Logo'
 import { BottomNav, SideNav } from './Nav'
 
@@ -14,6 +15,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="border-line sticky top-0 z-30 flex items-center justify-between border-b bg-white px-4 py-3 md:hidden">
           <Wordmark />
           <div className="flex items-center gap-2">
+            <ThemeToggle className="h-9 w-9 border-0" />
             <button
               onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
               className="text-muted min-h-11 rounded-full px-2 text-sm font-semibold"
@@ -25,16 +27,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <div className="hidden items-center justify-end gap-3 px-6 py-4 md:flex">
+          <ThemeToggle />
           <button
             onClick={() => setLargeText(!largeText)}
             aria-pressed={largeText}
-            className="text-muted min-h-11 rounded-full border border-line px-3 text-sm font-semibold hover:text-navy"
+            className="text-muted min-h-11 rounded-full border border-line px-3 text-sm font-semibold hover:text-ink"
           >
             {t('common.largeText')}
           </button>
           <button
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            className="text-muted min-h-11 rounded-full border border-line px-3 text-sm font-semibold hover:text-navy"
+            className="text-muted min-h-11 rounded-full border border-line px-3 text-sm font-semibold hover:text-ink"
           >
             {t('common.language')}
           </button>

@@ -30,7 +30,7 @@ export function ResultCard({
       <div className="flex items-start gap-3">
         <IconTile icon={icon} tone={tone} />
         <div className="min-w-0 flex-1">
-          <h3 className="text-navy text-[15px] font-bold leading-snug">{title}</h3>
+          <h3 className="text-ink text-[15px] font-bold leading-snug">{title}</h3>
           <p className="text-muted mt-0.5 line-clamp-2 text-[13px] leading-snug">{detail}</p>
         </div>
         <button
@@ -39,7 +39,7 @@ export function ResultCard({
           className="press shrink-0 text-right"
           aria-label={`${title}: ${formatINR(amount)} ${unitLabel}. Tap to see source.`}
         >
-          <div className="tabular text-navy text-xl font-extrabold leading-tight">{formatINR(amount)}</div>
+          <div className="tabular text-ink text-xl font-extrabold leading-tight">{formatINR(amount)}</div>
           <div className="text-muted text-[11px] font-medium leading-tight">{unitLabel}</div>
         </button>
       </div>
@@ -49,7 +49,7 @@ export function ResultCard({
           <SourceChip label={sourceLabel} onClick={onTapAmount} />
           {statusLabel && (
             <span
-              className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ${statusTone === 'ok' ? 'bg-teal-tint text-navy' : 'bg-yellow text-navy'}`}
+              className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ${statusTone === 'ok' ? 'bg-teal-tint text-ink' : 'bg-yellow text-ink'}`}
             >
               {statusLabel}
             </span>
@@ -58,7 +58,7 @@ export function ResultCard({
         <button
           type="button"
           onClick={onAction}
-          className="bg-coral-button text-navy press inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full px-4 text-sm font-bold shadow-sm"
+          className="bg-coral-button text-ink press inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full px-4 text-sm font-bold shadow-sm"
         >
           {actionLabel}
           <span aria-hidden="true">›</span>

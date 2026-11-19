@@ -5,7 +5,7 @@ export function SourceChip({ label, onClick }: { label: string; onClick?: () => 
   return (
     <Tag
       onClick={onClick}
-      className="bg-source-chip text-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+      className="bg-source-chip text-ink inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
     >
       <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <circle cx="10" cy="10" r="9" fill="#2EC4B6" />
@@ -19,13 +19,13 @@ export function SourceChip({ label, onClick }: { label: string; onClick?: () => 
 export function StatusChip({ status }: { status: 'ok' | 'check' }) {
   if (status === 'ok') {
     return (
-      <span className="bg-teal-tint text-navy inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold">
+      <span className="bg-teal-tint text-ink inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold">
         ✓ Looks right
       </span>
     )
   }
   return (
-    <span className="bg-yellow text-navy inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold">
+    <span className="bg-yellow text-ink inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold">
       ⚠ Please check
     </span>
   )
@@ -33,7 +33,7 @@ export function StatusChip({ status }: { status: 'ok' | 'check' }) {
 
 export function SampleDataTag() {
   return (
-    <span className="bg-yellow text-navy inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide">
+    <span className="bg-yellow text-ink inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide">
       Sample data
     </span>
   )
@@ -43,7 +43,7 @@ export function Pill({ children, active = false }: { children: ReactNode; active
   return (
     <span
       className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${
-        active ? 'bg-coral-tint text-navy' : 'text-muted'
+        active ? 'bg-coral-tint text-ink' : 'text-muted'
       }`}
     >
       {children}

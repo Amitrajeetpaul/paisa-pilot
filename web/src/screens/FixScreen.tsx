@@ -49,7 +49,7 @@ export function FixScreen() {
   return (
     <div className="mx-auto max-w-2xl py-5 sm:py-7">
       <p className="text-muted text-sm font-medium">Fix</p>
-      <h1 className="text-navy text-2xl font-extrabold leading-tight tracking-tight">Stop the leaks</h1>
+      <h1 className="text-ink text-2xl font-extrabold leading-tight tracking-tight">Stop the leaks</h1>
 
       <div className="bg-leak-hero animate-card-entrance mt-4 rounded-[20px] p-5 text-white sm:p-6">
         <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
@@ -82,7 +82,7 @@ export function FixScreen() {
       <div className="mt-6 flex items-center justify-between">
         <h2 className="section-label">Things to fix</h2>
         {result && result.cards.length > 0 && (
-          <span className="bg-coral-tint text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
+          <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
         )}
       </div>
 

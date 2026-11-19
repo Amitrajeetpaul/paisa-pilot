@@ -4,6 +4,7 @@ import { ApiError, api } from '../lib/api'
 import { track } from '../lib/track'
 import { Button } from '../components/Button'
 import { Icon, type IconName } from '../components/Icon'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { Wordmark } from '../components/Logo'
 
 const PROBLEMS = [
@@ -80,7 +81,7 @@ function WaitlistForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@email.com"
           aria-label="Email address"
-          className="text-navy min-h-11 flex-1 rounded-[18px] border-0 bg-white px-4 outline-none"
+          className="text-ink min-h-11 flex-1 rounded-[18px] border-0 bg-white px-4 outline-none"
         />
         <Button type="submit" variant="primary" loading={state === 'sending'} disabled={!agree}>
           Join the list
@@ -103,7 +104,7 @@ export function LandingScreen() {
   }, [])
 
   return (
-    <div className="text-navy">
+    <div className="text-ink">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <Wordmark />
         <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
@@ -117,14 +118,17 @@ export function LandingScreen() {
             Trust
           </a>
         </nav>
-        <Link to="/app/consent">
-          <Button variant="primary">Try it</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link to="/app/consent">
+            <Button variant="primary">Try it</Button>
+          </Link>
+        </div>
       </header>
 
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-12 md:grid-cols-2 md:py-20">
         <div className="text-center md:text-left">
-          <span className="bg-teal-tint text-navy inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold">
+          <span className="bg-teal-tint text-ink inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold">
             <Icon name="shield" size={14} className="text-teal" /> Built for India. Nothing filed without you.
           </span>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
@@ -147,9 +151,9 @@ export function LandingScreen() {
           </p>
           <div className="text-muted mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold md:justify-start">
             <span>Built on</span>
-            <span className="text-navy">Google Cloud</span>
-            <span className="text-navy">Gemini</span>
-            <span className="text-navy">Google ADK</span>
+            <span className="text-ink">Google Cloud</span>
+            <span className="text-ink">Gemini</span>
+            <span className="text-ink">Google ADK</span>
           </div>
         </div>
 
@@ -157,11 +161,11 @@ export function LandingScreen() {
           <div className="float-soft border-navy bg-cream relative rounded-[42px] border-[7px] p-3 shadow-[0_40px_80px_-30px_rgba(34,34,59,0.55)]">
             <div className="bg-navy mx-auto mb-3 h-1.5 w-16 rounded-full" />
             <p className="text-muted px-1 text-xs font-medium">Good morning</p>
-            <p className="text-navy px-1 text-lg font-extrabold">Riya</p>
+            <p className="text-ink px-1 text-lg font-extrabold">Riya</p>
             <div className="bg-hero-card hero-shine mt-2 rounded-3xl p-4 text-white">
               <div className="flex items-center justify-between text-[11px] font-semibold text-white/75">
                 <span>Money found for you</span>
-                <span className="bg-yellow text-navy rounded-full px-2 py-0.5 text-[10px] font-bold">SAMPLE</span>
+                <span className="bg-yellow text-ink rounded-full px-2 py-0.5 text-[10px] font-bold">SAMPLE</span>
               </div>
               <div className="tabular mt-1 text-4xl font-extrabold">₹2,13,700</div>
               <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full">
@@ -176,29 +180,29 @@ export function LandingScreen() {
                 <Icon name="book" size={20} />
               </span>
               <div className="flex-1">
-                <p className="text-navy text-[13px] font-bold">Old PF account found</p>
+                <p className="text-ink text-[13px] font-bold">Old PF account found</p>
                 <p className="text-muted text-[11px]">2 accounts not transferred</p>
               </div>
-              <span className="tabular text-navy text-base font-extrabold">₹1,11,300</span>
+              <span className="tabular text-ink text-base font-extrabold">₹1,11,300</span>
             </div>
             <div className="card mt-2.5 mb-1 flex items-center gap-3 p-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl" style={{ background: '#ececfb', color: '#4a4ac0' }}>
                 <Icon name="receipt" size={20} />
               </span>
               <div className="flex-1">
-                <p className="text-navy text-[13px] font-bold">Switch to new tax option</p>
+                <p className="text-ink text-[13px] font-bold">Switch to new tax option</p>
                 <p className="text-muted text-[11px]">Source: your Form 16</p>
               </div>
-              <span className="tabular text-navy text-base font-extrabold">₹75,400</span>
+              <span className="tabular text-ink text-base font-extrabold">₹75,400</span>
             </div>
           </div>
           <div className="card float-soft absolute -bottom-3 -left-4 hidden items-center gap-2 px-3 py-2 sm:flex md:-left-12" style={{ animationDelay: '1s' }}>
             <Icon name="check" size={16} className="text-teal" />
-            <span className="text-navy text-xs font-bold">Every number shows its source</span>
+            <span className="text-ink text-xs font-bold">Every number shows its source</span>
           </div>
           <div className="card float-soft absolute -right-3 top-6 hidden items-center gap-2 px-3 py-2 sm:flex md:-right-10" style={{ animationDelay: '2s' }}>
             <Icon name="lock" size={16} className="text-teal" />
-            <span className="text-navy text-xs font-bold">Auto-deleted</span>
+            <span className="text-ink text-xs font-bold">Auto-deleted</span>
           </div>
         </div>
       </section>
@@ -208,7 +212,7 @@ export function LandingScreen() {
           {PROOF_POINTS.map((p) => (
             <div key={p.figure} className="border-line rounded-[20px] border bg-white p-6 text-center">
               <div className="text-coral text-3xl font-extrabold">{p.figure}</div>
-              <p className="text-navy mt-2 text-sm font-medium">{p.detail}</p>
+              <p className="text-ink mt-2 text-sm font-medium">{p.detail}</p>
               <p className="text-muted mt-1 text-xs">Source: {p.source}</p>
             </div>
           ))}
@@ -272,7 +276,7 @@ export function LandingScreen() {
           <li>We never file, move money, or touch your bank without you.</li>
           <li>Consent first, encrypted, uploads auto-deleted within 24 hours. Delete everything yourself anytime.</li>
         </ul>
-        <p className="text-navy mx-auto mt-6 max-w-2xl rounded-2xl bg-[var(--color-warn-tint)] p-4 text-center text-sm font-medium">
+        <p className="text-ink mx-auto mt-6 max-w-2xl rounded-2xl bg-[var(--color-warn-tint)] p-4 text-center text-sm font-medium">
           {"We don't claim results yet — impact will be measured in a real pilot."}
         </p>
       </section>

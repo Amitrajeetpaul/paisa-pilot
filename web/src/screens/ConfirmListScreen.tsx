@@ -211,11 +211,11 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
         <span className="text-muted text-sm font-semibold">{t('confirm.stepLabel')}</span>
       </div>
 
-      <h1 className="text-navy mt-5 text-2xl font-extrabold">{t(schema.titleKey)}</h1>
+      <h1 className="text-ink mt-5 text-2xl font-extrabold">{t(schema.titleKey)}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
       <ReadWarning warnings={(readResult?.warnings as string[] | undefined) ?? []} nothingRead={parsed.rows.length === 0} />
       {checkCount > 0 && (
-        <p className="text-navy bg-warning-card border-yellow mt-3 rounded-2xl border p-3 text-sm">
+        <p className="text-ink bg-warning-card border-yellow mt-3 rounded-2xl border p-3 text-sm">
           {checkCount} row(s) need a second look — they are highlighted below.
         </p>
       )}
@@ -228,7 +228,7 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
             className={`rounded-[20px] border p-4 ${lowFlags[i] ? 'bg-warning-card border-yellow' : 'border-line bg-white'}`}
           >
             <div className="flex items-center justify-between gap-3">
-              <span className="text-navy text-sm font-bold">{schema.rowTitle(row)}</span>
+              <span className="text-ink text-sm font-bold">{schema.rowTitle(row)}</span>
               <div className="flex items-center gap-2">
                 <StatusChip status={lowFlags[i] ? 'check' : 'ok'} />
                 {schema.canRemove && (
@@ -246,7 +246,7 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
                     <select
                       value={String(row[col.key] ?? '')}
                       onChange={(e) => setCell(i, col.key, e.target.value)}
-                      className="text-navy border-line min-h-11 rounded-xl border bg-white px-3 text-base font-bold"
+                      className="text-ink border-line min-h-11 rounded-xl border bg-white px-3 text-base font-bold"
                     >
                       {col.options?.map((o) => (
                         <option key={o} value={o}>
@@ -260,7 +260,7 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
                       inputMode={col.kind === 'number' ? 'decimal' : undefined}
                       value={row[col.key] === null ? '' : String(row[col.key] ?? '')}
                       onChange={(e) => setCell(i, col.key, e.target.value)}
-                      className="text-navy border-line min-h-11 rounded-xl border bg-white px-3 text-base font-bold"
+                      className="text-ink border-line min-h-11 rounded-xl border bg-white px-3 text-base font-bold"
                     />
                   )}
                 </label>

@@ -67,7 +67,7 @@ export function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="border-rose text-navy flex h-9 w-9 items-center justify-center rounded-full border-2 bg-white text-sm font-bold"
+        className="border-rose text-ink flex h-9 w-9 items-center justify-center rounded-full border-2 bg-white text-sm font-bold"
       >
         {displayName ? displayName.charAt(0).toUpperCase() : <Icon name="user" size={16} />}
       </button>
@@ -78,7 +78,7 @@ export function AccountMenu() {
           className="border-line animate-card-entrance absolute right-0 z-50 mt-2 w-72 rounded-2xl border bg-white p-2 shadow-xl"
         >
           <div className="px-3 py-2">
-            <p className="text-navy text-sm font-bold">{displayName || t('account.session')}</p>
+            <p className="text-ink text-sm font-bold">{displayName || t('account.session')}</p>
             <p className="text-muted text-xs">{sampleData ? t('account.sampleNote') : t('account.realNote')}</p>
           </div>
           <button
@@ -87,7 +87,7 @@ export function AccountMenu() {
               setOpen(false)
               navigate('/app/consent')
             }}
-            className="text-navy hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
+            className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
           >
             <Icon name="upload" size={18} /> {t('account.add')}
           </button>
@@ -95,13 +95,13 @@ export function AccountMenu() {
             <button
               role="menuitem"
               onClick={() => setConfirming(true)}
-              className="text-navy hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
+              className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
             >
               <Icon name="trash" size={18} /> {sampleData ? t('account.startOver') : t('account.delete')}
             </button>
           ) : (
             <div className="bg-warning-card mx-1 mb-1 rounded-xl p-3">
-              <p className="text-navy text-xs leading-relaxed">
+              <p className="text-ink text-xs leading-relaxed">
                 {sampleData ? t('account.confirmSample') : t('account.confirmReal')}
               </p>
               <div className="mt-2 flex gap-2">
@@ -112,7 +112,7 @@ export function AccountMenu() {
                 >
                   {busy ? t('account.deleting') : t('account.yes')}
                 </button>
-                <button onClick={() => setConfirming(false)} className="text-navy min-h-11 flex-1 rounded-xl border text-sm font-semibold">
+                <button onClick={() => setConfirming(false)} className="text-ink min-h-11 flex-1 rounded-xl border text-sm font-semibold">
                   {t('account.keep')}
                 </button>
               </div>

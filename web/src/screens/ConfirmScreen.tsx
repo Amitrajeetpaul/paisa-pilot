@@ -125,7 +125,7 @@ function FieldConfirmScreen() {
         ))}
       </div>
 
-      <h1 className="text-navy mt-5 text-2xl font-extrabold">{t('confirm.title')}</h1>
+      <h1 className="text-ink mt-5 text-2xl font-extrabold">{t('confirm.title')}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
       <ReadWarning
         warnings={readResult?.warnings ?? []}
@@ -152,9 +152,9 @@ function FieldConfirmScreen() {
                 inputMode="decimal"
                 value={values[key] ?? ''}
                 onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                className="text-navy mt-2 w-full border-0 bg-transparent text-3xl font-extrabold tracking-tight outline-none"
+                className="text-ink mt-2 w-full border-0 bg-transparent text-3xl font-extrabold tracking-tight outline-none"
               />
-              {needsCheck && <p className="text-navy mt-1 text-xs">{t('confirm.helperBlurry')}</p>}
+              {needsCheck && <p className="text-ink mt-1 text-xs">{t('confirm.helperBlurry')}</p>}
             </div>
           )
         })}

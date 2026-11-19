@@ -30,13 +30,13 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
             <div key={month} className="flex flex-1 flex-col items-center gap-1.5">
               <div className="relative flex w-full items-end justify-center rounded-t-lg bg-white/10" style={{ height: TRACK_HEIGHT_PX }}>
                 {isHovered && (
-                  <div className="absolute -top-9 left-1/2 bg-white text-navy -translate-x-1/2 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold shadow">
+                  <div className="absolute -top-9 left-1/2 bg-white text-ink -translate-x-1/2 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold shadow">
                     {formatINR(value)}
                   </div>
                 )}
                 <div
-                  className="w-3/5 max-w-16 cursor-default rounded-t-md bg-white transition-opacity"
-                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.9 }}
+                  className="w-3/5 max-w-16 cursor-default rounded-t-md transition-opacity"
+                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.92, background: '#ffffff' }}
                   onMouseEnter={() => setHovered(month)}
                   onMouseLeave={() => setHovered(null)}
                   tabIndex={0}

@@ -29,10 +29,10 @@ export function QuickActions() {
           onClick={() => (a.to ? navigate(a.to) : document.getElementById(a.scrollTo!)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))}
           className="press flex min-h-11 flex-col items-center gap-1.5 rounded-xl py-2"
         >
-          <span className="bg-navy/[0.06] text-navy flex h-12 w-12 items-center justify-center rounded-full">
+          <span className="bg-navy/[0.06] text-ink flex h-12 w-12 items-center justify-center rounded-full">
             <Icon name={a.icon} size={22} />
           </span>
-          <span className="text-navy text-center text-[11px] font-semibold leading-tight">{a.label}</span>
+          <span className="text-ink text-center text-[11px] font-semibold leading-tight">{a.label}</span>
         </button>
       ))}
     </nav>

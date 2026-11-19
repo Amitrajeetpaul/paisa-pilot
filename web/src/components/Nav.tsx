@@ -57,7 +57,7 @@ export function SideNav() {
           to={item.to}
           className={({ isActive }) =>
             `press relative flex min-h-12 items-center gap-3 rounded-2xl px-3.5 text-sm font-bold transition-colors ${
-              isActive ? 'bg-coral-tint text-navy' : 'text-muted hover:bg-black/[0.04] hover:text-navy'
+              isActive ? 'bg-coral-tint text-ink' : 'text-muted hover:bg-black/[0.04] hover:text-ink'
             }`
           }
         >
@@ -70,7 +70,7 @@ export function SideNav() {
           )}
         </NavLink>
       ))}
-      <div className="bg-teal-tint text-navy mt-auto rounded-2xl p-3.5 text-xs leading-relaxed">
+      <div className="bg-teal-tint text-ink mt-auto rounded-2xl p-3.5 text-xs leading-relaxed">
         <p className="flex items-center gap-1.5 font-bold">
           <Icon name="shield" size={14} className="text-teal" /> Your data, your control
         </p>

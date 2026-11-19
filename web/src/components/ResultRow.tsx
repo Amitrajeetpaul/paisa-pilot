@@ -28,11 +28,11 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
       <IconTile icon={icon} tone={tone} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="text-navy line-clamp-2 text-[15px] font-semibold leading-tight">{title}</p>
+          <p className="text-ink line-clamp-2 text-[15px] font-semibold leading-tight">{title}</p>
           {badge && (
             <span
               className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-                badgeTone === 'ok' ? 'bg-teal-tint text-navy' : 'bg-yellow text-navy'
+                badgeTone === 'ok' ? 'bg-teal-tint text-ink' : 'bg-yellow text-ink'
               }`}
             >
               {badge}
@@ -42,7 +42,7 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
         <p className="text-muted mt-0.5 truncate text-[13px] leading-tight">{subtitle}</p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="tabular text-navy text-[15px] font-bold leading-tight">{formatINR(amount)}</p>
+        <p className="tabular text-ink text-[15px] font-bold leading-tight">{formatINR(amount)}</p>
         <p className="text-muted mt-0.5 text-[11px] leading-tight">{unitLabel}</p>
       </div>
       <span className="text-muted shrink-0 text-lg leading-none" aria-hidden="true">
