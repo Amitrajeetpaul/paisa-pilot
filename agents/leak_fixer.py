@@ -37,11 +37,11 @@ Hard rules:
 """
 
 
-def build_leak_fixer_agent() -> Agent:
+def build_leak_fixer_agent(model=None) -> Agent:
     skills = [load_skill_from_dir(SKILLS_DIR / name) for name in SKILL_NAMES]
     return Agent(
         name="leak_fixer",
-        model=explainer_model(),
+        model=model or explainer_model(),
         description="Finds money leaking every month: idle subscriptions, live UPI AutoPay, high-interest loan switching.",
         instruction=INSTRUCTION,
         tools=[skill_toolset.SkillToolset(skills=skills), *LEAK_FIXER_TOOLS],

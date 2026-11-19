@@ -34,6 +34,7 @@ const en = {
   'upload.form16': 'Form 16',
   'upload.bankStatement': 'Bank statement',
   'upload.pfPassbook': 'PF passbook',
+  'upload.ais': 'AIS (tax statement)',
   'upload.choose': 'Choose file',
   'upload.uploaded': 'Uploaded',
 

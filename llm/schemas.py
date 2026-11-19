@@ -143,9 +143,39 @@ class PfPassbookReaderOutput(BaseModel):
     accounts: list[PfPassbookAccount]
 
 
+# --- AIS (Annual Information Statement) ------------------------------------
+
+class AisTaxpayer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    taxpayer_name: StringField
+    pan: StringField
+    financial_year: StringField
+
+
+class AisTdsEntry(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    deductor_name: str
+    section: str | None
+    amount_paid: float | None
+    tds_deducted: float
+    confidence: float = Field(ge=0, le=1)
+    raw_text: str
+    notes: str | None = None
+
+
+class AisReaderOutput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    document_type: Literal["ais"]
+    extraction_version: Literal["1.0"]
+    warnings: list[str]
+    taxpayer: AisTaxpayer
+    tds_entries: list[AisTdsEntry]
+
+
 READER_OUTPUT_MODELS: dict[str, type[BaseModel]] = {
     "payslip": PayslipReaderOutput,
     "form16": Form16ReaderOutput,
     "bank_statement": BankStatementReaderOutput,
     "pf_passbook": PfPassbookReaderOutput,
+    "ais": AisReaderOutput,
 }

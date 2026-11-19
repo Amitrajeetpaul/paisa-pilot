@@ -1,0 +1,45 @@
+{
+  "document_type": "ais",
+  "extraction_version": "1.0",
+  "warnings": [],
+  "taxpayer": {
+    "taxpayer_name": {
+      "value": "Riya Sharma",
+      "confidence": 0.97,
+      "raw_text": "Name: Riya Sharma",
+      "notes": null
+    },
+    "pan": {
+      "value": "ABCDE1234F",
+      "confidence": 0.97,
+      "raw_text": "PAN: ABCDE1234F",
+      "notes": null
+    },
+    "financial_year": {
+      "value": "2025-26",
+      "confidence": 0.97,
+      "raw_text": "Financial Year: 2025-26",
+      "notes": null
+    }
+  },
+  "tds_entries": [
+    {
+      "deductor_name": "TechNova Solutions Pvt Ltd",
+      "section": "192",
+      "amount_paid": 1000000,
+      "tds_deducted": 90000,
+      "confidence": 0.97,
+      "raw_text": "TechNova Solutions Pvt Ltd  Sec 192  Amount paid: 1,000,000  TDS: 90,000",
+      "notes": null
+    },
+    {
+      "deductor_name": "State Bank of India",
+      "section": "194A",
+      "amount_paid": 25000,
+      "tds_deducted": 2500,
+      "confidence": 0.96,
+      "raw_text": "State Bank of India  Sec 194A  Amount paid: 25,000  TDS: 2,500",
+      "notes": null
+    }
+  ]
+}

@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError
 
 from api.db import get_db
 from api.models import (
+    ConfirmedAis,
     ConfirmedBankStatement,
     ConfirmedForm16,
     ConfirmedPayslip,
@@ -23,6 +24,7 @@ CONFIRMED_MODELS: dict[str, type[BaseModel]] = {
     "form16": ConfirmedForm16,
     "bank_statement": ConfirmedBankStatement,
     "pf_passbook": ConfirmedPfPassbook,
+    "ais": ConfirmedAis,
 }
 
 

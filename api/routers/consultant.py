@@ -16,7 +16,7 @@ from api.db import get_db
 
 router = APIRouter(prefix="/sessions/{session_id}/consultant", tags=["consultant"])
 
-DOCUMENT_TYPES = ["payslip", "form16", "bank_statement", "pf_passbook"]
+DOCUMENT_TYPES = ["payslip", "form16", "bank_statement", "pf_passbook", "ais"]
 
 
 class AskRequest(BaseModel):

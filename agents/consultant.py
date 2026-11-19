@@ -10,15 +10,15 @@ local dev with zero cloud account. READER_MODE=live calls the explainer
 model directly with the same grounding contract as
 ai_studio/explainer_prompts/consultant_explainer.md.
 
-Known simplification (see LIMITATIONS.md): live mode calls the explainer
-model directly rather than running the full ADK Runner tool-calling loop
-end to end -- build_consultant_agent()'s Agent definition is correct and
-ready for that wiring, but driving an async ADK Runner session was judged
-lower priority than shipping a working demo across every milestone.
+Live mode runs the real ADK Runner (build_runner / _run_agent): the agent
+decides which rules_engine tools to call. If the live call fails (quota,
+overload, network) answer_question() logs it and falls back to the
+deterministic fixture answer rather than returning a 500.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 from dataclasses import dataclass
@@ -34,9 +34,13 @@ from agents.tools import (
     compare_tax_regimes,
     emergency_fund_target_tool,
     goal_category_tool,
+    insurance_guide_tool,
+    spare_money_plan_tool,
     review_pf_accounts_tool,
 )
 from llm.client import explainer_model
+
+logger = logging.getLogger(__name__)
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
 SKILL_NAMES = ["tax-regime", "tds", "pf-transfer", "refunds", "upi-autopay", "savings-basics"]
@@ -64,11 +68,11 @@ Hard rules:
 """
 
 
-def build_consultant_agent() -> Agent:
+def build_consultant_agent(model=None) -> Agent:
     skills = [load_skill_from_dir(SKILLS_DIR / name) for name in SKILL_NAMES]
     return Agent(
         name="consultant",
-        model=explainer_model(),
+        model=model or explainer_model(),
         description="Explains salary/Form16, tax option, savings targets, FD/RD/SIP/loan maths, and goal categories.",
         instruction=INSTRUCTION,
         tools=[skill_toolset.SkillToolset(skills=skills), *CONSULTANT_TOOLS],
@@ -119,9 +123,35 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
             "Source: your payslip + rules engine",
         )
 
+    if "insurance" in q or "term cover" in q or "health cover" in q:
+        income = None
+        if "form16" in confirmed:
+            income = confirmed["form16"].get("gross_salary_annual")
+        elif "payslip" in confirmed:
+            income = confirmed["payslip"].get("monthly_gross_salary", 0) * 12
+        result = insurance_guide_tool(income or 0)
+        text = f"{result['term_explainer']} {result['health_explainer']}"
+        if income:
+            text += (
+                f" A common rule of thumb is term cover of about {result['term_cover_multiple']}x your "
+                f"yearly income -- roughly ₹{result['suggested_term_cover']:,.0f} for you."
+            )
+        text += " This is education, not registered insurance advice -- an IRDAI-licensed partner can help pick a policy."
+        return text, "Source: your income documents + rules engine (rule of thumb)"
+
     if any(k in q for k in ("spare", "invest", "sip", "save", "goal")):
         years_match = re.search(r"(\d+)\s*year", q)
         years = float(years_match.group(1)) if years_match else 5.0
+        amount_match = re.search(r"(?:rs\.?|₹|inr)\s*([\d,]+)", q)
+        if amount_match:
+            amount = float(amount_match.group(1).replace(",", ""))
+            plan = spare_money_plan_tool(amount, years)
+            return (
+                f"For ₹{plan['amount']:,.0f} with a goal around {years:.0f} years out, {plan['category']} "
+                "tends to fit best. This is education, not registered investment advice -- a SEBI-registered "
+                "adviser can help with a specific pick.",
+                "Source: rules engine (goal-horizon rule of thumb)",
+            )
         result = goal_category_tool(years)
         return (
             f"For a goal around {years:.0f} years out, {result['category']} tends to fit best. "
@@ -140,7 +170,20 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
 def answer_question(confirmed: dict[str, dict], question: str, mode: str | None = None) -> ConsultantAnswer:
     resolved_mode = mode or os.environ.get("READER_MODE", "fixture")
     if resolved_mode == "live":
-        answer_text, source_chip = _live_answer(confirmed, question)
+        try:
+            answer_text, source_chip = _live_answer(confirmed, question)
+        except Exception:
+            # Gemini quota / overload / network trouble: degrade to the
+            # deterministic rules-engine answer instead of a 500.
+            logger.exception("Live consultant failed; falling back to the offline ADK agent")
+            try:
+                from agents.runtime import run_offline
+
+                answer_text = run_offline("consultant", confirmed, question).answer
+                source_chip = "Source: your confirmed numbers + rules engine (ADK agent)"
+            except Exception:
+                logger.exception("Offline agent failed; using fixture answer")
+                answer_text, source_chip = _fixture_answer(confirmed, question)
     else:
         answer_text, source_chip = _fixture_answer(confirmed, question)
 
@@ -150,24 +193,54 @@ def answer_question(confirmed: dict[str, dict], question: str, mode: str | None 
     return ConsultantAnswer(answer=answer_text, guardrail_flagged=False, source_chip=source_chip)
 
 
-def _live_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str]:
+APP_NAME = "paisa_pilot_consultant"
+
+
+def build_runner():
+    """Real ADK Runner + in-memory session service around the consultant
+    agent. Constructing this makes no network call."""
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+
+    return Runner(
+        app_name=APP_NAME,
+        agent=build_consultant_agent(),
+        session_service=InMemorySessionService(),
+    )
+
+
+async def _run_agent(confirmed: dict[str, dict], question: str) -> str:
+    """Drive the agent's tool-calling loop end to end and return its final
+    text. Needs GEMINI_API_KEY (live model call)."""
     import json
+    import uuid
 
     from google.genai import types
 
-    from llm.client import generate_structured
-    from llm.prompts import load_explainer_prompt
-    from pydantic import BaseModel
+    runner = build_runner()
+    user_id, session_id = "user", str(uuid.uuid4())
+    await runner.session_service.create_session(app_name=APP_NAME, user_id=user_id, session_id=session_id)
 
-    class _Answer(BaseModel):
-        answer: str
-
-    system_prompt = load_explainer_prompt("consultant")
-    context_block = json.dumps({"confirmed_fields": confirmed}, default=str)
-    result = generate_structured(
-        model=explainer_model(),
-        system_instruction=system_prompt,
-        parts=[types.Part.from_text(text=context_block), types.Part.from_text(text=question)],
-        response_schema=_Answer,
+    prompt = (
+        "The user's confirmed document fields (use these as the inputs to your tools):\n"
+        + json.dumps(confirmed, default=str)
+        + "\n\nQuestion: "
+        + question
     )
-    return result.answer, "Source: your confirmed numbers + rules engine"
+    message = types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
+
+    final_text = ""
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=message):
+        if event.is_final_response() and event.content and event.content.parts:
+            final_text = "".join(p.text or "" for p in event.content.parts)
+    return final_text
+
+
+def _live_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str]:
+    import asyncio
+
+    try:
+        text = asyncio.run(_run_agent(confirmed, question))
+    except Exception:
+        text = asyncio.run(_run_agent(confirmed, question))  # one retry for transient 503s
+    return text or "I couldn't produce an answer just now.", "Source: your confirmed numbers + rules engine (ADK agent)"

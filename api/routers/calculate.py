@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from api.db import get_db
+from rules_engine.ais import cross_check_tds
 from rules_engine.config import load_merchant_categories, load_rules_config
 from rules_engine.leaks import Transaction, detect_recurring_charges, monthly_leak_total
 from rules_engine.loans import loan_switch_saving
@@ -64,6 +65,7 @@ def calculate_money_finder(session_id: str) -> dict:
     form16 = db.get_confirmed_fields(session_id, "form16")
     pf_passbook = db.get_confirmed_fields(session_id, "pf_passbook")
     bank_statement = db.get_confirmed_fields(session_id, "bank_statement")
+    ais = db.get_confirmed_fields(session_id, "ais")
 
     cards = []
     yearly_total = 0.0
@@ -112,6 +114,25 @@ def calculate_money_finder(session_id: str) -> dict:
             {"tds_deducted_annual": form16["tds_deducted_annual"], "taxable_income": form16["taxable_income"], "regime": regime},
             "rules_engine.tax.compute_tax, compared against Form 16's TDS deducted",
             RULES_CONFIG.regimes[regime].source_url,
+        )
+
+    if form16 is not None and ais is not None:
+        check = cross_check_tds(form16["tds_deducted_annual"], [e["tds_deducted"] for e in ais["tds_entries"]])
+        if check.claimable_extra_tds > 0:
+            cards.append({
+                "card_id": "ais_extra_tds",
+                "title": "TDS on other income to claim",
+                "detail": f"Your AIS shows {check.claimable_extra_tds:,.0f} more TDS than your Form 16 (for example on bank interest)",
+                "amount": check.claimable_extra_tds,
+                "unit_label": "claim as credit when filing",
+                "source_chip": "Source: AIS + Form 16",
+                "action_label": "See how",
+            })
+            one_time_total += check.claimable_extra_tds
+        _save_trail(
+            session_id, "ais_extra_tds", "TDS on other income to claim",
+            {"form16_tds": check.form16_tds, "ais_tds_total": check.ais_tds_total, "ais_entries": ais["tds_entries"]},
+            "rules_engine.ais.cross_check_tds (AIS total TDS minus Form 16 TDS, when positive)",
         )
 
     if pf_passbook is not None:

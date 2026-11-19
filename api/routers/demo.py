@@ -16,10 +16,12 @@ from api.models import (
     ConfirmedBankStatement,
     ConfirmedForm16,
     ConfirmedPayslip,
+    ConfirmedAis,
     ConfirmedPfPassbook,
 )
 from llm.reader import read_document
 from llm.schemas import (
+    AisReaderOutput,
     BankStatementReaderOutput,
     Form16ReaderOutput,
     PayslipReaderOutput,
@@ -43,6 +45,9 @@ def create_sample_session() -> dict:
         cast(PfPassbookReaderOutput, read_document("pf_passbook", mode="fixture"))
     )
 
+    ais = ConfirmedAis.prefill_from_reader(cast(AisReaderOutput, read_document("ais", mode="fixture")))
+
+    db.save_confirmed_fields(session_id, "ais", ais.model_dump(mode="json"))
     db.save_confirmed_fields(session_id, "payslip", payslip.model_dump(mode="json"))
     db.save_confirmed_fields(session_id, "form16", form16.model_dump(mode="json"))
     db.save_confirmed_fields(session_id, "bank_statement", bank_statement.model_dump(mode="json"))
@@ -56,5 +61,6 @@ def create_sample_session() -> dict:
             "form16": form16.model_dump(mode="json"),
             "bank_statement": bank_statement.model_dump(mode="json"),
             "pf_passbook": pf_passbook.model_dump(mode="json"),
+            "ais": ais.model_dump(mode="json"),
         },
     }

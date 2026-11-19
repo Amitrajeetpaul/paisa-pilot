@@ -62,3 +62,48 @@ def goal_category_by_horizon(goal_years: float) -> str:
     if goal_years < LONG_HORIZON_YEARS_MIN:
         return "FD/RD or a mix, depending on comfort with risk"
     return "SIP / index fund (category)"
+
+
+TERM_COVER_INCOME_MULTIPLE = 10  # common rule of thumb, not a regulatory figure
+
+INSURANCE_TYPES = {
+    "term": (
+        "Term insurance pays your family a lump sum if you die during the policy "
+        "term. It has no maturity payout, so it is the cheapest way to protect "
+        "people who depend on your income."
+    ),
+    "health": (
+        "Health insurance pays hospital bills. Employer cover often ends when you "
+        "leave the job, so a personal policy protects you between jobs and in later years."
+    ),
+}
+
+
+@dataclass(frozen=True)
+class TermCoverSuggestion:
+    annual_income: float
+    multiple: int
+    suggested_cover: float
+
+
+def term_cover_suggestion(
+    annual_income: float,
+    multiple: int = TERM_COVER_INCOME_MULTIPLE,
+) -> TermCoverSuggestion:
+    return TermCoverSuggestion(
+        annual_income=annual_income,
+        multiple=multiple,
+        suggested_cover=round(annual_income * multiple, 2),
+    )
+
+
+@dataclass(frozen=True)
+class SpareMoneyPlan:
+    amount: float
+    goal_years: float
+    category: str
+
+
+def spare_money_plan(amount: float, goal_years: float) -> SpareMoneyPlan:
+    """Where a given spare amount should go, by goal horizon. Category only."""
+    return SpareMoneyPlan(amount=amount, goal_years=goal_years, category=goal_category_by_horizon(goal_years))

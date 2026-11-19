@@ -21,6 +21,7 @@ READER_PROMPT_FILES = {
     "form16": "form16_reader.md",
     "bank_statement": "bank_statement_reader.md",
     "pf_passbook": "pf_passbook_reader.md",
+    "ais": "ais_reader.md",
 }
 
 EXPLAINER_PROMPT_FILES = {

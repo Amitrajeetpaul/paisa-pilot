@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paisapilot.app/schema/ais_reader_output.schema.json",
+  "title": "AisReaderOutput",
+  "description": "LOCKED. Output contract for the Gemini 3.8 Flash Annual Information Statement (AIS) reader. AIS lists, per payer (deductor), the income reported about the taxpayer and the TDS credited. The reader reports each TDS line exactly as printed; it must NOT add, net or reconcile totals -- the cross-check against Form 16 belongs to rules_engine.",
+  "type": "object",
+  "required": [
+    "document_type",
+    "extraction_version",
+    "taxpayer",
+    "tds_entries",
+    "warnings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "document_type": {
+      "const": "ais"
+    },
+    "extraction_version": {
+      "const": "1.0"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "taxpayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taxpayer_name",
+        "pan",
+        "financial_year"
+      ],
+      "properties": {
+        "taxpayer_name": {
+          "$ref": "#/$defs/string_field"
+        },
+        "pan": {
+          "$ref": "#/$defs/string_field"
+        },
+        "financial_year": {
+          "$ref": "#/$defs/string_field",
+          "description": "e.g. 2025-26"
+        }
+      }
+    },
+    "tds_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deductor_name",
+          "section",
+          "amount_paid",
+          "tds_deducted",
+          "confidence",
+          "raw_text"
+        ],
+        "properties": {
+          "deductor_name": {
+            "type": "string"
+          },
+          "section": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "TDS section as printed, e.g. 192 (salary), 194A (interest)."
+          },
+          "amount_paid": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Income/amount paid or credited by the deductor."
+          },
+          "tds_deducted": {
+            "type": "number"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "raw_text": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "string_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "confidence",
+        "raw_text"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "raw_text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

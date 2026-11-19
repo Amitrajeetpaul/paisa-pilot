@@ -26,8 +26,11 @@ from rules_engine.refund_hunter import (
 from rules_engine.salary import explain_salary_breakdown
 from rules_engine.savings import (
     emergency_fund_target,
+    INSURANCE_TYPES,
     goal_category_by_horizon,
     savings_target_from_income,
+    spare_money_plan,
+    term_cover_suggestion,
 )
 from rules_engine.tax import compare_regimes, compute_tax
 
@@ -214,6 +217,26 @@ def goal_category_tool(goal_years: float) -> dict:
     return {"category": goal_category_by_horizon(goal_years)}
 
 
+def spare_money_plan_tool(amount: float, goal_years: float) -> dict:
+    """Where a given spare amount (in rupees) should go for a goal this many
+    years away. CATEGORY-LEVEL only -- never a specific fund or product."""
+    plan = spare_money_plan(amount, goal_years)
+    return {"amount": plan.amount, "goal_years": plan.goal_years, "category": plan.category}
+
+
+def insurance_guide_tool(annual_income: float) -> dict:
+    """Plain-language explanation of term and health insurance, plus a
+    rule-of-thumb term cover amount (10x annual income). Types only -- never
+    a specific policy or provider."""
+    cover = term_cover_suggestion(annual_income)
+    return {
+        "term_explainer": INSURANCE_TYPES["term"],
+        "health_explainer": INSURANCE_TYPES["health"],
+        "term_cover_multiple": cover.multiple,
+        "suggested_term_cover": cover.suggested_cover,
+    }
+
+
 def explain_salary_tool(
     monthly_gross_salary: float,
     basic_pay: float,
@@ -260,6 +283,8 @@ CONSULTANT_TOOLS = [
     FunctionTool(func=emergency_fund_target_tool),
     FunctionTool(func=savings_target_tool),
     FunctionTool(func=goal_category_tool),
+    FunctionTool(func=spare_money_plan_tool),
+    FunctionTool(func=insurance_guide_tool),
     FunctionTool(func=fd_maturity_tool),
     FunctionTool(func=sip_future_value_tool),
     FunctionTool(func=loan_switch_saving_tool),

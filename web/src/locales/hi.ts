@@ -36,6 +36,7 @@ const hi: Record<TranslationKey, string> = {
   'upload.form16': 'फॉर्म 16',
   'upload.bankStatement': 'बैंक स्टेटमेंट',
   'upload.pfPassbook': 'PF पासबुक',
+  'upload.ais': 'AIS (कर विवरण)',
   'upload.choose': 'फ़ाइल चुनें',
   'upload.uploaded': 'अपलोड हो गया',
 

@@ -10,6 +10,7 @@ const DOCUMENT_TYPES = [
   { type: 'form16', labelKey: 'upload.form16' as const, icon: '🧾' },
   { type: 'bank_statement', labelKey: 'upload.bankStatement' as const, icon: '🏦' },
   { type: 'pf_passbook', labelKey: 'upload.pfPassbook' as const, icon: '📘' },
+  { type: 'ais', labelKey: 'upload.ais' as const, icon: '📊' },
 ] as const
 
 export function ConsentUploadScreen() {

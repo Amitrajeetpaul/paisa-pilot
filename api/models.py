@@ -12,6 +12,7 @@ from typing import Literal, cast
 from pydantic import BaseModel, Field
 
 from llm.schemas import (
+    AisReaderOutput,
     BankStatementReaderOutput,
     Form16ReaderOutput,
     PayslipReaderOutput,
@@ -147,6 +148,37 @@ class ConfirmedPfPassbook(BaseModel):
                     status_as_printed=acc.status_as_printed,
                 )
                 for acc in output.accounts
+            ],
+        )
+
+
+class ConfirmedAisEntry(BaseModel):
+    deductor_name: str
+    section: str | None = None
+    amount_paid: float | None = None
+    tds_deducted: float = Field(ge=0)
+
+
+class ConfirmedAis(BaseModel):
+    taxpayer_name: str
+    pan: str | None = None
+    financial_year: str
+    tds_entries: list[ConfirmedAisEntry]
+
+    @classmethod
+    def prefill_from_reader(cls, output: AisReaderOutput) -> "ConfirmedAis":
+        return cls(
+            taxpayer_name=output.taxpayer.taxpayer_name.value or "",
+            pan=output.taxpayer.pan.value,
+            financial_year=output.taxpayer.financial_year.value or "",
+            tds_entries=[
+                ConfirmedAisEntry(
+                    deductor_name=e.deductor_name,
+                    section=e.section,
+                    amount_paid=e.amount_paid,
+                    tds_deducted=e.tds_deducted,
+                )
+                for e in output.tds_entries
             ],
         )
 

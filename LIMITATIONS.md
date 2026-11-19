@@ -29,18 +29,17 @@ repeats this.
   client library APIs but have never run against a real bucket/database --
   no GCP credentials in this environment. `infra/deploy.md` is untested
   for the same reason (see its own header note).
-- **The ADK `Runner` tool-calling loop.** `agents/money_finder.py`,
-  `agents/leak_fixer.py`, and `agents/consultant.py`'s
-  `build_*_agent()` functions define real `google.adk.Agent` objects
-  (tools + skills + model) and are unit-tested for correct *construction*
-  (`agents/tests/test_agents_defined.py`), but nothing in this repo
-  actually drives one through `google.adk.runners.Runner` end to end --
-  that needs a live model call to decide tool use, same constraint as
-  above. The API's `/consultant/ask` endpoint (`agents/consultant.py:
-  answer_question`) calls the explainer model directly with pre-computed
-  rules_engine context instead, as a smaller stand-in that still
-  satisfies "AI explains, rules engine computes" without the Runner
-  plumbing. Finishing that wiring is a clean, scoped next step.
+- **ADK agents run through a real `Runner`; Gemini-driven tool choice is
+  unconfirmed.** `agents/runtime.py` runs Money Finder, Leak Fixer and the
+  Consultant (`POST /sessions/{id}/agents/{name}/run`). In live mode Gemini
+  chooses the tools; it returned 429/503 during testing, so a clean Gemini
+  end-to-end run is still unconfirmed. On any failure (and in fixture mode)
+  a deterministic `OfflineToolModel` -- a real ADK `BaseLlm` -- drives the
+  same agents, tools and Runner loop, writing the answer only from tool
+  results. That offline path is what's verified (tests + Cloud Run).
+- **AIS reader is built against an invented layout.** `ai_studio/schema/
+  ais_schema.json` and the reader prompt were written without a real AIS
+  document; test with a real one in AI Studio before trusting it.
 
 ## Heuristic, not verified fact
 

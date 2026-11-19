@@ -1,5 +1,4 @@
 {
-  "_comment": "GCS Object Lifecycle Management only supports day-granularity 'age' conditions, not hours -- there is no native way to express exactly '24 hours' as a bucket rule. age:1 deletes an object once it's 1+ day old, which is close to (and never looser than) the brief's 24h default but isn't precise to the hour. For hour-precision deletion, add a small Cloud Scheduler + Cloud Run job calling the same delete logic as api/storage/local.py's delete_expired() against GCS objects directly -- see LIMITATIONS.md and docs/ROADMAP.md.",
   "rule": [
     {
       "action": { "type": "Delete" },

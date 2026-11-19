@@ -26,6 +26,7 @@ FIXTURE_FILES = {
     "form16": "form16_riya_sharma_fy2025-26.json",
     "bank_statement": "bank_statement_riya_sharma_q3fy26.json",
     "pf_passbook": "pf_passbook_riya_sharma.json",
+    "ais": "ais_riya_sharma_fy2025-26.json",
 }
 
 _PDF_SUFFIXES = (".pdf",)

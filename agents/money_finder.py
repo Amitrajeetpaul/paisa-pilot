@@ -38,11 +38,11 @@ Hard rules:
 """
 
 
-def build_money_finder_agent() -> Agent:
+def build_money_finder_agent(model=None) -> Agent:
     skills = [load_skill_from_dir(SKILLS_DIR / name) for name in SKILL_NAMES]
     return Agent(
         name="money_finder",
-        model=explainer_model(),
+        model=model or explainer_model(),
         description="Finds money the user is owed: tax regime savings, extra TDS, old PF accounts, failed/double payments.",
         instruction=INSTRUCTION,
         tools=[skill_toolset.SkillToolset(skills=skills), *MONEY_FINDER_TOOLS],
