@@ -23,7 +23,7 @@ export function formatInputValue(key: string, value: unknown): string {
 
 /** "UPI AUTOPAY-FITZONE GYM-fitzone@upi" -> "Fitzone Gym" */
 export function prettyMerchant(raw: string): string {
-  let s = raw.replace(/@[a-z0-9.\-_]+$/i, '')
+  let s = raw.replace(/[-\s]*[a-z0-9._]+@[a-z0-9.\-_]+$/i, '')
   s = s.replace(/^(UPI AUTOPAY|UPI|NEFT|IMPS|RTGS|ACH|NACH|POS)[-\s]+/i, '')
   s = s.replace(/-[A-Z]{2}\d{4,}$/i, '').replace(/[-_]+/g, ' ').trim()
   const title = s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())

@@ -41,7 +41,7 @@ function parseAnswer(answer: string): { points: Line[]; closing: string } {
     .map((l) => l.replace(/^[•\-*]\s*/, '').trim())
     .filter(Boolean)
     .map((l) => {
-      const m = l.match(/^([A-Za-z][A-Za-z -]{1,18}):\s+(.*)$/)
+      const m = l.match(/^([A-Za-z][A-Za-z -]{1,30}):\s+(.*)$/)
       return m ? { label: LABEL_FOR[m[1]] ?? m[1], text: m[2] } : { label: null, text: l }
     })
   return { points, closing: rest.join(' ').trim() }

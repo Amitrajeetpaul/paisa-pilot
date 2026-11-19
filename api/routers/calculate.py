@@ -236,7 +236,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
                 "unit_label": "per month",
                 "status_label": None,
                 "source_chip": "Source: bank statement",
-                "action_label": "Check switch saving",
+                "action_label": "Draft message to lender",
                 "months_seen": charge.months_seen,
             })
 

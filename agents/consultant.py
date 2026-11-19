@@ -5,7 +5,7 @@ build_consultant_agent() defines the real ADK Agent (tools + skills +
 Gemini 4 Argon/Flash) for live use. answer_question() is the dispatcher the
 API calls: READER_MODE=fixture (the default, matching llm/reader.py's
 pattern) answers with a deterministic, template-based responder grounded
-only in the confirmed fields it's given -- no network, safe for CI and
+only in the confirmed fields it's given — no network, safe for CI and
 local dev with zero cloud account. READER_MODE=live calls the explainer
 model directly with the same grounding contract as
 ai_studio/explainer_prompts/consultant_explainer.md.
@@ -59,7 +59,7 @@ Hard rules:
    explanation, savings/emergency-fund targets, PF status, FD/RD/SIP maths, loan
    switching.
 4. Category-only (never a specific fund/stock/policy): "where should my spare
-   money go" -- name only the category goal_category_tool returns, never a
+   money go" — name only the category goal_category_tool returns, never a
    specific product. If pushed for a specific pick, decline and say a
    SEBI-registered adviser or IRDAI-licensed partner is needed for that.
 5. Lead with one plain sentence, then structure the rest as short points.
@@ -110,7 +110,7 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
             return (
                 f"You have {result['needs_transfer_count']} old PF account(s) "
                 f"(₹{result['total_balance_needing_transfer']:,.0f} combined) that likely need a transfer to your "
-                f"current account -- they're not automatically merged.",
+                f"current account — they're not automatically merged.",
                 "Source: your PF passbook + rules engine",
             )
         return ("I don't see any old PF accounts needing a transfer in what you've confirmed.", "Source: your PF passbook")
@@ -118,7 +118,7 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
     if "emergency" in q and "payslip" in confirmed:
         result = emergency_fund_target_tool(confirmed["payslip"]["net_pay"])
         return (
-            f"A common rule of thumb is {result['months']} months of expenses -- on your net pay, "
+            f"A common rule of thumb is {result['months']} months of expenses — on your net pay, "
             f"that's about ₹{result['target_amount']:,.0f}.",
             "Source: your payslip + rules engine",
         )
@@ -134,9 +134,9 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
         if income:
             text += (
                 f" A common rule of thumb is term cover of about {result['term_cover_multiple']}x your "
-                f"yearly income -- roughly ₹{result['suggested_term_cover']:,.0f} for you."
+                f"yearly income — roughly ₹{result['suggested_term_cover']:,.0f} for you."
             )
-        text += " This is education, not registered insurance advice -- an IRDAI-licensed partner can help pick a policy."
+        text += " This is education, not registered insurance advice — an IRDAI-licensed partner can help pick a policy."
         return text, "Source: your income documents + rules engine (rule of thumb)"
 
     if any(k in q for k in ("spare", "invest", "sip", "save", "goal")):
@@ -148,14 +148,14 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
             plan = spare_money_plan_tool(amount, years)
             return (
                 f"For ₹{plan['amount']:,.0f} with a goal around {years:.0f} years out, {plan['category']} "
-                "tends to fit best. This is education, not registered investment advice -- a SEBI-registered "
+                "tends to fit best. This is education, not registered investment advice — a SEBI-registered "
                 "adviser can help with a specific pick.",
                 "Source: rules engine (goal-horizon rule of thumb)",
             )
         result = goal_category_tool(years)
         return (
             f"For a goal around {years:.0f} years out, {result['category']} tends to fit best. "
-            "This is education, not registered investment advice -- a SEBI-registered adviser can help with a "
+            "This is education, not registered investment advice — a SEBI-registered adviser can help with a "
             "specific pick.",
             "Source: rules engine (goal-horizon rule of thumb)",
         )

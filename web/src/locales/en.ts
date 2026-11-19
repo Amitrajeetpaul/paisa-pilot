@@ -88,7 +88,7 @@ const en = {
   'fix.empty': 'Confirm a bank statement and we will show what is leaking.',
   'fix.action.idle': 'Cancel',
   'fix.action.autopay': 'Draft message',
-  'fix.action.loan': 'Check switch saving',
+  'fix.action.loan': 'Draft message to lender',
   'fix.status.idle': 'idle',
   'fix.status.active': 'active',
 

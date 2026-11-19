@@ -3,8 +3,8 @@
 Two interchangeable "brains" drive the same Agent objects (same tools, same
 skills, same Runner loop):
 
-  * Gemini      -- READER_MODE=live; the model decides which tools to call.
-  * OfflineToolModel -- a deterministic stand-in model (a real ADK BaseLlm
+  * Gemini      — READER_MODE=live; the model decides which tools to call.
+  * OfflineToolModel — a deterministic stand-in model (a real ADK BaseLlm
     subclass) that calls the agent's tools from the confirmed data and writes
     the answer ONLY from what those tools returned. No network, no API key, so
     the agents run in CI and keep working when Gemini is out of quota or
@@ -82,7 +82,7 @@ def _pretty_merchant(raw: str) -> str:
     """'UPI AUTOPAY-FITZONE GYM-fitzone@upi' -> 'Fitzone Gym'."""
     import re
 
-    s = re.sub(r"@[a-z0-9._\-]+$", "", raw, flags=re.I)
+    s = re.sub(r"[-\s]*[a-z0-9._]+@[a-z0-9._\-]+$", "", raw, flags=re.I)
     s = re.sub(r"^(UPI AUTOPAY|UPI|NEFT|IMPS|RTGS|ACH|NACH|POS)[-\s]+", "", s, flags=re.I)
     s = re.sub(r"-[A-Z]{2}\d{4,}$", "", s, flags=re.I)
     s = re.sub(r"[-_]+", " ", s).strip()
@@ -140,11 +140,11 @@ def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
                 return f"You have {r['needs_transfer_count']} old PF account(s) ({_inr(r['total_balance_needing_transfer'])} combined) that likely need a transfer."
             return "I don't see any old PF accounts needing a transfer."
         if name == "emergency_fund_target_tool":
-            return f"A common rule of thumb is {r['months']} months of expenses -- about {_inr(r['target_amount'])} on your net pay."
+            return f"A common rule of thumb is {r['months']} months of expenses — about {_inr(r['target_amount'])} on your net pay."
         if name == "insurance_guide_tool":
             t = f"{r['term_explainer']} {r['health_explainer']}"
             if r["suggested_term_cover"]:
-                t += f" A rule of thumb is term cover of about {r['term_cover_multiple']}x yearly income -- roughly {_inr(r['suggested_term_cover'])} for you."
+                t += f" A rule of thumb is term cover of about {r['term_cover_multiple']}x yearly income — roughly {_inr(r['suggested_term_cover'])} for you."
             return t + " This is education, not registered insurance advice."
         if name == "spare_money_plan_tool":
             return f"For {_inr(r['amount'])} with a goal {r['goal_years']:.0f} years out, {r['category']} tends to fit best. This is education, not registered investment advice."
@@ -172,16 +172,16 @@ def _ca_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     for name, r in results:
         if name == "compare_tax_regimes":
             if r["recommended_regime"] == "new" and r["annual_saving_if_switch"] > 0:
-                lines.append(f"Regime: the new regime would save you {_inr(r['annual_saving_if_switch'])} a year versus the old one (Form 16).")
+                lines.append(f"Regime: the new regime would save you {_inr(r['annual_saving_if_switch'])} a year compared with the old one (from your Form 16).")
             else:
-                lines.append("Regime: your current regime is already the cheaper one (Form 16).")
+                lines.append("Regime: your current regime is already the cheaper one (from your Form 16).")
         elif name == "tds_reconciliation_tool":
             if r["claimable_extra_tds"] > 0:
-                lines.append(f"TDS: your AIS credits {_inr(r['claimable_extra_tds'])} more TDS than your Form 16 (for example on bank interest) -- claim it as credit when filing.")
+                lines.append(f"TDS: your AIS shows {_inr(r['claimable_extra_tds'])} more tax already deducted than your Form 16 (for example on bank interest). Claim it as credit when you file.")
             elif r["missing_from_ais"] > 0:
-                lines.append(f"TDS: your AIS shows {_inr(r['missing_from_ais'])} less than your Form 16 -- ask your employer whether all TDS was deposited.")
+                lines.append(f"TDS: your AIS shows {_inr(r['missing_from_ais'])} less tax deducted than your Form 16. Ask your employer whether all of it was deposited.")
             else:
-                lines.append("TDS: Form 16 and AIS match.")
+                lines.append("TDS: the tax deducted on your Form 16 and AIS match.")
         elif name == "breakeven_deductions_tool":
             if r["breakeven_deductions"] is None:
                 lines.append("Break-even: the new regime already costs you no tax, so extra deductions would not help.")
@@ -193,17 +193,17 @@ def _ca_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
             else:
                 lines.append(f"Break-even: your deductions ({_inr(r['deductions_claimed'])}) are past the old-regime break-even of {_inr(r['breakeven_deductions'])}.")
         elif name == "itr_form_tool":
-            lines.append(f"Form: {r['form']} -- assuming salary and interest income only; capital gains, extra houses, foreign assets or business income would change this.")
+            lines.append(f"Form: {r['form']}. This assumes you only have salary and interest income; capital gains, a second house, foreign assets or business income would change it.")
         elif name == "deduction_limits_tool":
             if r["section_80c_limit_old_regime"]:
-                lines.append(f"Deductions: under the old regime Section 80C is capped at {_inr(r['section_80c_limit_old_regime'])}; the new regime allows no Chapter VI-A deductions.")
+                lines.append(f"Deductions: the old regime lets you deduct savings such as PF and insurance up to {_inr(r['section_80c_limit_old_regime'])} (Section 80C). The new regime does not allow these.")
         elif name == "filing_readiness_tool":
             if r["ready"]:
-                lines.append("Documents: Form 16, AIS and bank statement are all in -- you have what a CA needs.")
+                lines.append("Documents: Form 16, AIS and bank statement are all in. You have what a CA needs.")
             else:
                 lines.append("Documents still needed: " + "; ".join(r["missing_descriptions"]) + ".")
     body = "\n".join(f"• {ln}" for ln in lines) or "I need your Form 16 to run a tax check-up."
-    return body + "\n\nHRA, home-loan interest, capital gains and business income are not modelled. I'm an assistant, not a CA: these figures are unverified until a CA signs them off, and nothing is filed for you."
+    return body + "\n\nNot covered here: HRA, home-loan interest, capital gains and business income. I'm an assistant, not a CA. These figures are unverified until a CA signs them off, and nothing is filed for you."
 
 
 PLANS: dict[str, tuple[Plan, Summarize]] = {
