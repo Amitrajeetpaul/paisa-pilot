@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { api, type AgentRunResult } from '../lib/api'
 
-const AGENT_LABEL = { money_finder: 'Money Finder agent', leak_fixer: 'Leak Fixer agent' } as const
+const AGENT_LABEL = { money_finder: 'Money Finder agent', leak_fixer: 'Leak Fixer agent', ca_assistant: 'CA Assistant agent' } as const
 
 const TOOL_LABEL: Record<string, string> = {
   compare_tax_regimes: 'Compared old vs new tax regime',
   review_pf_accounts_tool: 'Reviewed PF accounts',
   find_refund_opportunities: 'Scanned for failed / double payments',
   detect_recurring_charges_tool: 'Detected recurring charges',
+  tds_reconciliation_tool: 'Checked Form 16 TDS against your AIS',
+  deduction_limits_tool: 'Looked up deduction limits',
+  breakeven_deductions_tool: 'Worked out the old-regime break-even',
+  itr_form_tool: 'Picked the likely ITR form',
+  filing_readiness_tool: 'Checked which documents are missing',
 }
 
 /** Shows what an ADK agent did: the tools it called (each backed by the rules
@@ -35,7 +40,7 @@ export function AgentActivity({ sessionId, agent }: { sessionId: string; agent: 
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-navy text-base font-bold">🤖 {AGENT_LABEL[agent]}</h2>
-          <p className="text-muted text-xs">A Google ADK agent. It calls the rules engine; it never makes up a number.</p>
+          <p className="text-muted text-xs">A Google ADK agent. It calls the rules engine; it never makes up a number.{agent === 'ca_assistant' && ' Prepares you for a CA; it is not a CA.'}</p>
         </div>
         {!run && (
           <button
@@ -69,7 +74,7 @@ export function AgentActivity({ sessionId, agent }: { sessionId: string; agent: 
               </li>
             ))}
           </ol>
-          <p className="text-navy text-sm leading-relaxed">{run.answer}</p>
+          <p className="text-navy whitespace-pre-line text-sm leading-relaxed">{run.answer}</p>
           <button type="button" onClick={start} className="text-muted w-fit text-xs font-semibold underline">
             Run again
           </button>

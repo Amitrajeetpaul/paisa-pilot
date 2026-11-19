@@ -84,6 +84,7 @@ export function HomeScreen() {
       </div>
 
       {sessionId && <AgentActivity sessionId={sessionId} agent="money_finder" />}
+      {sessionId && <AgentActivity sessionId={sessionId} agent="ca_assistant" />}
 
       <p className="text-muted mt-6 text-center text-xs">{t('home.feeNote')}</p>
 

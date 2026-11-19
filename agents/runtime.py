@@ -30,7 +30,7 @@ from google.genai import types
 
 logger = logging.getLogger(__name__)
 
-AGENT_NAMES = ("money_finder", "leak_fixer", "consultant")
+AGENT_NAMES = ("money_finder", "leak_fixer", "consultant", "ca_assistant")
 Plan = Callable[[dict[str, dict], str], list[tuple[str, dict[str, Any]]]]
 Summarize = Callable[[list[tuple[str, dict[str, Any]]]], str]
 
@@ -140,10 +140,64 @@ def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     return "I don't have enough confirmed information to answer that yet. Try asking about your tax option, PF accounts, emergency fund, insurance, or where spare money should go."
 
 
+def _ca_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+    calls: list[tuple[str, dict[str, Any]]] = []
+    if "form16" in c:
+        f = c["form16"]
+        calls.append(("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]}))
+        if "ais" in c:
+            calls.append(("tds_reconciliation_tool", {"form16_tds": f["tds_deducted_annual"], "ais_tds_entries": [e["tds_deducted"] for e in c["ais"]["tds_entries"]]}))
+        calls.append(("breakeven_deductions_tool", {"gross_salary_annual": f["gross_salary_annual"], "deductions_claimed": f["deductions_chapter_via_total"]}))
+        calls.append(("deduction_limits_tool", {}))
+        calls.append(("itr_form_tool", {}))
+    calls.append(("filing_readiness_tool", {"documents_present": list(c.keys())}))
+    return calls
+
+
+def _ca_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
+    lines: list[str] = []
+    for name, r in results:
+        if name == "compare_tax_regimes":
+            if r["recommended_regime"] == "new" and r["annual_saving_if_switch"] > 0:
+                lines.append(f"Regime: the new regime would save you {_inr(r['annual_saving_if_switch'])} a year versus the old one (Form 16).")
+            else:
+                lines.append("Regime: your current regime is already the cheaper one (Form 16).")
+        elif name == "tds_reconciliation_tool":
+            if r["claimable_extra_tds"] > 0:
+                lines.append(f"TDS: your AIS credits {_inr(r['claimable_extra_tds'])} more TDS than your Form 16 (for example on bank interest) -- claim it as credit when filing.")
+            elif r["missing_from_ais"] > 0:
+                lines.append(f"TDS: your AIS shows {_inr(r['missing_from_ais'])} less than your Form 16 -- ask your employer whether all TDS was deposited.")
+            else:
+                lines.append("TDS: Form 16 and AIS match.")
+        elif name == "breakeven_deductions_tool":
+            if r["breakeven_deductions"] is None:
+                lines.append("Break-even: the new regime already costs you no tax, so extra deductions would not help.")
+            elif r["shortfall"] > 0:
+                lines.append(
+                    f"Break-even: the old regime only wins if your deductions pass {_inr(r['breakeven_deductions'])}; "
+                    f"you claim {_inr(r['deductions_claimed'])}, so you're {_inr(r['shortfall'])} short."
+                )
+            else:
+                lines.append(f"Break-even: your deductions ({_inr(r['deductions_claimed'])}) are past the old-regime break-even of {_inr(r['breakeven_deductions'])}.")
+        elif name == "itr_form_tool":
+            lines.append(f"Form: {r['form']} -- assuming salary and interest income only; capital gains, extra houses, foreign assets or business income would change this.")
+        elif name == "deduction_limits_tool":
+            if r["section_80c_limit_old_regime"]:
+                lines.append(f"Deductions: under the old regime Section 80C is capped at {_inr(r['section_80c_limit_old_regime'])}; the new regime allows no Chapter VI-A deductions.")
+        elif name == "filing_readiness_tool":
+            if r["ready"]:
+                lines.append("Documents: Form 16, AIS and bank statement are all in -- you have what a CA needs.")
+            else:
+                lines.append("Documents still needed: " + "; ".join(r["missing_descriptions"]) + ".")
+    body = "\n".join(f"• {ln}" for ln in lines) or "I need your Form 16 to run a tax check-up."
+    return body + "\n\nHRA, home-loan interest, capital gains and business income are not modelled. I'm an assistant, not a CA: these figures are unverified until a CA signs them off, and nothing is filed for you."
+
+
 PLANS: dict[str, tuple[Plan, Summarize]] = {
     "money_finder": (_money_finder_plan, _money_finder_summary),
     "leak_fixer": (_leak_fixer_plan, _leak_fixer_summary),
     "consultant": (_consultant_plan, _consultant_summary),
+    "ca_assistant": (_ca_plan, _ca_summary),
 }
 
 
@@ -197,6 +251,7 @@ class AgentRun:
 
 
 def _build(agent_name: str, model: Any = None) -> Agent:
+    from agents.ca_assistant import build_ca_assistant_agent
     from agents.consultant import build_consultant_agent
     from agents.leak_fixer import build_leak_fixer_agent
     from agents.money_finder import build_money_finder_agent
@@ -205,6 +260,7 @@ def _build(agent_name: str, model: Any = None) -> Agent:
         "money_finder": build_money_finder_agent,
         "leak_fixer": build_leak_fixer_agent,
         "consultant": build_consultant_agent,
+        "ca_assistant": build_ca_assistant_agent,
     }
     return builders[agent_name](model=model)
 
@@ -250,6 +306,7 @@ def _default_question(agent_name: str) -> str:
         "money_finder": "Find every rupee I'm owed from my confirmed documents.",
         "leak_fixer": "Find the subscriptions and AutoPay charges leaking money every month.",
         "consultant": "Explain my finances.",
+        "ca_assistant": "Run a tax check-up on my confirmed documents.",
     }[agent_name]
 
 

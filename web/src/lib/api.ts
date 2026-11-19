@@ -62,7 +62,7 @@ export const api = {
   calculateLeakFixer: (sessionId: string) =>
     request<LeakFixerResult>(`/sessions/${sessionId}/calculate/leak-fixer`, { method: 'POST' }),
 
-  runAgent: (sessionId: string, agent: 'money_finder' | 'leak_fixer' | 'consultant', question?: string) =>
+  runAgent: (sessionId: string, agent: 'money_finder' | 'leak_fixer' | 'consultant' | 'ca_assistant', question?: string) =>
     request<AgentRunResult>(`/sessions/${sessionId}/agents/${agent}/run`, {
       method: 'POST',
       body: JSON.stringify({ question: question ?? null }),

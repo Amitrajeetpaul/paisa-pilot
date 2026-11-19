@@ -13,6 +13,9 @@ from __future__ import annotations
 
 from google.adk.tools import FunctionTool
 
+from rules_engine.ais import cross_check_tds
+from rules_engine.ca_checkup import filing_readiness
+from rules_engine.itr import suggest_itr_form
 from rules_engine.config import load_merchant_categories, load_rules_config
 from rules_engine.fd_sip import fd_maturity, rd_maturity, sip_future_value
 from rules_engine.leaks import Transaction, detect_recurring_charges, monthly_leak_total
@@ -32,7 +35,7 @@ from rules_engine.savings import (
     spare_money_plan,
     term_cover_suggestion,
 )
-from rules_engine.tax import compare_regimes, compute_tax
+from rules_engine.tax import breakeven_chapter_via, compare_regimes, compute_tax
 
 RULES_CONFIG = load_rules_config()
 MERCHANT_CONFIG = load_merchant_categories()
@@ -237,6 +240,85 @@ def insurance_guide_tool(annual_income: float) -> dict:
     }
 
 
+def tds_reconciliation_tool(form16_tds: float, ais_tds_entries: list[float]) -> dict:
+    """Compares the TDS on Form 16 with the total TDS credited in the AIS.
+
+    Args:
+        form16_tds: TDS deducted per Form 16 (annual).
+        ais_tds_entries: the TDS amount of each AIS line.
+
+    Returns:
+        ais_tds_total, claimable_extra_tds (AIS above Form 16, creditable when
+        filing) and missing_from_ais (AIS below Form 16, to raise with the
+        employer).
+    """
+    r = cross_check_tds(form16_tds, ais_tds_entries)
+    return {
+        "form16_tds": r.form16_tds,
+        "ais_tds_total": r.ais_tds_total,
+        "claimable_extra_tds": r.claimable_extra_tds,
+        "missing_from_ais": r.missing_from_ais,
+    }
+
+
+def deduction_limits_tool() -> dict:
+    """The deduction limits configured for the financial year: the Section 80C
+    cap under the old regime, and whether the new regime allows Chapter VI-A
+    deductions at all."""
+    old = RULES_CONFIG.regimes["old"]
+    new = RULES_CONFIG.regimes["new"]
+    return {
+        "section_80c_limit_old_regime": old.section_80c_limit,
+        "new_regime_allows_chapter_via": new.chapter_via_allowed,
+        "ca_review_status": "PENDING -- these limits need a CA's sign-off",
+    }
+
+
+def breakeven_deductions_tool(gross_salary_annual: float, deductions_claimed: float) -> dict:
+    """The deduction total at which the OLD tax regime stops being worse than
+    the new one for this salary, and how far the user's claimed deductions are
+    from it.
+
+    Returns:
+        breakeven_deductions (None if the new regime is already tax-free),
+        deductions_claimed, shortfall (how much more would be needed; 0 if the
+        old regime already wins).
+    """
+    b = breakeven_chapter_via(gross_salary_annual=gross_salary_annual, config=RULES_CONFIG)
+    return {
+        "breakeven_deductions": b,
+        "deductions_claimed": deductions_claimed,
+        "shortfall": None if b is None else max(0.0, b - deductions_claimed),
+    }
+
+
+def itr_form_tool(
+    has_capital_gains: bool = False,
+    house_properties_count: int = 1,
+    has_foreign_assets_or_income: bool = False,
+    has_business_or_profession_income: bool = False,
+    total_income_above_50_lakh: bool = False,
+) -> dict:
+    """Suggests the ITR form from yes/no facts. Defaults assume a salaried
+    person with one house and no capital gains, business or foreign income --
+    say that assumption out loud when you use the defaults."""
+    r = suggest_itr_form(
+        has_capital_gains=has_capital_gains,
+        house_properties_count=house_properties_count,
+        has_foreign_assets_or_income=has_foreign_assets_or_income,
+        has_business_or_profession_income=has_business_or_profession_income,
+        total_income_above_50_lakh=total_income_above_50_lakh,
+    )
+    return {"form": r.form, "reasons": r.reasons}
+
+
+def filing_readiness_tool(documents_present: list[str]) -> dict:
+    """Which supporting documents are still missing before filing or meeting a
+    CA (Form 16, AIS, bank statement)."""
+    r = filing_readiness(documents_present)
+    return {"present": r.present, "missing": r.missing, "missing_descriptions": r.missing_descriptions, "ready": r.ready}
+
+
 def explain_salary_tool(
     monthly_gross_salary: float,
     basic_pay: float,
@@ -273,6 +355,16 @@ MONEY_FINDER_TOOLS = [
 LEAK_FIXER_TOOLS = [
     FunctionTool(func=detect_recurring_charges_tool),
     FunctionTool(func=loan_switch_saving_tool),
+]
+
+CA_ASSISTANT_TOOLS = [
+    FunctionTool(func=compare_tax_regimes),
+    FunctionTool(func=compute_tax_for_regime),
+    FunctionTool(func=tds_reconciliation_tool),
+    FunctionTool(func=deduction_limits_tool),
+    FunctionTool(func=filing_readiness_tool),
+    FunctionTool(func=breakeven_deductions_tool),
+    FunctionTool(func=itr_form_tool),
 ]
 
 CONSULTANT_TOOLS = [

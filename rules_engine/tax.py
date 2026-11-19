@@ -132,3 +132,35 @@ def compare_regimes(
         recommended_regime=recommended,
         annual_saving_if_switch=round(annual_saving, 2),
     )
+
+
+def breakeven_chapter_via(*, gross_salary_annual: float, config: RulesConfig) -> float | None:
+    """Smallest whole-rupee Chapter VI-A deduction total at which the OLD
+    regime's tax is no higher than the NEW regime's, for this gross salary.
+
+    This is what a CA works out when asked "should I stay on the old
+    regime?": the old regime wins only if the user's deductions exceed this.
+    Returns None if the new regime already costs nothing (no deduction can
+    beat zero). Deterministic: binary search over compare_regimes' own maths.
+    """
+    new_tax = compare_regimes(
+        gross_salary_annual=gross_salary_annual, chapter_via_total_old_regime=0, config=config
+    ).new.total_tax
+    if new_tax <= 0:
+        return None
+
+    def old_tax(deduction: int) -> float:
+        return compare_regimes(
+            gross_salary_annual=gross_salary_annual, chapter_via_total_old_regime=deduction, config=config
+        ).old.total_tax
+
+    lo, hi = 0, int(gross_salary_annual)
+    if old_tax(hi) > new_tax:
+        return None
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if old_tax(mid) <= new_tax:
+            hi = mid
+        else:
+            lo = mid + 1
+    return float(lo)
