@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { api } from '../lib/api'
+import { stripMarkdown } from '../lib/plain'
 import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
 
@@ -88,7 +89,7 @@ export function AdviseScreen() {
                   : 'card text-navy rounded-[20px] rounded-bl-md'
               }`}
             >
-              <p className="whitespace-pre-line">{m.text}</p>
+              <p className="whitespace-pre-line">{stripMarkdown(m.text)}</p>
               {m.role === 'assistant' && /education, not/i.test(m.text) && (
                 <p className="bg-warn-tint text-navy mt-2 rounded-lg px-2 py-1 text-xs">{t('advise.guardrailNote')}</p>
               )}

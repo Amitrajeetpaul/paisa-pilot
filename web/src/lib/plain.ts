@@ -43,3 +43,15 @@ export function greetingForNow(): 'morning' | 'afternoon' | 'evening' {
   const h = new Date().getHours()
   return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening'
 }
+
+
+/** Safety net for display: remove markdown symbols if any ever reach the UI. */
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/^\s*#{1,6}\s*/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '• ')
+    .replace(/\*\*|__|`/g, '')
+    .replace(/^\s*-{3,}\s*$/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from google.adk.tools import FunctionTool
 
+from agents.text import pretty_merchant
 from rules_engine.ais import cross_check_tds
 from rules_engine.ca_checkup import filing_readiness
 from rules_engine.itr import suggest_itr_form
@@ -148,7 +149,7 @@ def detect_recurring_charges_tool(transactions: list[dict]) -> dict:
         "monthly_leak_total": monthly_leak_total(charges),
         "charges": [
             {
-                "description": c.description,
+                "description": pretty_merchant(c.description),
                 "category": c.category,
                 "monthly_amount": c.monthly_amount,
                 "status_label": c.status_label,

@@ -11,7 +11,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <SideNav />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-line sticky top-0 z-30 flex items-center justify-between border-b bg-white/90 px-4 py-3 backdrop-blur md:hidden">
+        <header className="border-line sticky top-0 z-30 flex items-center justify-between border-b bg-white px-4 py-3 md:hidden">
           <Wordmark />
           <div className="flex items-center gap-2">
             <button

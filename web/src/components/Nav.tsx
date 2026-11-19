@@ -9,27 +9,32 @@ const NAV_ITEMS: { to: string; icon: IconName; key: 'nav.find' | 'nav.fix' | 'na
   { to: '/app/advise', icon: 'chat', key: 'nav.advise' },
 ]
 
-/** Mobile: a floating glass bar like the best money apps. The active tab lifts into a coral pill. */
+/** Mobile: a standard fixed tab bar, as in every payments app. The active tab takes the brand colour. */
 export function BottomNav() {
   const { t } = useApp()
   return (
     <nav
       aria-label="Primary"
-      className="glass border-line fixed inset-x-4 bottom-3 z-40 flex justify-around rounded-[26px] border p-1.5 shadow-[0_12px_32px_-10px_rgba(34,34,59,0.35)] md:hidden"
-      style={{ paddingBottom: 'calc(0.375rem + env(safe-area-inset-bottom, 0px))' }}
+      className="border-line fixed inset-x-0 bottom-0 z-40 flex border-t bg-white md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.key}
           to={item.to}
           className={({ isActive }) =>
-            `press flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-[20px] text-[11px] font-bold transition-colors ${
-              isActive ? 'bg-coral-button text-navy shadow-sm' : 'text-muted'
+            `press relative flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${
+              isActive ? 'text-coral-dark' : 'text-muted'
             }`
           }
         >
-          <Icon name={item.icon} size={21} />
-          {t(item.key)}
+          {({ isActive }) => (
+            <>
+              {isActive && <span className="bg-coral absolute inset-x-6 top-0 h-0.5 rounded-b-full" aria-hidden="true" />}
+              <Icon name={item.icon} size={22} />
+              {t(item.key)}
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

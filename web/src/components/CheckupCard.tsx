@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { formatINR } from '../lib/format'
+import { stripMarkdown } from '../lib/plain'
 import { Icon } from './Icon'
 import { track } from '../lib/track'
 import { api, type AgentRunResult } from '../lib/api'
@@ -76,7 +77,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
     if (!cache.has(key)) load()
   }, [key, load])
 
-  const parsed = run ? parseAnswer(run.answer) : null
+  const parsed = run ? parseAnswer(stripMarkdown(run.answer)) : null
 
   function result(tool: string): Record<string, unknown> | null {
     return run?.tool_calls.find((c) => c.tool === tool)?.result ?? null
@@ -202,7 +203,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
             ))}
           </ul>
 
-          {parsed.closing && <p className="bg-warning-card text-navy rounded-xl px-3 py-2 text-xs">{parsed.closing}</p>}
+          {parsed.closing && <p className="bg-warning-card text-navy whitespace-pre-line rounded-xl px-3 py-2 text-xs leading-relaxed">{parsed.closing}</p>}
 
           {run.tool_calls.length > 0 && (
             <details className="text-sm">

@@ -28,14 +28,14 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
           const isHovered = hovered === month
           return (
             <div key={month} className="flex flex-1 flex-col items-center gap-1.5">
-              <div className="relative flex w-full items-end justify-center rounded-t-xl bg-white/25" style={{ height: TRACK_HEIGHT_PX }}>
+              <div className="relative flex w-full items-end justify-center rounded-t-lg bg-white/10" style={{ height: TRACK_HEIGHT_PX }}>
                 {isHovered && (
-                  <div className="bg-navy absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold text-white shadow">
+                  <div className="absolute -top-9 left-1/2 bg-white text-navy -translate-x-1/2 whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold shadow">
                     {formatINR(value)}
                   </div>
                 )}
                 <div
-                  className="bg-navy w-3/5 max-w-16 cursor-default rounded-t-lg transition-opacity"
+                  className="w-3/5 max-w-16 cursor-default rounded-t-md bg-white transition-opacity"
                   style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.9 }}
                   onMouseEnter={() => setHovered(month)}
                   onMouseLeave={() => setHovered(null)}
@@ -44,8 +44,8 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
                   onBlur={() => setHovered(null)}
                 />
               </div>
-              <span className="text-navy text-xs font-bold">{monthLabel(month)}</span>
-              <span className="text-navy -mt-1 text-xs font-semibold opacity-80">{formatINR(value)}</span>
+              <span className="text-xs font-semibold text-white/80">{monthLabel(month)}</span>
+              <span className="tabular -mt-1 text-xs font-semibold text-white">{formatINR(value)}</span>
             </div>
           )
         })}

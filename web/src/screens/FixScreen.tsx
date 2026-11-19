@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { BreakdownBar, type Segment } from '../components/BreakdownBar'
 import { CheckupCard } from '../components/CheckupCard'
 import { LeakBarChart } from '../components/LeakBarChart'
-import { ResultCard } from '../components/ResultCard'
+import { ResultRow } from '../components/ResultRow'
 import { CardSkeleton } from '../components/Skeleton'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { TrustStrip } from '../components/TrustStrip'
 import type { IconName } from '../components/Icon'
 import type { Tone } from '../components/tones'
-import { api, type LeakFixerResult } from '../lib/api'
+import { api, type LeakFixerCard, type LeakFixerResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 import { prettyMerchant } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
@@ -28,6 +28,7 @@ export function FixScreen() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const drawer = useSourceDrawer(sessionId)
+  const [active, setActive] = useState<LeakFixerCard | null>(null)
 
   useEffect(() => {
     if (!sessionId) {
@@ -50,16 +51,16 @@ export function FixScreen() {
       <p className="text-muted text-sm font-medium">Fix</p>
       <h1 className="text-navy text-2xl font-extrabold leading-tight tracking-tight">Stop the leaks</h1>
 
-      <div className="bg-leak-hero hero-shine animate-card-entrance text-navy mt-4 rounded-[28px] p-5 shadow-[0_20px_40px_-22px_rgba(255,90,95,0.8)] sm:p-6">
-        <span className="text-sm font-bold opacity-80">{t('fix.heroTitle')}</span>
+      <div className="bg-leak-hero animate-card-entrance mt-4 rounded-[20px] p-5 text-white sm:p-6">
+        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
         <div className="mt-1 flex items-end gap-2">
           <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
             {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
           </div>
-          <span className="pb-1.5 text-sm font-bold opacity-80">{t('fix.monthLabel')}</span>
+          <span className="pb-1.5 text-sm font-semibold text-white/70">{t('fix.monthLabel')}</span>
         </div>
         {result && result.annual_leak_total > 0 && (
-          <p className="mt-2 inline-block rounded-full bg-white/35 px-3 py-1 text-xs font-bold">
+          <p className="mt-2 inline-block rounded-md bg-white/15 px-2.5 py-1 text-xs font-semibold">
             That is {formatINR(result.annual_leak_total)} a year
           </p>
         )}
@@ -70,8 +71,8 @@ export function FixScreen() {
           </div>
         )}
         {segments.length > 1 && (
-          <div className="mt-5 rounded-2xl bg-white/30 p-3">
-            <BreakdownBar segments={segments} />
+          <div className="mt-5">
+            <BreakdownBar segments={segments} dark />
           </div>
         )}
       </div>
@@ -79,39 +80,38 @@ export function FixScreen() {
       <TrustStrip />
 
       <div className="mt-6 flex items-center justify-between">
-        <h2 className="text-navy text-lg font-extrabold tracking-tight">Things to fix</h2>
+        <h2 className="section-label">Things to fix</h2>
         {result && result.cards.length > 0 && (
           <span className="bg-coral-tint text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
         )}
       </div>
 
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
         {loading && (
           <>
             <CardSkeleton />
             <CardSkeleton />
           </>
         )}
-        {errorMessage && <p className="text-muted text-sm">{errorMessage}</p>}
-        {!loading && result && result.cards.length === 0 && <p className="text-muted text-sm">{t('fix.empty')}</p>}
-        {result?.cards.map((card, i) => {
+        {errorMessage && <p className="text-muted p-4 text-sm">{errorMessage}</p>}
+        {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('fix.empty')}</p>}
+        {result?.cards.map((card) => {
           const l = look(card.card_id)
           return (
-            <ResultCard
+            <ResultRow
               key={card.card_id}
-              index={i}
               icon={l.icon}
               tone={l.tone}
               title={prettyMerchant(card.title)}
-              detail={card.detail}
+              subtitle={card.detail}
               amount={card.amount}
               unitLabel={card.unit_label}
-              sourceLabel={card.source_chip}
-              actionLabel={card.action_label}
-              statusLabel={card.status_label ? (card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')) : null}
-              statusTone={card.status_label === 'idle' ? 'warn' : 'ok'}
-              onAction={() => navigate(`/app/drafts/${card.card_id}`, { state: { card } })}
-              onTapAmount={() => drawer.open(card.card_id)}
+              badge={card.status_label ? (card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')) : null}
+              badgeTone={card.status_label === 'idle' ? 'warn' : 'ok'}
+              onOpen={() => {
+                setActive(card)
+                drawer.open(card.card_id)
+              }}
             />
           )
         })}
@@ -119,7 +119,16 @@ export function FixScreen() {
 
       {sessionId && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="leaks" />}
 
-      <SourceDrawer entry={drawer.entry} loading={drawer.loading} onClose={drawer.close} />
+      <SourceDrawer
+        entry={drawer.entry}
+        loading={drawer.loading}
+        onClose={() => {
+          drawer.close()
+          setActive(null)
+        }}
+        headline={active ? { title: prettyMerchant(active.title), amount: active.amount, unit: active.unit_label } : null}
+        primaryAction={active ? { label: active.action_label, onClick: () => navigate(`/app/drafts/${active.card_id}`, { state: { card: active } }) } : null}
+      />
     </div>
   )
 }

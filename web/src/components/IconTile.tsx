@@ -1,14 +1,15 @@
 import { Icon, type IconName } from './Icon'
-import { TONE, type Tone } from './tones'
+import { SOLID, type Tone } from './tones'
 
-export function IconTile({ icon, size = 44, tone = 'coral' }: { icon: IconName; size?: number; tone?: Tone }) {
+/** Solid circular icon, like the best payment apps: colour for meaning, white glyph. */
+export function IconTile({ icon, size = 40, tone = 'coral' }: { icon: IconName; size?: number; tone?: Tone }) {
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-2xl"
-      style={{ width: size, height: size, background: TONE[tone].bg, color: TONE[tone].fg }}
+      className="flex shrink-0 items-center justify-center rounded-full text-white"
+      style={{ width: size, height: size, background: SOLID[tone] }}
       aria-hidden="true"
     >
-      <Icon name={icon} size={Math.round(size * 0.5)} />
+      <Icon name={icon} size={Math.round(size * 0.48)} />
     </div>
   )
 }

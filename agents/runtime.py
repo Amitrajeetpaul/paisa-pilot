@@ -31,6 +31,7 @@ from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
 from agents.provenance import check_provenance
+from agents.text import clean_answer, pretty_merchant
 from llm.client import _model_chain, explainer_model
 
 logger = logging.getLogger(__name__)
@@ -84,17 +85,6 @@ def _leak_fixer_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
     return []
 
 
-def _pretty_merchant(raw: str) -> str:
-    """'UPI AUTOPAY-FITZONE GYM-fitzone@upi' -> 'Fitzone Gym'."""
-    import re
-
-    s = re.sub(r"[-\s]*[a-z0-9._]+@[a-z0-9._\-]+$", "", raw, flags=re.I)
-    s = re.sub(r"^(UPI AUTOPAY|UPI|NEFT|IMPS|RTGS|ACH|NACH|POS)[-\s]+", "", s, flags=re.I)
-    s = re.sub(r"-[A-Z]{2}\d{4,}$", "", s, flags=re.I)
-    s = re.sub(r"[-_]+", " ", s).strip()
-    return re.sub(r"\bEmi\b", "EMI", s.title()) or raw
-
-
 def _leak_fixer_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     for name, r in results:
         if name == "detect_recurring_charges_tool":
@@ -106,7 +96,7 @@ def _leak_fixer_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
                 note = {"idle": "looks unused, worth cancelling", "active": "an active AutoPay, keep or review"}.get(
                     ch.get("status_label") or "", "a loan EMI, ask your lender about a lower rate"
                 )
-                lines.append(f"{_pretty_merchant(ch['description'])}: {_inr(ch['monthly_amount'])} a month, {note}.")
+                lines.append(f"{pretty_merchant(ch['description'])}: {_inr(ch['monthly_amount'])} a month, {note}.")
             return "\n".join(f"• {ln}" for ln in lines) + "\n\n\"Looks unused\" is our best guess from the pattern, so check before you cancel anything."
     return "I need a confirmed bank statement to look for leaks."
 
@@ -341,7 +331,7 @@ async def _drive(agent: Agent, agent_name: str, confirmed: dict[str, dict], ques
             answer = "".join(p.text or "" for p in event.content.parts)
 
     tool_calls = [c for c in calls.values() if c["tool"] not in ("load_skill", "list_skills")]
-    return AgentRun(agent=agent_name, engine=engine, answer=answer, tool_calls=tool_calls)
+    return AgentRun(agent=agent_name, engine=engine, answer=clean_answer(answer), tool_calls=tool_calls)
 
 
 def _default_question(agent_name: str) -> str:

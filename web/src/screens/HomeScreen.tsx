@@ -6,13 +6,13 @@ import { CountUp } from '../components/CountUp'
 import { DocumentsCard } from '../components/DocumentsCard'
 import type { IconName } from '../components/Icon'
 import { QuickActions } from '../components/QuickActions'
-import { ResultCard } from '../components/ResultCard'
+import { ResultRow } from '../components/ResultRow'
 import { SampleDataTag } from '../components/Chip'
 import { CardSkeleton } from '../components/Skeleton'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { TrustStrip } from '../components/TrustStrip'
 import type { Tone } from '../components/tones'
-import { api, type MoneyFinderResult } from '../lib/api'
+import { api, type MoneyFinderCard, type MoneyFinderResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 import { greetingForNow } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
@@ -32,6 +32,7 @@ export function HomeScreen() {
   const [result, setResult] = useState<MoneyFinderResult | null>(null)
   const [loading, setLoading] = useState(true)
   const drawer = useSourceDrawer(sessionId)
+  const [active, setActive] = useState<MoneyFinderCard | null>(null)
 
   useEffect(() => {
     if (!sessionId) {
@@ -75,17 +76,17 @@ export function HomeScreen() {
         {sampleData && <SampleDataTag />}
       </div>
 
-      <div className="bg-hero-card hero-shine animate-card-entrance mt-4 rounded-[28px] p-5 text-white shadow-[0_20px_40px_-20px_rgba(34,34,59,0.6)] sm:p-6">
-        <span className="text-sm font-semibold text-white/75">{t('home.heroTitle')}</span>
+      <div className="bg-hero-card animate-card-entrance mt-4 rounded-[20px] p-5 text-white sm:p-6">
+        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('home.heroTitle')}</span>
         <div className="tabular mt-1 text-[44px] font-extrabold leading-none sm:text-5xl">
           {result ? <CountUp value={result.total_found} /> : formatINR(0)}
         </div>
         <div className="mt-4 flex gap-2.5">
-          <div className="flex-1 rounded-2xl bg-white/10 px-3 py-2.5 backdrop-blur-sm">
+          <div className="flex-1 rounded-xl bg-white/10 px-3 py-2.5">
             <div className="tabular text-base font-bold">{result ? formatINR(result.yearly_total) : '—'}</div>
             <div className="text-[11px] text-white/70">{t('home.heroYearly')}</div>
           </div>
-          <div className="flex-1 rounded-2xl bg-white/10 px-3 py-2.5 backdrop-blur-sm">
+          <div className="flex-1 rounded-xl bg-white/10 px-3 py-2.5">
             <div className="tabular text-base font-bold">{result ? formatINR(result.one_time_total) : '—'}</div>
             <div className="text-[11px] text-white/70">{t('home.heroOneTime')}</div>
           </div>
@@ -103,34 +104,33 @@ export function HomeScreen() {
       {sessionId && <DocumentsCard sessionId={sessionId} />}
 
       <div className="mt-6 flex items-center justify-between">
-        <h2 className="text-navy text-lg font-extrabold tracking-tight">Found for you</h2>
+        <h2 className="section-label">Found for you</h2>
         {result && result.cards.length > 0 && (
           <span className="bg-coral-tint text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
         )}
       </div>
 
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
         {loading && (
           <>
             <CardSkeleton />
             <CardSkeleton />
           </>
         )}
-        {!loading && result && result.cards.length === 0 && <p className="text-muted text-sm">{t('home.empty')}</p>}
-        {result?.cards.map((card, i) => (
-          <ResultCard
+        {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('home.empty')}</p>}
+        {result?.cards.map((card) => (
+          <ResultRow
             key={card.card_id}
-            index={i}
             icon={LOOK[card.card_id]?.icon ?? 'wallet'}
             tone={LOOK[card.card_id]?.tone ?? 'slate'}
             title={card.title}
-            detail={card.detail}
+            subtitle={card.source_chip}
             amount={card.amount}
             unitLabel={card.unit_label}
-            sourceLabel={card.source_chip}
-            actionLabel={card.action_label}
-            onAction={() => navigate(`/app/drafts/${card.card_id}`, { state: { card } })}
-            onTapAmount={() => drawer.open(card.card_id)}
+            onOpen={() => {
+              setActive(card)
+              drawer.open(card.card_id)
+            }}
           />
         ))}
       </div>
@@ -141,7 +141,16 @@ export function HomeScreen() {
 
       <p className="text-muted mt-6 text-center text-xs">{t('home.feeNote')}</p>
 
-      <SourceDrawer entry={drawer.entry} loading={drawer.loading} onClose={drawer.close} />
+      <SourceDrawer
+        entry={drawer.entry}
+        loading={drawer.loading}
+        onClose={() => {
+          drawer.close()
+          setActive(null)
+        }}
+        headline={active ? { title: active.title, amount: active.amount, unit: active.unit_label } : null}
+        primaryAction={active ? { label: active.action_label, onClick: () => navigate(`/app/drafts/${active.card_id}`, { state: { card: active } }) } : null}
+      />
     </div>
   )
 }
