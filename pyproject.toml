@@ -1,8 +1,8 @@
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["rules_engine/tests", "llm/tests"]
+testpaths = ["rules_engine/tests", "llm/tests", "api/tests"]
 
 [tool.mypy]
 python_version = "3.12"
-packages = ["rules_engine", "llm"]
+packages = ["rules_engine", "llm", "api"]
 ignore_missing_imports = true

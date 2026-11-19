@@ -3,8 +3,7 @@ fixture in "fixture" mode (the default -- see llm/fixtures/build_fixtures.py).
 
 READER_MODE=fixture is what every test and local-dev run uses, per the
 brief's "a stub reader must exist so tests never call the live API" rule.
-Only READER_MODE=live touches the network, and only once an upload actually
-reaches api/ in a later milestone.
+Only READER_MODE=live touches the network, once an upload reaches api/.
 """
 
 from __future__ import annotations
@@ -33,8 +32,8 @@ _PDF_SUFFIXES = (".pdf",)
 _IMAGE_MIME_BY_SUFFIX = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}
 
 
-def _mime_type_for(path: Path) -> str:
-    suffix = path.suffix.lower()
+def mime_type_for_filename(filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
     if suffix in _PDF_SUFFIXES:
         return "application/pdf"
     return _IMAGE_MIME_BY_SUFFIX.get(suffix, "application/octet-stream")
@@ -46,9 +45,9 @@ def _read_fixture(document_type: str, model_cls: type[BaseModel]) -> BaseModel:
     return model_cls.model_validate(data)
 
 
-def _read_live(document_type: str, source: Path, model_cls: type[BaseModel]) -> BaseModel:
+def _read_live(document_type: str, file_bytes: bytes, mime_type: str, model_cls: type[BaseModel]) -> BaseModel:
     system_prompt = load_reader_prompt(document_type)
-    file_part = types.Part.from_bytes(data=source.read_bytes(), mime_type=_mime_type_for(source))
+    file_part = types.Part.from_bytes(data=file_bytes, mime_type=mime_type)
     return generate_structured(
         model=reader_model(),
         system_instruction=system_prompt,
@@ -57,10 +56,16 @@ def _read_live(document_type: str, source: Path, model_cls: type[BaseModel]) -> 
     )
 
 
-def read_document(document_type: str, source: Path | str | None = None, mode: str | None = None) -> BaseModel:
-    """source is required (and must exist) in "live" mode; ignored in
-    "fixture" mode, which always returns the one recorded fixture for that
-    document type regardless of what was uploaded."""
+def read_document(
+    document_type: str,
+    *,
+    file_bytes: bytes | None = None,
+    mime_type: str | None = None,
+    mode: str | None = None,
+) -> BaseModel:
+    """file_bytes/mime_type are required in "live" mode; ignored in
+    "fixture" mode (the default), which always returns the one recorded
+    fixture for that document type regardless of what was uploaded."""
     if document_type not in READER_OUTPUT_MODELS:
         raise ValueError(f"Unknown document_type: {document_type!r}")
     resolved_mode = mode or os.environ.get("READER_MODE", "fixture")
@@ -69,7 +74,7 @@ def read_document(document_type: str, source: Path | str | None = None, mode: st
     if resolved_mode == "fixture":
         return _read_fixture(document_type, model_cls)
     if resolved_mode == "live":
-        if source is None:
-            raise ValueError("source is required in live mode")
-        return _read_live(document_type, Path(source), model_cls)
+        if file_bytes is None or mime_type is None:
+            raise ValueError("file_bytes and mime_type are required in live mode")
+        return _read_live(document_type, file_bytes, mime_type, model_cls)
     raise ValueError(f"Unknown reader mode: {resolved_mode!r} (expected 'fixture' or 'live')")

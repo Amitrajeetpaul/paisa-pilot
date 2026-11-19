@@ -35,6 +35,8 @@ class RegimeConfig:
     slabs: list[TaxSlab]
     rebate_87a: Rebate87A
     chapter_via_allowed: bool
+    source_url: str
+    as_of: str
     section_80c_limit: float | None = None
 
 
@@ -53,12 +55,15 @@ class EpfConfig:
     employer_eps_percent: float
     employer_eps_cap_monthly: float
     interest_rate_percent: float
+    source_url: str
+    as_of: str
 
 
 @dataclass(frozen=True)
 class RulesConfig:
     fy: str
     assessment_year: str
+    ca_review_status: str
     regimes: dict[str, RegimeConfig]
     cess_percent: float
     surcharge_bands: list[SurchargeBand]
@@ -77,6 +82,8 @@ def _parse_regime(raw: dict) -> RegimeConfig:
         slabs=_parse_slabs(raw["slabs"]),
         rebate_87a=Rebate87A(**raw["rebate_87a"]),
         chapter_via_allowed=raw["chapter_via_allowed"],
+        source_url=raw["source_url"],
+        as_of=raw["as_of"],
         section_80c_limit=chapter_via.get("section_80c_limit"),
     )
 
@@ -92,10 +99,13 @@ def load_rules_config(fy: str = "2025-26") -> RulesConfig:
         employer_eps_percent=raw["epf"]["employer_eps_percent"],
         employer_eps_cap_monthly=raw["epf"]["employer_eps_cap_monthly"],
         interest_rate_percent=raw["epf"]["interest_rate_percent_fy2025_26"],
+        source_url=raw["epf"]["source_url"],
+        as_of=raw["epf"]["as_of"],
     )
     return RulesConfig(
         fy=raw["fy"],
         assessment_year=raw["assessment_year"],
+        ca_review_status=raw["ca_review_status"],
         regimes=regimes,
         cess_percent=raw["cess"]["health_education_cess_percent"],
         surcharge_bands=surcharge_bands,

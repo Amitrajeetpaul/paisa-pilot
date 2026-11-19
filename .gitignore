@@ -7,3 +7,6 @@ dist/
 build/
 .DS_Store
 *.egg-info/
+.data/
+.mypy_cache/
+.pytest_cache/

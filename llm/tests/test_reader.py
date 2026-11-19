@@ -46,15 +46,15 @@ def test_fixture_mode_pf_passbook_matches_ground_truth():
     assert len(dormant_unlabeled) == 2
 
 
-def test_fixture_mode_ignores_source_argument():
+def test_fixture_mode_ignores_file_bytes_argument():
     # fixture mode always returns the recorded fixture regardless of what
-    # "source" was passed -- this is the point of fixture mode.
-    result = read_document("payslip", source="/does/not/exist.pdf", mode="fixture")
+    # file_bytes was passed -- this is the point of fixture mode.
+    result = read_document("payslip", file_bytes=b"not a real pdf", mode="fixture")
     assert result.fields.employee_name.value == "Riya Sharma"
 
 
-def test_live_mode_without_source_raises():
-    with pytest.raises(ValueError, match="source is required"):
+def test_live_mode_without_file_bytes_raises():
+    with pytest.raises(ValueError, match="file_bytes and mime_type are required"):
         read_document("payslip", mode="live")
 
 

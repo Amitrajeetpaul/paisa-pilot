@@ -7,8 +7,8 @@ dev:
 	$(VENV)/pip install --quiet -r requirements-dev.txt
 
 test:
-	$(VENV)/python -m pytest rules_engine/ llm/ -q
-	$(VENV)/python -m mypy rules_engine llm
+	$(VENV)/python -m pytest rules_engine/ llm/ api/ -q
+	$(VENV)/python -m mypy rules_engine llm api
 
 lint: test
 
