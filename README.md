@@ -28,6 +28,10 @@ not a dependency.
 |---|---|---|
 | ![Landing page](docs/screenshots/landing.jpg) | ![Home with money found](docs/screenshots/home.jpg) | ![Leak Fixer](docs/screenshots/fix.jpg) |
 
+| Tap a row for the proof and next step | On a phone | Dark mode |
+|---|---|---|
+| ![Detail sheet with the source of a number](docs/screenshots/sheet.jpg) | ![Mobile screens](docs/screenshots/mobile.jpg) | ![Dark mode](docs/screenshots/dark.jpg) |
+
 ## What this is
 
 Three modules, one trust story:
