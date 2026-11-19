@@ -11,13 +11,21 @@ from api.routers import agents, calculate, confirm, consent, consultant, demo, d
 
 app = FastAPI(title="Paisa Pilot API", version="0.1.0")
 
-# ALLOWED_ORIGINS is a comma-separated list; defaults to the Vite dev
-# server so local dev works unconfigured. In production, set it to the
-# deployed web service's URL (see infra/deploy.md step 5).
-_default_origins = "http://localhost:5173"
+# ALLOWED_ORIGINS is a comma-separated list; defaults to Vite dev server + Capacitor mobile schemes.
+_default_origins = [
+    "http://localhost:5173",
+    "http://localhost",
+    "https://localhost",
+    "capacitor://localhost",
+    "ionic://localhost",
+]
+configured = [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+origins = list(set(_default_origins + configured)) if configured else _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("ALLOWED_ORIGINS", _default_origins).split(","),
+    allow_origins=origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$|^capacitor://localhost$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
