@@ -19,9 +19,9 @@ def enhance_document_image(image_bytes: bytes, mime_type: str) -> tuple[bytes, b
         return image_bytes, False
 
     try:
-        with Image.open(io.BytesIO(image_bytes)) as img:
+        with Image.open(io.BytesIO(image_bytes)) as opened:
             # 1. Correct EXIF orientation from smartphone cameras
-            img = ImageOps.exif_transpose(img) or img
+            img: Image.Image = ImageOps.exif_transpose(opened) or opened
 
             # Convert to RGB if needed (handles RGBA / palette)
             if img.mode != "RGB":

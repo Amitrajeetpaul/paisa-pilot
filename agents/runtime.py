@@ -29,6 +29,8 @@ from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
 from google.genai import types
 
+from agents.provenance import check_provenance
+
 logger = logging.getLogger(__name__)
 
 AGENT_TIMEOUT_SECONDS = float(os.environ.get("AGENT_TIMEOUT_SECONDS", "18"))
@@ -111,6 +113,15 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
     import re
 
     ql = q.lower()
+    if "payslip" in c and any(k in ql for k in ("salary", "take home", "take-home", "in-hand", "in hand", "ctc", "gross", "payslip", "explain my finances")):
+        p = c["payslip"]
+        return [("explain_salary_tool", {
+            "monthly_gross_salary": p["monthly_gross_salary"], "basic_pay": p["basic_pay"],
+            "pf_employee_deduction": p.get("pf_employee_deduction", 0), "professional_tax": p.get("professional_tax", 0),
+            "tds_deducted": p.get("tds_deducted", 0), "net_pay_on_payslip": p["net_pay"],
+        })]
+    if "payslip" in c and any(k in ql for k in ("save every month", "save each month", "monthly saving", "savings target", "how much should i save", "how much to save")):
+        return [("savings_target_tool", {"net_monthly_income": c["payslip"]["net_pay"]})]
     if ("tax" in ql or "regime" in ql) and "form16" in c:
         f = c["form16"]
         return [("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]})]
@@ -141,6 +152,21 @@ def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
             if r["needs_transfer_count"] > 0:
                 return f"You have {r['needs_transfer_count']} old PF account(s) ({_inr(r['total_balance_needing_transfer'])} combined) that likely need a transfer."
             return "I don't see any old PF accounts needing a transfer."
+        if name == "explain_salary_tool":
+            d = r["deduction_breakdown"]
+            return (
+                f"Your payslip shows {_inr(r['gross_monthly'])} gross a month (about {_inr(r['gross_annual'])} a year before deductions). "
+                f"Basic pay is {_inr(r['basic_pay'])}, {r['basic_pct_of_gross']:g}% of gross.\n"
+                f"Deductions total {_inr(r['total_deductions'])}: PF {_inr(d['pf_employee_deduction'])}, "
+                f"professional tax {_inr(d['professional_tax'])} and tax deducted at source (TDS) {_inr(d['tds_deducted'])}.\n"
+                f"Your take-home is {_inr(r['net_pay_computed'])}, which is {r['in_hand_pct_of_gross']:g}% of gross."
+            )
+        if name == "savings_target_tool":
+            return (
+                f"A common rule of thumb is to save {r['savings_rate_percent']:g}% of your take-home pay: about "
+                f"{_inr(r['monthly_savings_target'])} a month on your net pay of {_inr(r['net_monthly_income'])}. "
+                "This is a rule of thumb, not a rule."
+            )
         if name == "emergency_fund_target_tool":
             return f"A common rule of thumb is {r['months']} months of expenses — about {_inr(r['target_amount'])} on your net pay."
         if name == "insurance_guide_tool":
@@ -320,7 +346,7 @@ def _default_question(agent_name: str) -> str:
     return {
         "money_finder": "Find every rupee I'm owed from my confirmed documents.",
         "leak_fixer": "Find the subscriptions and AutoPay charges leaking money every month.",
-        "consultant": "Explain my finances.",
+        "consultant": "Explain my salary: what is my gross pay and what is my take-home?",
         "ca_assistant": "Run a tax check-up on my confirmed documents.",
     }[agent_name]
 
@@ -342,9 +368,14 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
         # One bounded attempt: a person is waiting on this card, so if Gemini is
         # overloaded we answer from the built-in model rather than make them wait.
         try:
-            return asyncio.run(
+            run = asyncio.run(
                 asyncio.wait_for(_drive(_build(agent_name), agent_name, confirmed, q, "gemini"), timeout=AGENT_TIMEOUT_SECONDS)
             )
+            problems = check_provenance(run.tool_calls, run.answer, confirmed, q)
+            if not problems:
+                return run
+            # The model used a number nobody gave it: never show that answer.
+            logger.warning("Discarding Gemini answer for %s (number provenance): %s", agent_name, "; ".join(problems))
         except Exception:
             logger.exception("Gemini agent run failed or timed out for %s; using the built-in model", agent_name)
     return run_offline(agent_name, confirmed, q)

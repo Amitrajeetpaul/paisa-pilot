@@ -186,7 +186,14 @@ def answer_question(confirmed: dict[str, dict], question: str, mode: str | None 
                 logger.exception("Offline agent failed; using fixture answer")
                 answer_text, source_chip = _fixture_answer(confirmed, question)
     else:
-        answer_text, source_chip = _fixture_answer(confirmed, question)
+        try:
+            from agents.runtime import run_offline
+
+            run = run_offline("consultant", confirmed, question)
+            answer_text, source_chip = run.answer, "Source: your confirmed numbers + our tax and savings rules"
+        except Exception:
+            logger.exception("Offline agent failed; using template answer")
+            answer_text, source_chip = _fixture_answer(confirmed, question)
 
     guardrail = check_guardrail(answer_text)
     if guardrail.flagged and guardrail.rewritten_answer:
@@ -238,10 +245,12 @@ async def _run_agent(confirmed: dict[str, dict], question: str) -> str:
 
 
 def _live_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str]:
-    import asyncio
+    """Gemini-driven answer through the shared, provenance-checked runner. It
+    returns the deterministic answer itself if Gemini fails or invents a number."""
+    from agents.runtime import run_agent
 
-    try:
-        text = asyncio.run(_run_agent(confirmed, question))
-    except Exception:
-        text = asyncio.run(_run_agent(confirmed, question))  # one retry for transient 503s
-    return text or "I couldn't produce an answer just now.", "Source: your confirmed numbers + our tax and savings rules"
+    run = run_agent("consultant", confirmed, question, mode="live")
+    return (
+        run.answer or "I couldn't produce an answer just now.",
+        "Source: your confirmed numbers + our tax and savings rules",
+    )

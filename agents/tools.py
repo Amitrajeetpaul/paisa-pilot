@@ -211,7 +211,11 @@ def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6) ->
 def savings_target_tool(net_monthly_income: float, savings_rate_percent: float = 20) -> dict:
     """Computes a monthly savings target as a rule-of-thumb rate of net income."""
     result = savings_target_from_income(net_monthly_income, savings_rate_percent=savings_rate_percent)
-    return {"monthly_savings_target": result.monthly_savings_target, "savings_rate_percent": result.savings_rate_percent}
+    return {
+        "net_monthly_income": result.net_monthly_income,
+        "monthly_savings_target": result.monthly_savings_target,
+        "savings_rate_percent": result.savings_rate_percent,
+    }
 
 
 def goal_category_tool(goal_years: float) -> dict:
@@ -338,10 +342,15 @@ def explain_salary_tool(
         net_pay_on_payslip=net_pay_on_payslip,
     )
     return {
+        "gross_monthly": result.gross_monthly,
+        "gross_annual": result.gross_annual,
+        "basic_pay": result.basic_pay,
+        "basic_pct_of_gross": result.basic_pct_of_gross,
+        "deduction_breakdown": result.deduction_breakdown,
         "total_deductions": result.total_deductions,
         "net_pay_computed": result.net_pay_computed,
+        "in_hand_pct_of_gross": result.in_hand_pct_of_gross,
         "net_pay_matches_payslip": result.net_pay_matches_payslip,
-        "basic_pct_of_gross": result.basic_pct_of_gross,
     }
 
 

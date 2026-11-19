@@ -20,6 +20,8 @@ class SalaryBreakdown:
     net_pay_computed: float
     net_pay_matches_payslip: bool
     deduction_breakdown: dict[str, float]
+    gross_annual: float = 0.0
+    in_hand_pct_of_gross: float = 0.0
 
 
 def explain_salary_breakdown(
@@ -40,6 +42,8 @@ def explain_salary_breakdown(
         total_deductions=total_deductions,
         net_pay_computed=net_pay_computed,
         net_pay_matches_payslip=abs(net_pay_computed - net_pay_on_payslip) < 1.0,
+        gross_annual=round(monthly_gross_salary * 12, 2),
+        in_hand_pct_of_gross=round(100 * net_pay_computed / monthly_gross_salary, 1) if monthly_gross_salary else 0.0,
         deduction_breakdown={
             "pf_employee_deduction": pf_employee_deduction,
             "professional_tax": professional_tax,
