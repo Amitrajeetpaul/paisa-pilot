@@ -89,6 +89,26 @@ by then, update this log.
   caps from one combined number -- re-deriving them would require assuming how the
   total splits across sections, which isn't given.
 
+### 2026-11-19 — llm/ implementation choices (Milestone 2, second slice)
+- `llm/reader.py`'s fixture mode is keyed only by `document_type`, not by the
+  uploaded file -- there's exactly one recorded fixture per document type
+  right now (Riya Sharma's). **Why:** that's all Milestone 2 needs for the
+  demo and for contract tests; if more fixture variety is needed later
+  (e.g. to exercise low-confidence paths end to end through the API), add
+  more files to `llm/fixtures/` and extend the lookup then, rather than
+  building a multi-fixture registry before there's a second fixture to
+  justify it.
+- Fixed `sample_data/generate_pdfs.py` to stop printing "DORMANT" on old PF
+  accounts (found while wiring the PF passbook fixture against its own
+  reader prompt, which explicitly forbids the reader from inventing a
+  dormancy judgement). Real EPFO passbooks don't print that verdict either
+  -- it's `rules_engine/pf.py`'s job. Regenerated the PDF and all 4
+  `llm/fixtures/*.json` after the fix.
+- `llm/client.py`'s `explainer_model()` defaults to "free" plan tier
+  (`GEMINI_PLAN_TIER=free`), always falling back to the reader model, so
+  local dev never silently assumes paid-tier Gemini 4 Argon access it
+  doesn't have.
+
 ---
 
 ## Things I will NOT decide unilaterally (will check first)
