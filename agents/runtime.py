@@ -78,17 +78,30 @@ def _leak_fixer_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
     return []
 
 
+def _pretty_merchant(raw: str) -> str:
+    """'UPI AUTOPAY-FITZONE GYM-fitzone@upi' -> 'Fitzone Gym'."""
+    import re
+
+    s = re.sub(r"@[a-z0-9._\-]+$", "", raw, flags=re.I)
+    s = re.sub(r"^(UPI AUTOPAY|UPI|NEFT|IMPS|RTGS|ACH|NACH|POS)[-\s]+", "", s, flags=re.I)
+    s = re.sub(r"-[A-Z]{2}\d{4,}$", "", s, flags=re.I)
+    s = re.sub(r"[-_]+", " ", s).strip()
+    return re.sub(r"\bEmi\b", "EMI", s.title()) or raw
+
+
 def _leak_fixer_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     for name, r in results:
         if name == "detect_recurring_charges_tool":
             charges = r["charges"]
             if not charges:
                 return "I don't see any recurring subscriptions or AutoPay charges in your bank statement."
-            top = ", ".join(
-                f"{ch['description']} ({_inr(ch['monthly_amount'])}/month" + (f", {ch['status_label']}" if ch.get("status_label") else "") + ")"
-                for ch in charges[:4]
-            )
-            return f"Your recurring charges leak about {_inr(r['monthly_leak_total'])} a month. Found: {top}. Check the idle ones before cancelling -- the idle/active label is a guess."
+            lines = [f"Repeating payments are costing you about {_inr(r['monthly_leak_total'])} a month."]
+            for ch in charges[:5]:
+                note = {"idle": "looks unused, worth cancelling", "active": "an active AutoPay, keep or review"}.get(
+                    ch.get("status_label") or "", "a loan EMI, ask your lender about a lower rate"
+                )
+                lines.append(f"{_pretty_merchant(ch['description'])}: {_inr(ch['monthly_amount'])} a month, {note}.")
+            return "\n".join(f"• {ln}" for ln in lines) + "\n\n\"Looks unused\" is our best guess from the pattern, so check before you cancel anything."
     return "I need a confirmed bank statement to look for leaks."
 
 

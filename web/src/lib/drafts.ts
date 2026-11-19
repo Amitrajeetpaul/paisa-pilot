@@ -1,5 +1,6 @@
 import type { MoneyFinderCard } from './api'
 import { formatINR } from './format'
+import { prettyMerchant } from './plain'
 
 /** Draft message templates. The user edits and sends these themselves --
  * per brief principle 4, the app never files or sends anything on its own. */
@@ -36,7 +37,7 @@ export function buildDraftText(card: Pick<MoneyFinderCard, 'card_id' | 'title' |
     return {
       heading: 'Cancel subscription',
       body:
-        `To: ${card.title}\n\nSubject: Please cancel my subscription\n\n` +
+        `To: ${prettyMerchant(card.title)}\n\nSubject: Please cancel my subscription\n\n` +
         `I'd like to cancel my subscription (${formatINR(card.amount)}/month) effective immediately. ` +
         `Please confirm the cancellation and stop any further charges.\n\n[Your name / account email]`,
     }
@@ -46,7 +47,7 @@ export function buildDraftText(card: Pick<MoneyFinderCard, 'card_id' | 'title' |
     return {
       heading: 'Review AutoPay',
       body:
-        `To: ${card.title}\n\nSubject: Reviewing my UPI AutoPay mandate\n\n` +
+        `To: ${prettyMerchant(card.title)}\n\nSubject: Reviewing my UPI AutoPay mandate\n\n` +
         `I'm reviewing my recurring payment of ${formatINR(card.amount)}/month to you. Could you confirm what this covers, ` +
         `and let me know if there's a lower-cost plan available?\n\n[Your name]`,
     }
@@ -56,7 +57,7 @@ export function buildDraftText(card: Pick<MoneyFinderCard, 'card_id' | 'title' |
     return {
       heading: 'Ask your lender about a lower rate',
       body:
-        `To: ${card.title}\n\nSubject: Request for foreclosure statement and interest-rate review\n\n` +
+        `To: ${prettyMerchant(card.title)}\n\nSubject: Request for foreclosure statement and interest-rate review\n\n` +
         `I pay ${formatINR(card.amount)}/month towards this loan. Please share: (1) my outstanding principal, ` +
         `(2) my current interest rate, (3) foreclosure / prepayment charges, and (4) whether you can offer a lower rate ` +
         `or a balance-transfer option.\n\nI will compare this with other lenders' quotes before deciding.\n\n[Your name / loan account number]`,

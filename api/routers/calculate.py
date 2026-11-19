@@ -81,7 +81,7 @@ def calculate_money_finder(session_id: str) -> dict:
             cards.append({
                 "card_id": "tax_regime_switch",
                 "title": "Switch to new tax option",
-                "detail": f"Saves {comparison.annual_saving_if_switch:,.0f} a year vs your current old regime filing",
+                "detail": f"Saves ₹{comparison.annual_saving_if_switch:,.0f} a year compared with your current old-regime filing",
                 "amount": comparison.annual_saving_if_switch,
                 "unit_label": "every year",
                 "source_chip": "Source: Form 16",
@@ -91,7 +91,7 @@ def calculate_money_finder(session_id: str) -> dict:
         _save_trail(
             session_id, "tax_regime_switch", "Switch to new tax option",
             {"gross_salary_annual": form16["gross_salary_annual"], "deductions_chapter_via_total": form16["deductions_chapter_via_total"]},
-            "rules_engine.tax.compare_regimes (old vs new regime slabs, Section 87A rebate, cess)",
+            "We worked out your tax under both the old and the new regime from your yearly salary and deductions (standard deduction, the Section 87A rebate and 4% cess included) and compared the two.",
             RULES_CONFIG.regimes["new"].source_url,
         )
 
@@ -102,7 +102,7 @@ def calculate_money_finder(session_id: str) -> dict:
             cards.append({
                 "card_id": "extra_tds_refund",
                 "title": "Extra tax cut (TDS)",
-                "detail": f"TDS deducted was {extra_tds:,.0f} more than your computed tax under the {regime} regime",
+                "detail": f"Your employer deducted ₹{extra_tds:,.0f} more tax than you owe under the {regime} regime",
                 "amount": round(extra_tds, 2),
                 "unit_label": "possible refund",
                 "source_chip": "Source: Form 16 + AIS",
@@ -112,7 +112,7 @@ def calculate_money_finder(session_id: str) -> dict:
         _save_trail(
             session_id, "extra_tds_refund", "Extra tax cut (TDS)",
             {"tds_deducted_annual": form16["tds_deducted_annual"], "taxable_income": form16["taxable_income"], "regime": regime},
-            "rules_engine.tax.compute_tax, compared against Form 16's TDS deducted",
+            "We worked out the tax you actually owe on your taxable income, then compared it with the tax your employer already deducted (TDS).",
             RULES_CONFIG.regimes[regime].source_url,
         )
 
@@ -122,7 +122,7 @@ def calculate_money_finder(session_id: str) -> dict:
             cards.append({
                 "card_id": "ais_extra_tds",
                 "title": "TDS on other income to claim",
-                "detail": f"Your AIS shows {check.claimable_extra_tds:,.0f} more TDS than your Form 16 (for example on bank interest)",
+                "detail": f"Your AIS shows ₹{check.claimable_extra_tds:,.0f} more tax already paid than your Form 16 (for example on bank interest)",
                 "amount": check.claimable_extra_tds,
                 "unit_label": "claim as credit when filing",
                 "source_chip": "Source: AIS + Form 16",
@@ -131,8 +131,8 @@ def calculate_money_finder(session_id: str) -> dict:
             one_time_total += check.claimable_extra_tds
         _save_trail(
             session_id, "ais_extra_tds", "TDS on other income to claim",
-            {"form16_tds": check.form16_tds, "ais_tds_total": check.ais_tds_total, "ais_entries": ais["tds_entries"]},
-            "rules_engine.ais.cross_check_tds (AIS total TDS minus Form 16 TDS, when positive)",
+            {"tds_on_your_form_16": check.form16_tds, "tds_credited_in_your_ais": check.ais_tds_total, "tds_lines_in_ais": len(ais["tds_entries"])},
+            "We added up all the TDS credited to your PAN in your AIS and subtracted the TDS on your Form 16. The difference is tax cut on other income, such as bank interest, which you can claim as credit when you file.",
         )
 
     if pf_passbook is not None:
@@ -142,7 +142,7 @@ def calculate_money_finder(session_id: str) -> dict:
             cards.append({
                 "card_id": "old_pf_accounts",
                 "title": "Old PF account found",
-                "detail": f"{len(pf_review.needs_transfer_review)} account(s) from past employers, not yet transferred",
+                "detail": f"{len(pf_review.needs_transfer_review)} PF account(s) from past employers have not been transferred",
                 "amount": pf_review.total_balance_needing_transfer,
                 "unit_label": "one-time, if confirmed",
                 "source_chip": "Source: PF passbook",
@@ -151,8 +151,8 @@ def calculate_money_finder(session_id: str) -> dict:
             one_time_total += pf_review.total_balance_needing_transfer
         _save_trail(
             session_id, "old_pf_accounts", "Old PF account found",
-            {"accounts": pf_passbook["accounts"]},
-            "rules_engine.pf.review_pf_accounts (flags accounts with period_to set and no settled/transferred status)",
+            {"old_accounts_found": len(pf_review.needs_transfer_review), "combined_balance": pf_review.total_balance_needing_transfer},
+            "We looked for PF accounts from past employers that have an end date but are not marked as settled or transferred. These usually need a transfer to your current account.",
         )
 
     if bank_statement is not None:
@@ -164,7 +164,7 @@ def calculate_money_finder(session_id: str) -> dict:
             cards.append({
                 "card_id": "refund_hunter",
                 "title": "Refund Hunter: failed or double payments",
-                "detail": f"{len(double_debits) + len(failed)} transaction(s) look recoverable",
+                "detail": f"{len(double_debits) + len(failed)} payment(s) look like they can be recovered",
                 "amount": recoverable,
                 "unit_label": "possible refund",
                 "source_chip": "Source: bank statement",
@@ -172,9 +172,9 @@ def calculate_money_finder(session_id: str) -> dict:
             })
             one_time_total += recoverable
         _save_trail(
-            session_id, "refund_hunter", "Refund Hunter",
-            {"transaction_count": len(transactions)},
-            "rules_engine.refund_hunter.find_double_debits + find_unreversed_failed_transactions",
+            session_id, "refund_hunter", "Failed or double payments",
+            {"transactions_checked": len(transactions)},
+            "We looked for the same amount debited twice on the same day, and for failed payments that never got a matching refund.",
         )
 
     return {
@@ -207,7 +207,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
             cards.append({
                 "card_id": f"subscription_{charge.description}",
                 "title": charge.description,
-                "detail": f"Seen {len(charge.months_seen)} months running, ~{charge.monthly_amount:,.0f}/month",
+                "detail": f"Charged every month for the last {len(charge.months_seen)} months",
                 "amount": charge.monthly_amount,
                 "unit_label": "per month",
                 "status_label": charge.status_label,
@@ -219,7 +219,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
             cards.append({
                 "card_id": f"autopay_{charge.description}",
                 "title": charge.description,
-                "detail": f"Live UPI AutoPay, ~{charge.monthly_amount:,.0f}/month",
+                "detail": "A live UPI AutoPay that charges you every month",
                 "amount": charge.monthly_amount,
                 "unit_label": "per month",
                 "status_label": charge.status_label,
@@ -231,7 +231,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
             cards.append({
                 "card_id": f"loan_{charge.description}",
                 "title": charge.description,
-                "detail": "Recurring loan EMI -- see Leak Fixer's loan-switch check for a saving estimate",
+                "detail": "Monthly loan EMI. A lower rate could save you money, so we have drafted a message to your lender",
                 "amount": charge.monthly_amount,
                 "unit_label": "per month",
                 "status_label": None,
@@ -242,8 +242,8 @@ def calculate_leak_fixer(session_id: str) -> dict:
 
     _save_trail(
         session_id, "leak_fixer_monthly_total", "Leaking every month",
-        {"transaction_count": len(transactions)},
-        "rules_engine.leaks.detect_recurring_charges + monthly_leak_total (subscription + AutoPay only, excludes loan EMIs)",
+        {"transactions_checked": len(transactions)},
+        "We found payments that repeat every month (subscriptions and UPI AutoPay) and added them up. Loan EMIs are shown separately and are not counted as a leak.",
     )
 
     return {
@@ -269,7 +269,7 @@ def calculate_loan_switch(session_id: str, body: LoanSwitchRequest) -> dict:
     _save_trail(
         session_id, "loan_switch", "Loan switch saving",
         body.model_dump(),
-        "rules_engine.loans.loan_switch_saving (EMI amortization formula)",
+        "We used the standard loan EMI formula to compare what you pay now with the rate you were quoted.",
     )
     return {
         "current_monthly_emi": result.current_monthly_emi,

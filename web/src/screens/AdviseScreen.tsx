@@ -11,6 +11,13 @@ interface Message {
   sourceChip?: string
 }
 
+const SUGGESTIONS = [
+  'Which tax option is better for me?',
+  'Where should my spare ₹8,000 go? My goal is 3 years away.',
+  'How big should my emergency fund be?',
+  'What insurance do I need?',
+]
+
 export function AdviseScreen() {
   const { t, sessionId } = useApp()
   const navigate = useNavigate()
@@ -22,8 +29,8 @@ export function AdviseScreen() {
     if (!sessionId) navigate('/app/consent')
   }, [sessionId, navigate])
 
-  async function handleSend() {
-    const question = input.trim()
+  async function handleSend(preset?: string) {
+    const question = (preset ?? input).trim()
     if (!question || !sessionId) return
     setMessages((prev) => [...prev, { role: 'user', text: question }])
     setInput('')
@@ -46,7 +53,24 @@ export function AdviseScreen() {
       <h1 className="text-navy text-xl font-bold">{t('advise.title')}</h1>
 
       <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto">
-        {messages.length === 0 && <p className="text-muted text-sm">{t('advise.greeting')}</p>}
+        {messages.length === 0 && (
+          <div>
+            <p className="text-muted text-sm">{t('advise.greeting')}</p>
+            <p className="text-navy mt-4 text-xs font-bold uppercase tracking-wide">{t('advise.try')}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SUGGESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => handleSend(q)}
+                  className="border-line text-navy min-h-11 rounded-full border bg-white px-4 text-left text-sm font-medium hover:bg-black/[0.03]"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
@@ -55,7 +79,7 @@ export function AdviseScreen() {
               }`}
             >
               <p>{m.text}</p>
-              {m.role === 'assistant' && (
+              {m.role === 'assistant' && /education, not/i.test(m.text) && (
                 <p className="bg-warn-tint text-navy mt-2 rounded-lg px-2 py-1 text-xs">{t('advise.guardrailNote')}</p>
               )}
               {m.sourceChip && <p className="text-muted mt-1 text-xs">{m.sourceChip}</p>}

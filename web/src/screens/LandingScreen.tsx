@@ -29,10 +29,10 @@ const PROOF_POINTS = [
 
 const STAGES = [
   { n: 1, title: 'Upload', body: 'Payslip, Form 16, bank statement, AIS — consent first.' },
-  { n: 2, title: 'Read', body: 'Gemini 3.8 Flash turns photos and PDFs into typed fields, with confidence.' },
+  { n: 2, title: 'Read', body: 'We read your photos and PDFs and pull out the numbers, flagging anything we are unsure about.' },
   { n: 3, title: 'Confirm', body: 'You fix anything wrong. Nothing runs on unchecked data.' },
-  { n: 4, title: 'Calculate', body: 'A deterministic Python rules engine — not the AI — does the maths.' },
-  { n: 5, title: 'Helpers', body: 'Money Finder, Leak Fixer, AI Consultant call the engine as a tool.' },
+  { n: 4, title: 'Calculate', body: 'Tested tax and savings rules do the maths, not an AI guess. Same input, same answer.' },
+  { n: 5, title: 'Explain', body: 'Money Finder, Leak Fixer and your tax check-up explain what they found in plain words.' },
   { n: 6, title: 'Output', body: 'Source trail, filled PF forms, cancel and refund drafts — you send them.' },
 ]
 
@@ -148,7 +148,7 @@ export function LandingScreen() {
       <section id="trust" className="mx-auto max-w-5xl px-6 py-16">
         <h2 className="text-center text-3xl font-extrabold">Trust by design</h2>
         <ul className="text-muted mx-auto mt-6 max-w-2xl list-disc space-y-2 pl-6 text-sm">
-          <li>AI reads and explains. A deterministic rules engine does the maths — same input, same output.</li>
+          <li>AI reads and explains. Tested rules do the maths — same input, same answer, every time.</li>
           <li>Tap any number to see its source: inputs used, rule, config version, official link.</li>
           <li>Nothing runs until you confirm it.</li>
           <li>We never file, move money, or touch your bank without you.</li>

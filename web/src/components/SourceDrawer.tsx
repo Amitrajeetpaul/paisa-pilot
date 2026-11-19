@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useApp } from '../state/AppContext'
 import type { SourceTrailEntry } from '../lib/api'
+import { formatInputValue, humanizeKey } from '../lib/plain'
 import { Button } from './Button'
 
 interface SourceDrawerProps {
@@ -62,29 +63,29 @@ export function SourceDrawer({ entry, loading, onClose }: SourceDrawerProps) {
               <h3 className="text-muted text-xs font-bold uppercase tracking-wide">{entry.label}</h3>
             </div>
             <div>
-              <h4 className="text-navy text-sm font-semibold">Inputs used</h4>
+              <h4 className="text-navy text-sm font-semibold">What we used</h4>
               <dl className="border-line mt-1 divide-y rounded-xl border text-sm">
                 {Object.entries(entry.inputs_used).map(([key, value]) => (
                   <div key={key} className="flex justify-between gap-3 px-3 py-2">
-                    <dt className="text-muted">{key}</dt>
-                    <dd className="text-navy max-w-[60%] truncate text-right font-medium">{JSON.stringify(value)}</dd>
+                    <dt className="text-muted">{humanizeKey(key)}</dt>
+                    <dd className="text-navy max-w-[60%] text-right font-medium">{formatInputValue(key, value)}</dd>
                   </div>
                 ))}
               </dl>
             </div>
             <div>
-              <h4 className="text-navy text-sm font-semibold">Rule or formula</h4>
+              <h4 className="text-navy text-sm font-semibold">How we worked it out</h4>
               <p className="text-muted mt-1 text-sm">{entry.rule_or_formula}</p>
             </div>
             {entry.config_version && (
               <div>
-                <h4 className="text-navy text-sm font-semibold">Config version</h4>
-                <p className="text-muted mt-1 text-sm">{entry.config_version}</p>
+                <h4 className="text-navy text-sm font-semibold">Tax rules used</h4>
+                <p className="text-muted mt-1 text-sm">Financial year {entry.config_version.replace(/^fy/i, '')}</p>
               </div>
             )}
             {entry.source_url && (
               <div>
-                <h4 className="text-navy text-sm font-semibold">Official source</h4>
+                <h4 className="text-navy text-sm font-semibold">Read the official rules</h4>
                 <a
                   href={entry.source_url}
                   target="_blank"

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AgentActivity } from '../components/AgentActivity'
+import { CheckupCard } from '../components/CheckupCard'
 import { CountUp } from '../components/CountUp'
 import { ResultCard } from '../components/ResultCard'
 import { SampleDataTag } from '../components/Chip'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { api, type MoneyFinderResult } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { greetingForNow } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
 import { useApp } from '../state/AppContext'
 
@@ -18,7 +19,7 @@ const ICONS: Record<string, string> = {
 }
 
 export function HomeScreen() {
-  const { t, sessionId, sampleData } = useApp()
+  const { t, sessionId, sampleData, displayName, setDisplayName } = useApp()
   const navigate = useNavigate()
   const [result, setResult] = useState<MoneyFinderResult | null>(null)
   const [loading, setLoading] = useState(true)
@@ -34,11 +35,30 @@ export function HomeScreen() {
       .then(setResult)
       .catch(() => setResult(null))
       .finally(() => setLoading(false))
-  }, [sessionId, navigate])
+
+    // Greet the person by the name on their own documents.
+    const firstNameFrom = (doc: Record<string, unknown>) =>
+      String(doc.employee_name ?? doc.taxpayer_name ?? doc.account_holder_name ?? doc.member_name ?? '')
+        .trim()
+        .split(/\s+/)[0]
+    ;(async () => {
+      for (const type of ['payslip', 'form16', 'ais', 'bank_statement', 'pf_passbook']) {
+        try {
+          const name = firstNameFrom(await api.getConfirmed(sessionId, type))
+          if (name) return setDisplayName(name)
+        } catch {
+          /* that document has not been confirmed yet */
+        }
+      }
+    })()
+  }, [sessionId, navigate, setDisplayName])
 
   return (
     <div className="mx-auto max-w-2xl py-6">
-      <p className="text-navy text-xl font-bold">{t('home.greetingPrefix')}, Riya</p>
+      <p className="text-navy text-xl font-bold">
+        {t(`home.greeting.${greetingForNow()}`)}
+        {displayName ? `, ${displayName}` : ''}
+      </p>
 
       <div className="bg-hero-card animate-card-entrance mt-4 rounded-[28px] p-6 text-white">
         <div className="flex items-center justify-between">
@@ -83,8 +103,7 @@ export function HomeScreen() {
         ))}
       </div>
 
-      {sessionId && <AgentActivity sessionId={sessionId} agent="money_finder" />}
-      {sessionId && <AgentActivity sessionId={sessionId} agent="ca_assistant" />}
+      {sessionId && !loading && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="tax" />}
 
       <p className="text-muted mt-6 text-center text-xs">{t('home.feeNote')}</p>
 

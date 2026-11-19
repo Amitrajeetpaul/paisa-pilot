@@ -180,7 +180,7 @@ def answer_question(confirmed: dict[str, dict], question: str, mode: str | None 
                 from agents.runtime import run_offline
 
                 answer_text = run_offline("consultant", confirmed, question).answer
-                source_chip = "Source: your confirmed numbers + rules engine (ADK agent)"
+                source_chip = "Source: your confirmed numbers + our tax and savings rules"
             except Exception:
                 logger.exception("Offline agent failed; using fixture answer")
                 answer_text, source_chip = _fixture_answer(confirmed, question)
@@ -243,4 +243,4 @@ def _live_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str]:
         text = asyncio.run(_run_agent(confirmed, question))
     except Exception:
         text = asyncio.run(_run_agent(confirmed, question))  # one retry for transient 503s
-    return text or "I couldn't produce an answer just now.", "Source: your confirmed numbers + rules engine (ADK agent)"
+    return text or "I couldn't produce an answer just now.", "Source: your confirmed numbers + our tax and savings rules"

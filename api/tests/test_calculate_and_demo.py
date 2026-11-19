@@ -72,7 +72,7 @@ def test_money_finder_source_trail_is_retrievable(client):
     r = client.get(f"/sessions/{session_id}/source-trail/tax_regime_switch")
     assert r.status_code == 200
     trail = r.json()
-    assert trail["rule_or_formula"].startswith("rules_engine.tax.compare_regimes")
+    assert "old and the new regime" in trail["rule_or_formula"] and "rules_engine" not in trail["rule_or_formula"]
     assert trail["inputs_used"]["gross_salary_annual"] == 1000000
     assert trail["source_url"]
 

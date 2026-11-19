@@ -3,8 +3,9 @@ import { useApp } from '../state/AppContext'
 import { Wordmark } from './Logo'
 import { BottomNav, SideNav } from './Nav'
 
-export function AppShell({ children, avatarInitial = 'R' }: { children: ReactNode; avatarInitial?: string }) {
-  const { t, language, setLanguage, largeText, setLargeText } = useApp()
+export function AppShell({ children }: { children: ReactNode }) {
+  const { t, language, setLanguage, largeText, setLargeText, displayName } = useApp()
+  const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : '👤'
 
   return (
     <div className="flex min-h-screen">

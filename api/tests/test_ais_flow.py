@@ -22,4 +22,4 @@ def test_demo_session_surfaces_ais_extra_tds_card():
     card = next(c for c in cards if c["card_id"] == "ais_extra_tds")
     assert card["amount"] == 2500
     trail = client.get(f"/sessions/{sid}/source-trail/ais_extra_tds").json()
-    assert trail["inputs_used"]["ais_tds_total"] == 92500
+    assert trail["inputs_used"]["tds_credited_in_your_ais"] == 92500

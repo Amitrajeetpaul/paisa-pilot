@@ -46,8 +46,8 @@ const SCHEMAS: Record<string, Schema> = {
     columns: [
       { key: 'employer_name', label: 'Employer', kind: 'text' },
       { key: 'balance', label: 'Balance (₹)', kind: 'number' },
-      { key: 'period_to', label: 'Left on (YYYY-MM-DD, blank if current)', kind: 'text' },
-      { key: 'status_as_printed', label: 'Status as printed', kind: 'text' },
+      { key: 'period_to', label: 'Left this employer on (leave blank if you still work there)', kind: 'text' },
+      { key: 'status_as_printed', label: 'Status on the passbook', kind: 'text' },
     ],
     rowTitle: (r) => String(r.employer_name || 'PF account'),
     canRemove: false,

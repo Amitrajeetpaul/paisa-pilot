@@ -22,7 +22,7 @@ def test_money_finder_runs_through_adk_runner_and_calls_tools():
 def test_leak_fixer_runs_and_reports_monthly_leak():
     r = client.post(f"/sessions/{_sid()}/agents/leak_fixer/run").json()
     assert [c["tool"] for c in r["tool_calls"]] == ["detect_recurring_charges_tool"]
-    assert "a month" in r["answer"]
+    assert "a month" in r["answer"] and "Fitzone Gym" in r["answer"] and "@upi" not in r["answer"]
 
 
 def test_consultant_agent_answers_via_tools():

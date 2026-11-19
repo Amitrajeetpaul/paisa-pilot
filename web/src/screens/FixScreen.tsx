@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AgentActivity } from '../components/AgentActivity'
+import { CheckupCard } from '../components/CheckupCard'
 import { Button } from '../components/Button'
 import { SourceChip } from '../components/Chip'
 import { LeakBarChart } from '../components/LeakBarChart'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { api, type LeakFixerResult } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { prettyMerchant } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
 import { useApp } from '../state/AppContext'
 
@@ -58,7 +59,7 @@ export function FixScreen() {
           <div key={card.card_id} className="border-line animate-card-entrance rounded-[20px] border bg-white p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-navy text-base font-bold">{card.title}</h3>
+                <h3 className="text-navy text-base font-bold">{prettyMerchant(card.title)}</h3>
                 <p className="text-muted mt-0.5 text-sm">{card.detail}</p>
               </div>
               {card.status_label && (
@@ -95,7 +96,7 @@ export function FixScreen() {
         ))}
       </div>
 
-      {sessionId && <AgentActivity sessionId={sessionId} agent="leak_fixer" />}
+      {sessionId && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="leaks" />}
 
       <SourceDrawer entry={drawer.entry} loading={drawer.loading} onClose={drawer.close} />
     </div>
