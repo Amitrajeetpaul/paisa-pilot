@@ -93,7 +93,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
   const regimeResult = run ? (result('compare_tax_regimes') as { recommended_regime?: string; annual_saving_if_switch?: number } | null) : null
 
-  /** A brief for the person's CA. Every step comes from this person's own results. */
+  /** A tax summary the person can use themselves or share. Every step comes from their own results. */
   function downloadActionPlan() {
     if (!run) return
     const steps: string[] = []
@@ -106,16 +106,15 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
     if (tds?.claimable_extra_tds) steps.push(`Claim ${formatINR(tds.claimable_extra_tds)} of tax already deducted (shown in your AIS) as credit when you file.`)
     if (tds?.missing_from_ais) steps.push(`Ask your employer whether ${formatINR(tds.missing_from_ais)} of deducted tax was deposited; it is missing from your AIS.`)
     const itr = result('itr_form_tool') as { form?: string } | null
-    if (itr?.form) steps.push(`Likely ITR form: ${itr.form} (assuming salary and interest income only; tell your CA about anything else).`)
+    if (itr?.form) steps.push(`Likely ITR form: ${itr.form} (assuming salary and interest income only; anything else would change this).`)
     const docs = result('filing_readiness_tool') as { missing_descriptions?: string[] } | null
     if (docs?.missing_descriptions?.length) steps.push(`Gather: ${docs.missing_descriptions.join('; ')}.`)
-    steps.push('Take this brief to your chartered accountant for review before you file anything.')
+    steps.push('Keep your documents and investment proofs ready. For capital gains, business income or a tax notice, a CA\'s help is worth it.')
 
     saveTextFile(
-      'Paisa_Pilot_Tax_Checkup_Brief.txt',
-      `PAISA PILOT: TAX CHECK-UP BRIEF (FY 2025-26)\n` +
-        `Prepared from the documents you confirmed. This is a preparation aid, not a chartered accountant.\n` +
-        `The figures are unverified until a CA signs them off, and nothing has been filed.\n\n` +
+      'Paisa_Pilot_Tax_Summary.txt',
+      `PAISA PILOT: TAX CHECK-UP SUMMARY (FY 2025-26)\n` +
+        `Prepared from the documents you confirmed. These are estimates from this year's published rules, not a filing. Nothing has been filed.\n\n` +
         `WHAT WE FOUND\n${run.answer.replace(/•\s*/g, '- ')}\n\n` +
         `SUGGESTED NEXT STEPS\n${steps.map((x, i) => `${i + 1}. ${x}`).join('\n')}\n`,
     )
@@ -134,7 +133,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
         `I would like TDS on my salary for FY 2025-26 to be calculated under the ${regime} tax regime. ` +
         `Please confirm the process and any form you need from me.\n\n` +
         (regime === 'new' && saving
-          ? `My own estimate suggests this could reduce my yearly tax by about ${formatINR(saving)}. I will confirm this with my CA.\n\n`
+          ? `My estimate suggests this could reduce my yearly tax by about ${formatINR(saving)}.\n\n`
           : '') +
         `Name: [Your name]\nEmployee ID: [Your ID]\nDate: ${new Date().toLocaleDateString('en-IN')}\n`,
     )
@@ -185,7 +184,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                   {regimeResult.recommended_regime === 'new'
                     ? `The new tax regime looks cheaper for you${regimeResult.annual_saving_if_switch ? `, by about ${formatINR(regimeResult.annual_saving_if_switch)} a year` : ''}.`
                     : 'Your current tax regime looks like the cheaper one.'}{' '}
-                  Confirm with your CA before you act on it.
+                  Based on your Form 16 and this year's rules.
                 </p>
               </div>
             </div>
@@ -225,7 +224,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                   className="bg-coral text-navy min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
                 >
                   <Icon name="check" size={16} />
-                  Download brief for my CA
+                  Download my tax summary
                 </button>
                 {regimeResult?.recommended_regime && (
                   <button

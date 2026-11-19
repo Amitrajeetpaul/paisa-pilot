@@ -6,14 +6,21 @@ An AI money co-pilot that **finds your money, fixes your leaks, and
 advises you with proof.** Built by **git_happens** for the Google Startup
 Buildathon India 2026.
 
-> ⚠️ **Tax, PF, and other financial figures in this repo need a CA's
-> review before any real use.** `config/rules/fy2025-26.yaml` is marked
-> `ca_review_status: PENDING` -- the slabs and rates were cross-checked
-> against several tax-advisory sources, not verified against a primary
-> government filing. Everything you see from this app, including the
-> live demo, should be treated as **sample/demo-grade**, not advice to
-> act on. See `LIMITATIONS.md` for the full list of what's stubbed,
-> unverified, or out of scope.
+> **Heads-up:** the tax, PF and other figures are estimates from the published
+> FY 2025-26 rules (`config/rules/fy2025-26.yaml`, every figure with its source
+> link). A formal review of those rules by a chartered accountant is planned before
+> public launch; the review pack is ready in `docs/CA_REVIEW.md`. See
+> `LIMITATIONS.md` for what is stubbed or out of scope.
+
+## Do I still need a CA?
+
+For the routine things Paisa Pilot finds, no: switching tax regime, claiming extra
+TDS as credit, transferring an old PF account, cancelling a subscription, moving a
+loan. The app tells you what you are owed or losing and gives you the exact next
+step, and you do it yourself. A CA is worth it for the complex cases the app says it
+does not cover (capital gains, business income, foreign assets, a tax notice). A CA
+partner network is on the roadmap (`docs/ROADMAP.md`), as a partner for those cases,
+not a dependency.
 
 **Live demo:** https://paisa-pilot-web-316611436028.asia-south1.run.app (click *Try with sample data*, no sign-up)
 

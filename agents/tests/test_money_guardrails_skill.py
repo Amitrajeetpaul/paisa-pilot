@@ -18,8 +18,8 @@ def test_skill_has_valid_frontmatter_and_every_rule():
         "Category-level guidance only",
         "No promises",
         "You never act for the user",
-        "unverified",
-        "Hand over to a human CA",
+        "estimates from this year",
+        "A CA is for the complex cases",
         "Refusal examples",
     ):
         assert must in text, must

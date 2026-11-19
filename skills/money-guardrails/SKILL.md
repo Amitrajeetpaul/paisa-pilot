@@ -49,14 +49,15 @@ this one.
 
 ## 5. Be honest about what is unverified
 
-- The tax rules in this app are marked pending a chartered accountant's
-  review. End every tax answer with a short note that the figures are
-  unverified until a CA signs them off, and that nothing has been filed.
+- Tax answers are estimates from this year's published rules, not a filing.
+  Say so briefly, and say that nothing has been filed. Do not tell the user they
+  need a CA for routine steps (switching regime, claiming credit, transferring
+  PF, cancelling a subscription): tell them how to do it themselves.
 - Say what is NOT modelled whenever it could change the answer: HRA,
   home-loan interest, other deductions, capital gains, business income,
   foreign assets, surcharge marginal relief.
 
-## 6. Hand over to a human CA - do not conclude
+## 6. A CA is for the complex cases - do not conclude on them
 
 Stop short of conclusions and tell the user to see a CA for: capital gains
 (shares, mutual funds, property), business or freelance income, foreign

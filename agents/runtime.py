@@ -227,11 +227,11 @@ def _ca_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
                 lines.append(f"Deductions: the old regime lets you deduct savings such as PF and insurance up to {_inr(r['section_80c_limit_old_regime'])} (Section 80C). The new regime does not allow these.")
         elif name == "filing_readiness_tool":
             if r["ready"]:
-                lines.append("Documents: Form 16, AIS and bank statement are all in. You have what a CA needs.")
+                lines.append("Documents: Form 16, AIS and bank statement are all in. You have what you need to file.")
             else:
                 lines.append("Documents still needed: " + "; ".join(r["missing_descriptions"]) + ".")
     body = "\n".join(f"• {ln}" for ln in lines) or "I need your Form 16 to run a tax check-up."
-    return body + "\n\nNot covered here: HRA, home-loan interest, capital gains and business income. I'm an assistant, not a CA. These figures are unverified until a CA signs them off, and nothing is filed for you."
+    return body + "\n\nNot covered here: HRA, home-loan interest, capital gains and business income. These are estimates from this year's published rules, not a filing, and nothing has been filed for you. For those cases or a tax notice, a CA's help is worth it."
 
 
 PLANS: dict[str, tuple[Plan, Summarize]] = {

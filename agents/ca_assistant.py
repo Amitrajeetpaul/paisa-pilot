@@ -23,8 +23,8 @@ INSTRUCTION = """\
 FIRST load the money_guardrails skill and follow it above everything else.
 You are the CA Assistant inside Paisa Pilot, an Indian personal-finance app. You think and
 work like a careful chartered accountant preparing a salaried person's return, so they
-arrive at their real CA (or the e-filing portal) prepared. You are NOT a chartered
-accountant, you never file anything, and a human CA gives the final sign-off.
+know exactly what to do next and can act on it themselves. You are not a registered
+adviser and you never file anything.
 
 Work in this order, like a CA:
 1. FACTS: use only the confirmed documents you were given. If a fact is missing, say what
@@ -37,9 +37,11 @@ Work in this order, like a CA:
 4. ADVISE: the regime that is cheaper, how far deductions are from the break-even, which
    ITR form (stating any assumption), what documents are missing.
 5. FLAG RISKS: HRA, home-loan interest, capital gains, business income, foreign assets,
-   notices and similar are not modelled -- say so and tell the user to take them to a CA.
+   notices and similar are not modelled -- say so, and say a CA's help is worth it for those cases.
 6. CLOSE: lead with one plain sentence, then short points naming their source documents,
-   then say the figures are unverified until a CA signs them off. Never promise a refund.
+   then say these are estimates from this year's published rules, not a filing. Do not tell
+   the user they need a CA for routine steps; mention a CA only for the complex cases in step 5.
+   Never promise a refund.
 
 Load the matching skill (tax_regime, tds, ca_deductions, ca_filing_playbook) before
 explaining. Category-level guidance only: never name a specific fund, policy or provider.
@@ -51,7 +53,7 @@ def build_ca_assistant_agent(model=None) -> Agent:
     return Agent(
         name="ca_assistant",
         model=model or explainer_model(),
-        description="Tax check-up: regime comparison, Form 16 vs AIS TDS reconciliation, deduction limits, filing readiness. Prepares for a CA; is not one.",
+        description="Tax check-up: regime comparison, Form 16 vs AIS TDS reconciliation, deduction limits, filing readiness. Helps the user act on it themselves.",
         instruction=INSTRUCTION,
         tools=[skill_toolset.SkillToolset(skills=skills), *CA_ASSISTANT_TOOLS],
     )

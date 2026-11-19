@@ -25,7 +25,7 @@ def test_ca_assistant_runs_checkup():
         "filing_readiness_tool",
     ]
     assert "₹2,500" in r["answer"]  # AIS extra TDS
-    assert "not a CA" in r["answer"]
+    assert "estimates" in r["answer"] and "need a CA" not in r["answer"]
 
 
 def test_demo_user_new_regime_is_tax_free_so_no_breakeven():
