@@ -16,10 +16,21 @@ from google.genai import types
 from pydantic import BaseModel
 
 from llm.client import generate_structured, reader_model
+from llm.image_enhancer import enhance_document_image
 from llm.prompts import load_reader_prompt
 from llm.schemas import READER_OUTPUT_MODELS
 
 FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures"
+
+_BLUR_RECOVERY_INSTRUCTION = """
+IMPORTANT - BLURRED & SMARTPHONE SCAN RESOLUTION:
+If a digit or character is faint, smudged, or partially blurred by camera shake, glare, or paper creases, use the document's internal mathematical relationships to reconstruct it with 100% certainty:
+- In Payslips: Basic Pay + HRA + Allowances = Gross Pay; Gross Pay - Deductions = Net Pay.
+- In Form 16: Gross Salary - Standard Deduction - Chapter VI-A Deductions = Taxable Income. Total TDS = Sum of Quarters.
+- In Bank Statements: Previous Balance +/- Transaction Amount = Running Balance.
+- In PF Passbooks: Opening Balance + Monthly Contributions + Interest = Closing Balance.
+Never guess; always verify the reconstructed digits against the document's arithmetic totals.
+"""
 
 FIXTURE_FILES = {
     "payslip": "payslip_riya_sharma_apr2026.json",
@@ -47,8 +58,10 @@ def _read_fixture(document_type: str, model_cls: type[BaseModel]) -> BaseModel:
 
 
 def _read_live(document_type: str, file_bytes: bytes, mime_type: str, model_cls: type[BaseModel]) -> BaseModel:
-    system_prompt = load_reader_prompt(document_type)
-    file_part = types.Part.from_bytes(data=file_bytes, mime_type=mime_type)
+    enhanced_bytes, was_enhanced = enhance_document_image(file_bytes, mime_type or "")
+    active_mime = "image/jpeg" if was_enhanced else (mime_type or "application/octet-stream")
+    system_prompt = load_reader_prompt(document_type) + "\n\n" + _BLUR_RECOVERY_INSTRUCTION
+    file_part = types.Part.from_bytes(data=enhanced_bytes, mime_type=active_mime)
     return generate_structured(
         model=reader_model(),
         system_instruction=system_prompt,

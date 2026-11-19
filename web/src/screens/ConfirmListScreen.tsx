@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
+import { ReadWarning } from '../components/ReadWarning'
 import { api } from '../lib/api'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
@@ -210,6 +211,13 @@ export function ConfirmListScreen({ documentType }: { documentType: string }) {
 
       <h1 className="text-navy mt-5 text-2xl font-extrabold">{t(schema.titleKey)}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
+      <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-teal/25 bg-teal/5 p-3.5 text-xs text-navy shadow-xs">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-white font-bold text-xs">✨</span>
+        <div className="leading-snug">
+          <span className="font-bold text-teal">Blur-Proof Vision Active:</span> Smartphone photos are automatically pre-processed (contrast enhancement, unsharp mask sharpening, and deductive arithmetic cross-checking) to recover smudged or blurry numbers.
+        </div>
+      </div>
+      <ReadWarning warnings={(readResult?.warnings as string[] | undefined) ?? []} nothingRead={parsed.rows.length === 0} />
       {checkCount > 0 && (
         <p className="text-navy bg-warning-card border-yellow mt-3 rounded-2xl border p-3 text-sm">
           {checkCount} row(s) need a second look — they are highlighted below.

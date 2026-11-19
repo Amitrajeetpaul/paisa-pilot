@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
+import { ReadWarning } from '../components/ReadWarning'
 import { api } from '../lib/api'
 import type { TranslationKey } from '../locales'
 import { useApp } from '../state/AppContext'
@@ -45,7 +46,7 @@ function FieldConfirmScreen() {
   const location = useLocation()
   const navigate = useNavigate()
   const { t, sessionId } = useApp()
-  const readResult = (location.state as { readResult?: { fields?: FieldsShape } } | null)?.readResult
+  const readResult = (location.state as { readResult?: { fields?: FieldsShape; warnings?: string[] } } | null)?.readResult
 
   const fields = useMemo(() => readResult?.fields ?? {}, [readResult])
   const fieldOrder = documentType === 'form16' ? FORM16_FIELD_ORDER : PAYSLIP_FIELD_ORDER
@@ -120,6 +121,16 @@ function FieldConfirmScreen() {
 
       <h1 className="text-navy mt-5 text-2xl font-extrabold">{t('confirm.title')}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
+      <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-teal/25 bg-teal/5 p-3.5 text-xs text-navy shadow-xs">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-white font-bold text-xs">✨</span>
+        <div className="leading-snug">
+          <span className="font-bold text-teal">Blur-Proof Vision Active:</span> Smartphone photos are automatically pre-processed (contrast enhancement, unsharp mask sharpening, and deductive arithmetic cross-checking) to recover smudged or blurry numbers.
+        </div>
+      </div>
+      <ReadWarning
+        warnings={readResult?.warnings ?? []}
+        nothingRead={fieldOrder.every((k) => fields[k]?.value === null || fields[k]?.value === undefined)}
+      />
 
       <div className="mt-5 flex flex-col gap-3">
         {fieldOrder.map((key) => {
@@ -159,7 +170,9 @@ function FieldConfirmScreen() {
         <Button variant="primary" className="w-full" loading={submitting} onClick={handleConfirm}>
           {t('confirm.confirmButton')}
         </Button>
-        <button className="text-sm font-medium text-white/80 underline">{t('confirm.reupload')}</button>
+        <button onClick={() => navigate('/app/consent')} className="text-sm font-medium text-white/80 underline">
+          {t('confirm.reupload')}
+        </button>
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ endpoints only ever return the AI's raw, per-field-confidence guess.
 
 from __future__ import annotations
 
+import logging
 import os
 
 from fastapi import APIRouter, HTTPException, UploadFile
@@ -14,6 +15,11 @@ from api.db import get_db
 from api.storage import get_storage
 from llm.reader import mime_type_for_filename, read_document
 from llm.schemas import READER_OUTPUT_MODELS
+
+logger = logging.getLogger(__name__)
+
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+ALLOWED_SUFFIXES = (".pdf", ".jpg", ".jpeg", ".png")
 
 router = APIRouter(prefix="/sessions/{session_id}/documents", tags=["documents"])
 
@@ -33,6 +39,26 @@ async def upload_document(session_id: str, document_type: str, file: UploadFile)
     _require_session(session_id)
     _require_document_type(document_type)
     content = await file.read()
+    filename = (file.filename or "").lower()
+    if not filename.endswith(ALLOWED_SUFFIXES):
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "unsupported_file", "message": "Please upload a PDF or a photo (JPG or PNG)."},
+        )
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail={"code": "too_large", "message": "That file is too large. Please upload one under 15 MB."},
+        )
+    if filename.endswith(".pdf") and b"/Encrypt" in content:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "password_protected",
+                "message": "This PDF is password protected, so we can't read it. Remove the password "
+                "(open it, then save or print it as a new PDF) and upload it again.",
+            },
+        )
     key = f"{session_id}/{document_type}/{file.filename}"
     get_storage().save(key, content)
     return {"upload_key": key}
@@ -54,10 +80,21 @@ def read_uploaded_document(session_id: str, document_type: str, body: dict) -> d
             content = get_storage().read(upload_key)
         except FileNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
-        result = read_document(
-            document_type,
-            file_bytes=content,
-            mime_type=mime_type_for_filename(upload_key),
-            mode="live",
-        )
+        try:
+            result = read_document(
+                document_type,
+                file_bytes=content,
+                mime_type=mime_type_for_filename(upload_key),
+                mode="live",
+            )
+        except Exception as exc:
+            logger.exception("Document read failed for %s", document_type)
+            raise HTTPException(
+                status_code=502,
+                detail={
+                    "code": "read_failed",
+                    "message": "We couldn't read this document right now. Please try again in a moment, "
+                    "or upload a clearer copy.",
+                },
+            ) from exc
     return result.model_dump(mode="json")

@@ -5,15 +5,34 @@
 // build time -- see infra/web.Dockerfile and infra/deploy.md.
 const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
+/** The friendly message the API sends for expected problems (locked PDF, unreadable file, ...). */
+export class ApiError extends Error {
+  code?: string
+  constructor(message: string, code?: string) {
+    super(message)
+    this.code = code
+  }
+}
+
+async function apiError(res: Response): Promise<ApiError> {
+  const body = await res.text()
+  try {
+    const detail = JSON.parse(body)?.detail
+    if (detail && typeof detail === 'object' && typeof detail.message === 'string') {
+      return new ApiError(detail.message, detail.code)
+    }
+  } catch {
+    /* not JSON */
+  }
+  return new ApiError(`${res.status} ${res.statusText}: ${body}`)
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
-  if (!res.ok) {
-    const body = await res.text()
-    throw new Error(`${res.status} ${res.statusText}: ${body}`)
-  }
+  if (!res.ok) throw await apiError(res)
   return res.json() as Promise<T>
 }
 
@@ -37,7 +56,7 @@ export const api = {
       method: 'POST',
       body: form,
     })
-    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    if (!res.ok) throw await apiError(res)
     return res.json() as Promise<{ upload_key: string }>
   },
 

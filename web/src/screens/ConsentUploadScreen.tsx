@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
 import { Icon } from '../components/Icon'
 import { Wordmark } from '../components/Logo'
-import { api } from '../lib/api'
+import { api, ApiError } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
 const DOCUMENT_TYPES = [
@@ -62,8 +62,12 @@ export function ConsentUploadScreen() {
       setUploadedKeys((prev) => ({ ...prev, [documentType]: upload_key }))
       const readResult = await api.readDocument(sessionId, documentType, upload_key)
       navigate(`/app/confirm/${documentType}`, { state: { readResult } })
-    } catch {
-      setError('Upload failed. Please try again.')
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : 'Upload failed. Please try again.')
+      setUploadedKeys((prev) => {
+        const { [documentType]: _removed, ...rest } = prev
+        return rest
+      })
     } finally {
       setUploadingType(null)
     }
