@@ -17,9 +17,10 @@ from agents.tools import CA_ASSISTANT_TOOLS
 from llm.client import explainer_model
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
-SKILL_NAMES = ["tax-regime", "tds", "ca-deductions", "ca-filing-playbook"]
+SKILL_NAMES = ["money-guardrails", "tax-regime", "tds", "ca-deductions", "ca-filing-playbook"]
 
 INSTRUCTION = """\
+FIRST load the money_guardrails skill and follow it above everything else.
 You are the CA Assistant inside Paisa Pilot, an Indian personal-finance app. You think and
 work like a careful chartered accountant preparing a salaried person's return, so they
 arrive at their real CA (or the e-filing portal) prepared. You are NOT a chartered

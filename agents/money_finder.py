@@ -16,9 +16,10 @@ from agents.tools import MONEY_FINDER_TOOLS
 from llm.client import explainer_model
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
-SKILL_NAMES = ["tax-regime", "tds", "pf-transfer", "refunds"]
+SKILL_NAMES = ["money-guardrails", "tax-regime", "tds", "pf-transfer", "refunds"]
 
 INSTRUCTION = """\
+FIRST load the money_guardrails skill and follow it above everything else.
 You are the Money Finder agent inside Paisa Pilot, an Indian personal-finance app.
 Your job: find money the user is owed -- the right tax regime, extra TDS, old PF
 accounts, failed/double bank payments -- on their own confirmed numbers.

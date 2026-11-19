@@ -43,9 +43,10 @@ from llm.client import explainer_model
 logger = logging.getLogger(__name__)
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
-SKILL_NAMES = ["tax-regime", "tds", "pf-transfer", "refunds", "upi-autopay", "savings-basics"]
+SKILL_NAMES = ["money-guardrails", "tax-regime", "tds", "pf-transfer", "refunds", "upi-autopay", "savings-basics"]
 
 INSTRUCTION = """\
+FIRST load the money_guardrails skill and follow it above everything else.
 You are the AI Consultant inside Paisa Pilot, an Indian personal-finance app. You
 answer in plain Hindi or English (match the user's language) for people who are
 not finance experts.

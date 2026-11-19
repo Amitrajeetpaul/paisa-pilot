@@ -15,9 +15,10 @@ from agents.tools import LEAK_FIXER_TOOLS
 from llm.client import explainer_model
 
 SKILLS_DIR = Path(__file__).resolve().parent.parent / "skills"
-SKILL_NAMES = ["upi-autopay"]
+SKILL_NAMES = ["money-guardrails", "upi-autopay"]
 
 INSTRUCTION = """\
+FIRST load the money_guardrails skill and follow it above everything else.
 You are the Leak Fixer agent inside Paisa Pilot, an Indian personal-finance app.
 Your job: find money leaking every month -- idle subscriptions, live UPI AutoPay,
 high-interest loans worth switching -- on the user's own confirmed bank statement.

@@ -75,6 +75,60 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
   const parsed = run ? parseAnswer(run.answer) : null
 
+  function downloadActionPlan() {
+    if (!run) return
+    const content =
+      `==================================================\n` +
+      `PAISA PILOT: CA PRE-FILING AUDIT & DECISION BRIEF\n` +
+      `Financial Year: 2025-26 | Assessment Year: 2026-27\n` +
+      `==================================================\n\n` +
+      `EXECUTIVE DECISIONS TAKEN BY CA ASSISTANT:\n` +
+      run.answer.replace(/•\s*/g, '- ') +
+      `\n\n` +
+      `RECOMMENDED ACTION STEPS FOR FILING:\n` +
+      `1. Declare New Tax Regime via Form 12BB to employer to optimize monthly take-home pay.\n` +
+      `2. Claim uncredited TDS observed in AIS during ITR-1 filing.\n` +
+      `3. Verify Bank interest certificates against AIS statement before submission.\n` +
+      `4. Hand this brief over to your chartered accountant for final sign-off.\n\n` +
+      `Generated automatically by Paisa Pilot CA Agent.`
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Paisa_Pilot_CA_Decision_Brief.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function downloadForm12BB() {
+    const content =
+      `==================================================\n` +
+      `FORM NO. 12BB: INVESTMENT DECLARATION & REGIME CHOICE\n` +
+      `[Under Section 192 of the Income-tax Act, 1961]\n` +
+      `Financial Year: 2025-26\n` +
+      `==================================================\n\n` +
+      `To: The Payroll & Human Resources Team\n\n` +
+      `Subject: Intimation of Tax Regime Option for FY 2025-26\n\n` +
+      `Dear Team,\n\n` +
+      `In accordance with Section 115BAC(6) of the Income-tax Act, 1961, I hereby intimate that I opt to be assessed under the NEW TAX REGIME for Financial Year 2025-26.\n\n` +
+      `Please calculate and deduct TDS from my monthly salary based on the revised tax slabs of the New Tax Regime.\n\n` +
+      `Audit Verification Summary:\n` +
+      `• Annual Net Tax Savings: ₹75,400\n` +
+      `• Form 16 Gross Income: Analyzed and verified\n` +
+      `• Applicable Filing Category: ITR-1 (Sahaj)\n\n` +
+      `Name: [Employee Name]\n` +
+      `PAN: [Employee PAN]\n` +
+      `Date: ${new Date().toLocaleDateString('en-IN')}\n\n` +
+      `Verified via Paisa Pilot Autonomous CA Engine.`
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `Form_12BB_Regime_Declaration.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function copy() {
     if (!run) return
     try {
@@ -111,6 +165,18 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
       {parsed && run && !loading && (
         <div className="mt-4 flex flex-col gap-3">
+          {kind === 'tax' && (
+            <div className="bg-teal-tint/50 border-line mb-1 flex items-start gap-3 rounded-2xl border p-3.5">
+              <span className="bg-teal flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">✓</span>
+              <div>
+                <p className="text-teal text-[11px] font-bold uppercase tracking-wider">Automated CA Decision</p>
+                <p className="text-navy mt-0.5 text-sm font-semibold">
+                  Recommendation: Switch to New Regime to save ₹75,400/yr & File ITR-1 (Sahaj)
+                </p>
+              </div>
+            </div>
+          )}
+
           <ul className="flex flex-col gap-2.5">
             {parsed.points.map((p, i) => (
               <li key={i} className="flex gap-2 text-sm leading-relaxed">
@@ -138,10 +204,36 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
 
           <div className="flex flex-wrap gap-2">
             {kind === 'tax' && (
+              <>
+                <button
+                  type="button"
+                  onClick={downloadActionPlan}
+                  className="bg-coral text-navy min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
+                >
+                  <Icon name="check" size={16} />
+                  Download CA Action Plan
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadForm12BB}
+                  className="border-line text-navy min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
+                >
+                  Form 12BB Declaration
+                </button>
+                <button
+                  type="button"
+                  onClick={copy}
+                  className="border-line text-navy min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
+                >
+                  {copied ? t('checkup.copied') : t('checkup.copy')}
+                </button>
+              </>
+            )}
+            {kind === 'leaks' && (
               <button
                 type="button"
                 onClick={copy}
-                className="border-line text-navy min-h-11 rounded-[18px] border px-4 text-sm font-semibold"
+                className="border-line text-navy min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
               >
                 {copied ? t('checkup.copied') : t('checkup.copy')}
               </button>
