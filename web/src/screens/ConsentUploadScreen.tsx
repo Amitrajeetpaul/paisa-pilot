@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { Icon } from '../components/Icon'
 import { Wordmark } from '../components/Logo'
 import { api } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
 const DOCUMENT_TYPES = [
-  { type: 'payslip', labelKey: 'upload.payslip' as const, icon: '📄' },
-  { type: 'form16', labelKey: 'upload.form16' as const, icon: '🧾' },
-  { type: 'bank_statement', labelKey: 'upload.bankStatement' as const, icon: '🏦' },
-  { type: 'pf_passbook', labelKey: 'upload.pfPassbook' as const, icon: '📘' },
-  { type: 'ais', labelKey: 'upload.ais' as const, icon: '📊' },
+  { type: 'payslip', labelKey: 'upload.payslip' as const, icon: 'file' },
+  { type: 'form16', labelKey: 'upload.form16' as const, icon: 'receipt' },
+  { type: 'bank_statement', labelKey: 'upload.bankStatement' as const, icon: 'bank' },
+  { type: 'pf_passbook', labelKey: 'upload.pfPassbook' as const, icon: 'book' },
+  { type: 'ais', labelKey: 'upload.ais' as const, icon: 'chart' },
 ] as const
 
 export function ConsentUploadScreen() {
@@ -123,9 +124,7 @@ export function ConsentUploadScreen() {
             {DOCUMENT_TYPES.map((doc) => (
               <div key={doc.type} className="border-line flex items-center justify-between gap-3 rounded-2xl border p-3">
                 <div className="flex items-center gap-3">
-                  <span aria-hidden="true" className="text-xl">
-                    {doc.icon}
-                  </span>
+                  <span className="bg-icon-tile text-coral-dark flex h-10 w-10 items-center justify-center rounded-xl"><Icon name={doc.icon} size={20} /></span>
                   <span className="text-navy text-sm font-semibold">{t(doc.labelKey)}</span>
                 </div>
                 {uploadedKeys[doc.type] ? (

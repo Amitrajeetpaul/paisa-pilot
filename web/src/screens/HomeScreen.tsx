@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import type { IconName } from '../components/Icon'
+import { DocumentsCard } from '../components/DocumentsCard'
+import { CardSkeleton } from '../components/Skeleton'
 import { CheckupCard } from '../components/CheckupCard'
 import { CountUp } from '../components/CountUp'
 import { ResultCard } from '../components/ResultCard'
@@ -11,11 +14,12 @@ import { greetingForNow } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
 import { useApp } from '../state/AppContext'
 
-const ICONS: Record<string, string> = {
-  tax_regime_switch: '🧾',
-  extra_tds_refund: '💸',
-  old_pf_accounts: '📘',
-  refund_hunter: '🔁',
+const ICONS: Record<string, IconName> = {
+  tax_regime_switch: 'receipt',
+  extra_tds_refund: 'percent',
+  ais_extra_tds: 'percent',
+  old_pf_accounts: 'book',
+  refund_hunter: 'repeat',
 }
 
 export function HomeScreen() {
@@ -80,17 +84,24 @@ export function HomeScreen() {
         </div>
       </div>
 
+      {sessionId && <DocumentsCard sessionId={sessionId} />}
+
       <p className="text-muted mt-6 text-xs font-bold uppercase tracking-wide">
         {t('home.sectionLabel')} · {result?.cards.length ?? 0}
       </p>
 
       <div className="mt-3 flex flex-col gap-4">
-        {loading && <p className="text-muted text-sm">{t('common.loading')}</p>}
+        {loading && (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        )}
         {!loading && result && result.cards.length === 0 && <p className="text-muted text-sm">{t('home.empty')}</p>}
         {result?.cards.map((card) => (
           <ResultCard
             key={card.card_id}
-            icon={ICONS[card.card_id] ?? '💰'}
+            icon={ICONS[card.card_id] ?? 'wallet'}
             title={card.title}
             detail={card.detail}
             amount={card.amount}

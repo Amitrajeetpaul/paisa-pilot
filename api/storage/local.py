@@ -30,6 +30,16 @@ class LocalUploadStorage(UploadStorage):
     def delete(self, key: str) -> None:
         self._path(key).unlink(missing_ok=True)
 
+    def delete_prefix(self, prefix: str) -> int:
+        import shutil
+
+        target = (self._dir / prefix.rstrip("/")).resolve()
+        if self._dir.resolve() not in target.parents or not target.exists():
+            return 0
+        count = sum(1 for p in target.rglob("*") if p.is_file())
+        shutil.rmtree(target, ignore_errors=True)
+        return count
+
     def delete_expired(self, ttl_hours: int) -> int:
         cutoff = time.time() - ttl_hours * 3600
         deleted = 0

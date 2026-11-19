@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Icon } from './Icon'
 import { api, type AgentRunResult } from '../lib/api'
 import { useApp } from '../state/AppContext'
 
@@ -113,9 +114,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
           <ul className="flex flex-col gap-2.5">
             {parsed.points.map((p, i) => (
               <li key={i} className="flex gap-2 text-sm leading-relaxed">
-                <span aria-hidden="true" className="text-teal mt-0.5">
-                  ✓
-                </span>
+                <Icon name="check" size={16} className="text-teal mt-1 shrink-0" />
                 <span className="text-navy">
                   {p.label && <strong className="font-bold">{p.label}: </strong>}
                   {p.text}

@@ -104,3 +104,9 @@ class SqliteDatabase(AppDatabase):
                 (session_id,),
             ).fetchall()
         return {card_id: json.loads(entry_json) for card_id, entry_json in rows}
+
+    def delete_session(self, session_id: str) -> None:
+        with self._lock:
+            for table, col in (("source_trail", "session_id"), ("confirmed_fields", "session_id"), ("sessions", "id")):
+                self._conn.execute(f"DELETE FROM {table} WHERE {col} = ?", (session_id,))
+            self._conn.commit()

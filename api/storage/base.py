@@ -31,3 +31,7 @@ class UploadStorage(ABC):
         the same "auto-delete uploads soon after use" rule without a real
         bucket. See DECISIONS.md.
         """
+
+    @abstractmethod
+    def delete_prefix(self, prefix: str) -> int:
+        """Delete every upload whose key starts with prefix; returns how many."""

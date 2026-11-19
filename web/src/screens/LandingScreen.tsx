@@ -1,21 +1,21 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { Icon, type IconName } from '../components/Icon'
 import { Wordmark } from '../components/Logo'
 
 const PROBLEMS = [
   {
-    icon: '💰',
+    icon: 'wallet' as IconName,
     title: 'Money you are owed but never claim',
     body: 'Old PF accounts from past jobs, extra tax cut (TDS), the wrong tax option, failed or double-paid refunds.',
   },
   {
-    icon: '🩹',
+    icon: 'droplet' as IconName,
     title: 'Money that leaks every month',
     body: 'Forgotten subscriptions, old UPI AutoPay still running, hidden fees and costly phone plans, loans with high interest.',
   },
   {
-    icon: '🧭',
+    icon: 'compass' as IconName,
     title: 'Money choices nobody taught',
     body: 'Old or new tax option, how much to save, where to put extra money (SIP, FD or PPF), what type of insurance, payslip and Form 16 jargon.',
   },
@@ -46,8 +46,6 @@ const COMPETITION = [
 ]
 
 export function LandingScreen() {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
 
   return (
     <div className="text-navy">
@@ -77,13 +75,48 @@ export function LandingScreen() {
           Many Indians, working or retired, young, middle-aged and old, manage money without anyone checking whether
           they are making the most of it.
         </p>
-        <div className="mt-8 flex justify-center gap-4">
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link to="/app/consent">
             <Button variant="primary">Try with sample data</Button>
           </Link>
           <a href="#problems">
             <Button variant="outline">See the problem</Button>
           </a>
+        </div>
+        <p className="text-muted mt-4 flex items-center justify-center gap-2 text-sm">
+          <Icon name="lock" size={14} /> No sign-up. Nothing is filed or sent without you. Delete your data anytime.
+        </p>
+
+        <div className="mx-auto mt-12 max-w-md text-left" aria-label="Product preview">
+          <div className="bg-hero-card rounded-[28px] p-6 text-white shadow-2xl">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/80">Money found for you</span>
+              <span className="bg-yellow text-navy rounded-full px-2.5 py-0.5 text-xs font-bold">SAMPLE</span>
+            </div>
+            <div className="mt-2 text-5xl font-extrabold tracking-tight">₹2,13,700</div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-white/10 p-3">
+                <div className="text-lg font-bold">₹75,400</div>
+                <div className="text-xs text-white/70">every year</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-3">
+                <div className="text-lg font-bold">₹1,38,300</div>
+                <div className="text-xs text-white/70">one-time, if confirmed</div>
+              </div>
+            </div>
+          </div>
+          <div className="border-line -mt-3 mx-4 rounded-[20px] border bg-white p-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="bg-icon-tile text-coral-dark flex h-10 w-10 items-center justify-center rounded-xl">
+                <Icon name="book" size={20} />
+              </span>
+              <div className="flex-1">
+                <p className="text-navy text-sm font-bold">Old PF account found</p>
+                <p className="text-muted text-xs">2 accounts from past employers, not transferred</p>
+              </div>
+              <span className="text-navy text-lg font-extrabold">₹1,11,300</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -104,7 +137,9 @@ export function LandingScreen() {
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {PROBLEMS.map((p) => (
             <div key={p.title} className="border-line rounded-[20px] border bg-white p-6">
-              <div className="bg-icon-tile flex h-12 w-12 items-center justify-center rounded-2xl text-2xl">{p.icon}</div>
+              <div className="bg-icon-tile text-coral-dark flex h-12 w-12 items-center justify-center rounded-2xl">
+                <Icon name={p.icon} size={24} />
+              </div>
               <h3 className="mt-4 text-lg font-bold">{p.title}</h3>
               <p className="text-muted mt-2 text-sm leading-relaxed">{p.body}</p>
             </div>
@@ -149,10 +184,10 @@ export function LandingScreen() {
         <h2 className="text-center text-3xl font-extrabold">Trust by design</h2>
         <ul className="text-muted mx-auto mt-6 max-w-2xl list-disc space-y-2 pl-6 text-sm">
           <li>AI reads and explains. Tested rules do the maths — same input, same answer, every time.</li>
-          <li>Tap any number to see its source: inputs used, rule, config version, official link.</li>
+          <li>Tap any number to see how we got it: what we used, the rule, and the official source.</li>
           <li>Nothing runs until you confirm it.</li>
           <li>We never file, move money, or touch your bank without you.</li>
-          <li>Consent first, encrypted, uploads auto-deleted within 24 hours.</li>
+          <li>Consent first, encrypted, uploads auto-deleted within 24 hours. Delete everything yourself anytime.</li>
         </ul>
         <p className="text-navy mx-auto mt-6 max-w-2xl rounded-2xl bg-[var(--color-warn-tint)] p-4 text-center text-sm font-medium">
           {"We don't claim results yet — impact will be measured in a real pilot."}
@@ -186,32 +221,16 @@ export function LandingScreen() {
       </section>
 
       <section className="bg-navy px-6 py-16 text-center text-white">
-        <h2 className="text-3xl font-extrabold">Join the pilot</h2>
-        <p className="mt-2 text-white/80">Be one of the first to try Paisa Pilot with your own numbers.</p>
-        {submitted ? (
-          <p className="text-teal mt-6 font-semibold">Thanks — we'll be in touch.</p>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              setSubmitted(true)
-            }}
-            className="mx-auto mt-6 flex max-w-md flex-col gap-3 sm:flex-row"
-          >
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@email.com"
-              aria-label="Email address"
-              className="min-h-11 flex-1 rounded-[18px] border-0 px-4 text-navy outline-none"
-            />
-            <Button type="submit" variant="primary">
-              Join the pilot
-            </Button>
-          </form>
-        )}
+        <h2 className="text-3xl font-extrabold">See what you are missing</h2>
+        <p className="mt-2 text-white/80">Try it on a sample profile in one click, or add your own documents.</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to="/app/consent">
+            <Button variant="primary">Try with sample data</Button>
+          </Link>
+          <Link to="/app/consent">
+            <Button variant="outline">Use my own documents</Button>
+          </Link>
+        </div>
       </section>
 
       <footer className="text-muted px-6 py-8 text-center text-xs">

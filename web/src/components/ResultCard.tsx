@@ -1,10 +1,11 @@
 import { Button } from './Button'
 import { SourceChip } from './Chip'
+import type { IconName } from './Icon'
 import { IconTile } from './IconTile'
 import { formatINR } from '../lib/format'
 
 interface ResultCardProps {
-  icon: string
+  icon: IconName
   title: string
   detail: string
   amount: number

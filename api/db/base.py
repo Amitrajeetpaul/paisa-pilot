@@ -36,3 +36,7 @@ class AppDatabase(ABC):
 
     @abstractmethod
     def list_source_trail(self, session_id: str) -> dict[str, dict]: ...
+
+    @abstractmethod
+    def delete_session(self, session_id: str) -> None:
+        """Permanently remove the session and everything saved under it."""

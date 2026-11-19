@@ -36,6 +36,12 @@ class GcsUploadStorage(UploadStorage):
     def delete(self, key: str) -> None:
         self._bucket.blob(key).delete(timeout=30)
 
+    def delete_prefix(self, prefix: str) -> int:
+        blobs = list(self._client.list_blobs(self._bucket, prefix=prefix))
+        for blob in blobs:
+            blob.delete(timeout=30)
+        return len(blobs)
+
     def delete_expired(self, ttl_hours: int) -> int:
         return 0  # handled server-side by the bucket's lifecycle rule
 

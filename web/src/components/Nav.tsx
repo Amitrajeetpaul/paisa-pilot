@@ -1,12 +1,13 @@
 import { NavLink } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
+import { Icon, type IconName } from './Icon'
 import { Wordmark } from './Logo'
 
-const NAV_ITEMS = [
-  { to: '/app/home', icon: '🔎', key: 'nav.find' as const },
-  { to: '/app/fix', icon: '🛠️', key: 'nav.fix' as const },
-  { to: '/app/advise', icon: '💬', key: 'nav.advise' as const },
-] as const
+const NAV_ITEMS: { to: string; icon: IconName; key: 'nav.find' | 'nav.fix' | 'nav.advise' }[] = [
+  { to: '/app/home', icon: 'search', key: 'nav.find' },
+  { to: '/app/fix', icon: 'wrench', key: 'nav.fix' },
+  { to: '/app/advise', icon: 'chat', key: 'nav.advise' },
+]
 
 export function BottomNav() {
   const { t } = useApp()
@@ -25,9 +26,7 @@ export function BottomNav() {
             }`
           }
         >
-          <span aria-hidden="true" className="text-base">
-            {item.icon}
-          </span>
+          <Icon name={item.icon} size={20} />
           {t(item.key)}
         </NavLink>
       ))}
@@ -55,7 +54,7 @@ export function SideNav() {
             }`
           }
         >
-          <span aria-hidden="true">{item.icon}</span>
+          <Icon name={item.icon} size={20} />
           {t(item.key)}
         </NavLink>
       ))}

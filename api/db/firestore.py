@@ -73,6 +73,14 @@ class FirestoreDatabase(AppDatabase):
         return {doc.id: doc.to_dict() for doc in docs}
 
 
+    def delete_session(self, session_id: str) -> None:
+        session_ref = self._client.collection("sessions").document(session_id)
+        for sub in ("confirmed_fields", "source_trail"):
+            for doc in session_ref.collection(sub).stream():
+                doc.reference.delete()
+        session_ref.delete()
+
+
 def _utc_now_iso() -> str:
     from datetime import UTC, datetime
 

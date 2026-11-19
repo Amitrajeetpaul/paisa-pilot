@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CardSkeleton } from '../components/Skeleton'
 import { CheckupCard } from '../components/CheckupCard'
 import { Button } from '../components/Button'
 import { SourceChip } from '../components/Chip'
@@ -52,7 +53,12 @@ export function FixScreen() {
       </p>
 
       <div className="mt-3 flex flex-col gap-4">
-        {loading && <p className="text-muted text-sm">{t('common.loading')}</p>}
+        {loading && (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        )}
         {errorMessage && <p className="text-muted text-sm">{errorMessage}</p>}
         {!loading && result && result.cards.length === 0 && <p className="text-muted text-sm">{t('fix.empty')}</p>}
         {result?.cards.map((card) => (

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { useApp } from '../state/AppContext'
+import { AccountMenu } from './AccountMenu'
 import { Wordmark } from './Logo'
 import { BottomNav, SideNav } from './Nav'
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { t, language, setLanguage, largeText, setLargeText, displayName } = useApp()
-  const avatarInitial = displayName ? displayName.charAt(0).toUpperCase() : '👤'
+  const { t, language, setLanguage, largeText, setLargeText } = useApp()
 
   return (
     <div className="flex min-h-screen">
@@ -20,9 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               {t('common.language')}
             </button>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-rose bg-white text-sm font-bold text-navy">
-              {avatarInitial}
-            </div>
+            <AccountMenu />
           </div>
         </header>
 
@@ -40,9 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {t('common.language')}
           </button>
-          <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-rose bg-white text-sm font-bold text-navy">
-            {avatarInitial}
-          </div>
+          <AccountMenu />
         </div>
 
         <main className="flex-1 px-4 pb-24 md:px-8 md:pb-10">{children}</main>

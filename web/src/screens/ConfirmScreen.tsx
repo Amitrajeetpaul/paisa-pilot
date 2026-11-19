@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../components/Button'
+import { Icon } from '../components/Icon'
 import { StatusChip } from '../components/Chip'
 import { api } from '../lib/api'
 import type { TranslationKey } from '../locales'
@@ -152,9 +153,7 @@ function FieldConfirmScreen() {
 
       <div className="bg-bottom-panel sticky bottom-0 mt-6 -mx-5 flex flex-col gap-3 rounded-t-[28px] p-5 md:mx-0 md:rounded-[28px]">
         <div className="flex items-center gap-2 text-sm text-white/90">
-          <span aria-hidden="true" className="text-teal">
-            🔒
-          </span>
+          <Icon name="lock" size={16} className="text-teal" />
           {t('confirm.lockLine')}
         </div>
         <Button variant="primary" className="w-full" loading={submitting} onClick={handleConfirm}>

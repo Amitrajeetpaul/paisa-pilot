@@ -68,6 +68,9 @@ export const api = {
       body: JSON.stringify({ question: question ?? null }),
     }),
 
+  deleteMyData: (sessionId: string) =>
+    request<{ deleted: boolean; uploads_deleted: number }>(`/sessions/${sessionId}`, { method: 'DELETE' }),
+
   getSourceTrail: (sessionId: string, cardId: string) =>
     request<SourceTrailEntry>(`/sessions/${sessionId}/source-trail/${cardId}`),
 
