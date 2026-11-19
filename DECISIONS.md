@@ -149,6 +149,34 @@ by then, update this log.
   extended to chart data -- better to show real data for however many
   months exist than fabricate placeholders to hit a specific bar count.
 
+### 2026-11-19 — browser verification found and fixed two real bugs
+No `claude-in-chrome` extension was connected in this environment, so I
+used `playwright-core` pointed at the machine's installed Google Chrome
+(`/Applications/Google Chrome.app`) to drive the real dev servers
+end-to-end (consent → sample data → Home → Fix → Advise chat, mobile and
+desktop viewports) and screenshot every step. This caught two real bugs
+unit tests didn't:
+- `api/db/sqlite.py` shared one `sqlite3` connection across FastAPI's
+  threadpool with no lock. React StrictMode's dev-mode double-effect-fire
+  sent two concurrent `POST /calculate/money-finder` requests for the same
+  session, racing on `self._conn.commit()` and raising a raw `SystemError`
+  from the C extension (visible as two unexplained 500s in the browser
+  console, not from any test). Fixed with an instance-level
+  `threading.Lock` around every method body.
+- `LeakBarChart`'s bars were invisible: they were filled `bg-coral`
+  sitting on the Leak Fixer hero's amber-to-coral gradient, and the bar's
+  percentage `height` resolved against a parent with no explicit height
+  (flex `items-end` sizes children to content, not the row height), so it
+  collapsed to 0 regardless of color. Fixed both: bars now fill `bg-navy`
+  (the hero's own established text color, so it's provably readable
+  against that background) inside a fixed-height track div the
+  percentage height can actually resolve against.
+**Why this matters for the repo:** neither bug was visible from Python
+tests, `tsc`, or `vite build` -- all of those passed the whole time. A
+screenshot-driven pass is the only check in this project that would catch
+either, which is why it's listed as a real Milestone-2 step rather than
+an optional nice-to-have.
+
 ---
 
 ## Things I will NOT decide unilaterally (will check first)
