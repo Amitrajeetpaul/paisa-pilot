@@ -3,7 +3,6 @@ import { useApp } from '../state/AppContext'
 import { Wordmark } from './Logo'
 
 const NAV_ITEMS = [
-  { to: '/app/home', icon: '🏠', key: 'nav.home' as const },
   { to: '/app/home', icon: '🔎', key: 'nav.find' as const },
   { to: '/app/fix', icon: '🛠️', key: 'nav.fix' as const },
   { to: '/app/advise', icon: '💬', key: 'nav.advise' as const },

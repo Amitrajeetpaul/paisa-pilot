@@ -22,7 +22,7 @@ const en = {
 
   'consent.title': 'Before you upload',
   'consent.body':
-    'We read your payslip, Form 16, bank statement or PF passbook to find money you are owed and leaks you can fix. Your photo is deleted within 24 hours. We keep only the values you confirm, encrypted. We never file anything or move money without you.',
+    'We read your payslip, Form 16, bank statement, PF passbook or AIS to find money you are owed and leaks you can fix. Your photo is deleted within 24 hours. We keep only the values you confirm, encrypted. We never file anything or move money without you.',
   'consent.checkbox': 'I understand and agree',
   'consent.continue': 'Continue',
   'consent.langToggleHint': 'Choose your language',

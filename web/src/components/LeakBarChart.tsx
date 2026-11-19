@@ -35,14 +35,16 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
                   </div>
                 )}
                 <div
-                  className="bg-navy w-full cursor-default rounded-t-[4px] transition-opacity"
-                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.8 }}
+                  className="bg-navy flex w-full cursor-default items-start justify-center rounded-t-[4px] pt-1.5 text-xs font-bold text-white transition-opacity"
+                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.85 }}
                   onMouseEnter={() => setHovered(month)}
                   onMouseLeave={() => setHovered(null)}
                   tabIndex={0}
                   onFocus={() => setHovered(month)}
                   onBlur={() => setHovered(null)}
-                />
+                >
+                  {formatINR(value)}
+                </div>
               </div>
               <span className="text-navy text-xs font-semibold">{monthLabel(month)}</span>
             </div>

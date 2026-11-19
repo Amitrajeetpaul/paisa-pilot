@@ -52,6 +52,17 @@ export function buildDraftText(card: Pick<MoneyFinderCard, 'card_id' | 'title' |
     }
   }
 
+  if (id.startsWith('loan_')) {
+    return {
+      heading: 'Ask your lender about a lower rate',
+      body:
+        `To: ${card.title}\n\nSubject: Request for foreclosure statement and interest-rate review\n\n` +
+        `I pay ${formatINR(card.amount)}/month towards this loan. Please share: (1) my outstanding principal, ` +
+        `(2) my current interest rate, (3) foreclosure / prepayment charges, and (4) whether you can offer a lower rate ` +
+        `or a balance-transfer option.\n\nI will compare this with other lenders' quotes before deciding.\n\n[Your name / loan account number]`,
+    }
+  }
+
   return {
     heading: card.title,
     body: `${card.detail}\n\nAmount: ${formatINR(card.amount)}`,
