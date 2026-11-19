@@ -47,77 +47,85 @@ export function FixScreen() {
   const segments: Segment[] = leakCards.map((c) => ({ label: prettyMerchant(c.title), amount: c.amount, tone: look(c.card_id).tone }))
 
   return (
-    <div className="mx-auto max-w-2xl py-5 sm:py-7">
+    <div className="mx-auto max-w-6xl py-5 sm:py-7">
       <p className="text-muted text-sm font-medium">Fix</p>
       <h1 className="text-ink text-2xl font-extrabold leading-tight tracking-tight">Stop the leaks</h1>
 
-      <div className="bg-leak-hero animate-card-entrance mt-4 rounded-[20px] p-5 text-white sm:p-6">
-        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
-        <div className="mt-1 flex items-end gap-2">
-          <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
-            {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
+      <div className="mt-4 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
+        {/* Left Column: Leak Hero & Things to Fix */}
+        <div className="lg:col-span-7 xl:col-span-7">
+          <div className="bg-leak-hero animate-card-entrance rounded-[20px] p-5 text-white sm:p-6">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
+            <div className="mt-1 flex items-end gap-2">
+              <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
+                {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
+              </div>
+              <span className="pb-1.5 text-sm font-semibold text-white/70">{t('fix.monthLabel')}</span>
+            </div>
+            {result && result.annual_leak_total > 0 && (
+              <p className="mt-2 inline-block rounded-md bg-white/15 px-2.5 py-1 text-xs font-semibold">
+                That is {formatINR(result.annual_leak_total)} a year
+              </p>
+            )}
+
+            {result && result.cards.length > 0 && (
+              <div className="mt-5">
+                <LeakBarChart data={result.monthly_breakdown} />
+              </div>
+            )}
+            {segments.length > 1 && (
+              <div className="mt-5">
+                <BreakdownBar segments={segments} dark />
+              </div>
+            )}
           </div>
-          <span className="pb-1.5 text-sm font-semibold text-white/70">{t('fix.monthLabel')}</span>
+
+          <TrustStrip />
+
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="section-label">Things to fix</h2>
+            {result && result.cards.length > 0 && (
+              <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
+            )}
+          </div>
+
+          <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
+            {loading && (
+              <>
+                <CardSkeleton />
+                <CardSkeleton />
+              </>
+            )}
+            {errorMessage && <p className="text-muted p-4 text-sm">{errorMessage}</p>}
+            {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('fix.empty')}</p>}
+            {result?.cards.map((card) => {
+              const l = look(card.card_id)
+              return (
+                <ResultRow
+                  key={card.card_id}
+                  icon={l.icon}
+                  tone={l.tone}
+                  title={prettyMerchant(card.title)}
+                  subtitle={card.detail}
+                  amount={card.amount}
+                  unitLabel={card.unit_label}
+                  badge={card.status_label ? (card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')) : null}
+                  badgeTone={card.status_label === 'idle' ? 'warn' : 'ok'}
+                  onOpen={() => {
+                    setActive(card)
+                    drawer.open(card.card_id)
+                  }}
+                />
+              )
+            })}
+          </div>
         </div>
-        {result && result.annual_leak_total > 0 && (
-          <p className="mt-2 inline-block rounded-md bg-white/15 px-2.5 py-1 text-xs font-semibold">
-            That is {formatINR(result.annual_leak_total)} a year
-          </p>
-        )}
 
-        {result && result.cards.length > 0 && (
-          <div className="mt-5">
-            <LeakBarChart data={result.monthly_breakdown} />
-          </div>
-        )}
-        {segments.length > 1 && (
-          <div className="mt-5">
-            <BreakdownBar segments={segments} dark />
-          </div>
-        )}
+        {/* Right Column: AI Assistant Leaks Explanation (Sticky on Desktop) */}
+        <div className="mt-6 flex flex-col gap-6 lg:sticky lg:top-20 lg:col-span-5 lg:mt-0 xl:col-span-5">
+          {sessionId && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="leaks" />}
+        </div>
       </div>
-
-      <TrustStrip />
-
-      <div className="mt-6 flex items-center justify-between">
-        <h2 className="section-label">Things to fix</h2>
-        {result && result.cards.length > 0 && (
-          <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
-        )}
-      </div>
-
-      <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
-        {loading && (
-          <>
-            <CardSkeleton />
-            <CardSkeleton />
-          </>
-        )}
-        {errorMessage && <p className="text-muted p-4 text-sm">{errorMessage}</p>}
-        {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('fix.empty')}</p>}
-        {result?.cards.map((card) => {
-          const l = look(card.card_id)
-          return (
-            <ResultRow
-              key={card.card_id}
-              icon={l.icon}
-              tone={l.tone}
-              title={prettyMerchant(card.title)}
-              subtitle={card.detail}
-              amount={card.amount}
-              unitLabel={card.unit_label}
-              badge={card.status_label ? (card.status_label === 'idle' ? t('fix.status.idle') : t('fix.status.active')) : null}
-              badgeTone={card.status_label === 'idle' ? 'warn' : 'ok'}
-              onOpen={() => {
-                setActive(card)
-                drawer.open(card.card_id)
-              }}
-            />
-          )
-        })}
-      </div>
-
-      {sessionId && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="leaks" />}
 
       <SourceDrawer
         entry={drawer.entry}

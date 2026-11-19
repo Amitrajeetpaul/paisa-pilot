@@ -53,7 +53,7 @@ export function AdviseScreen() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col py-6" style={{ minHeight: 'calc(100vh - 7rem)' }}>
+    <div className="mx-auto flex max-w-4xl flex-col py-6" style={{ minHeight: 'calc(100vh - 7rem)' }}>
       <h1 className="text-ink text-2xl font-extrabold tracking-tight">{t('advise.title')}</h1>
 
       <div className="mt-4 flex flex-1 flex-col gap-3 overflow-y-auto">

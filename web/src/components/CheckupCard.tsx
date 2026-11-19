@@ -216,30 +216,30 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
             </details>
           )}
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2.5">
             {kind === 'tax' && (
               <>
                 <button
                   type="button"
                   onClick={downloadActionPlan}
-                  className="bg-coral text-ink min-h-11 rounded-[18px] px-4 text-sm font-semibold hover:opacity-90 flex items-center gap-1.5"
+                  className="bg-coral text-navy min-h-11 rounded-[18px] px-4 py-2 text-sm font-bold hover:opacity-90 flex items-center justify-center gap-1.5 w-full sm:w-auto text-center"
                 >
                   <Icon name="check" size={16} />
-                  Download my tax summary
+                  Download CA Action Plan
                 </button>
                 {regimeResult?.recommended_regime && (
                   <button
                     type="button"
                     onClick={downloadRegimeMessage}
-                    className="border-line text-ink min-h-11 rounded-[18px] border bg-cream px-4 text-sm font-semibold hover:border-coral"
+                    className="border-line text-ink min-h-11 rounded-[18px] border bg-cream px-4 py-2 text-sm font-semibold hover:border-coral flex items-center justify-center w-full sm:w-auto text-center"
                   >
-                    Draft message to employer
+                    Form 12BB Declaration
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={copy}
-                  className="border-line text-ink min-h-11 rounded-[18px] border px-4 text-sm font-semibold hover:bg-black/5"
+                  className="border-line text-ink min-h-11 rounded-[18px] border px-4 py-2 text-sm font-semibold hover:bg-black/5 flex items-center justify-center w-full sm:w-auto text-center"
                 >
                   {copied ? t('checkup.copied') : t('checkup.copy')}
                 </button>

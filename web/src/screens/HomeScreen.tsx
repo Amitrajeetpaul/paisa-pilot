@@ -67,7 +67,7 @@ export function HomeScreen() {
     .map((c) => ({ label: LOOK[c.card_id].label, amount: c.amount, tone: LOOK[c.card_id].tone }))
 
   return (
-    <div className="mx-auto max-w-2xl py-5 sm:py-7">
+    <div className="mx-auto max-w-6xl py-5 sm:py-7">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-muted text-sm font-medium">{t(`home.greeting.${greetingForNow()}`)}</p>
@@ -76,70 +76,77 @@ export function HomeScreen() {
         {sampleData && <SampleDataTag />}
       </div>
 
-      <div className="bg-hero-card animate-card-entrance mt-4 rounded-[20px] p-5 text-white sm:p-6">
-        <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('home.heroTitle')}</span>
-        <div className="tabular mt-1 text-[44px] font-extrabold leading-none sm:text-5xl">
-          {result ? <CountUp value={result.total_found} /> : formatINR(0)}
+      <div className="mt-4 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
+        {/* Left Column: Hero & Findings */}
+        <div className="lg:col-span-7 xl:col-span-7">
+          <div className="bg-hero-card animate-card-entrance rounded-[20px] p-5 text-white sm:p-6">
+            <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('home.heroTitle')}</span>
+            <div className="tabular mt-1 text-[44px] font-extrabold leading-none sm:text-5xl">
+              {result ? <CountUp value={result.total_found} /> : formatINR(0)}
+            </div>
+            <div className="mt-4 flex gap-2.5">
+              <div className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2.5">
+                <div className="tabular text-base sm:text-lg font-bold truncate">{result ? formatINR(result.yearly_total) : '—'}</div>
+                <div className="text-[11px] text-white/70 truncate">{t('home.heroYearly')}</div>
+              </div>
+              <div className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2.5">
+                <div className="tabular text-base sm:text-lg font-bold truncate">{result ? formatINR(result.one_time_total) : '—'}</div>
+                <div className="text-[11px] text-white/70 truncate">{t('home.heroOneTime')}</div>
+              </div>
+            </div>
+            {segments.length > 0 && (
+              <div className="mt-5">
+                <BreakdownBar segments={segments} dark />
+              </div>
+            )}
+          </div>
+
+          <QuickActions />
+          <TrustStrip />
+
+          <div className="mt-6 flex items-center justify-between">
+            <h2 className="section-label">Found for you</h2>
+            {result && result.cards.length > 0 && (
+              <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
+            )}
+          </div>
+
+          <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
+            {loading && (
+              <>
+                <CardSkeleton />
+                <CardSkeleton />
+              </>
+            )}
+            {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('home.empty')}</p>}
+            {result?.cards.map((card) => (
+              <ResultRow
+                key={card.card_id}
+                icon={LOOK[card.card_id]?.icon ?? 'wallet'}
+                tone={LOOK[card.card_id]?.tone ?? 'slate'}
+                title={card.title}
+                subtitle={card.source_chip}
+                amount={card.amount}
+                unitLabel={card.unit_label}
+                onOpen={() => {
+                  setActive(card)
+                  drawer.open(card.card_id)
+                }}
+              />
+            ))}
+          </div>
         </div>
-        <div className="mt-4 flex gap-2.5">
-          <div className="flex-1 rounded-xl bg-white/10 px-3 py-2.5">
-            <div className="tabular text-base font-bold">{result ? formatINR(result.yearly_total) : '—'}</div>
-            <div className="text-[11px] text-white/70">{t('home.heroYearly')}</div>
+
+        {/* Right Column: AI Tax Checkup & Documents (Sticky on Desktop) */}
+        <div className="mt-6 flex flex-col gap-6 lg:sticky lg:top-20 lg:col-span-5 lg:mt-0 xl:col-span-5">
+          <div id="tax-checkup" className="scroll-mt-24">
+            {sessionId && !loading && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="tax" />}
           </div>
-          <div className="flex-1 rounded-xl bg-white/10 px-3 py-2.5">
-            <div className="tabular text-base font-bold">{result ? formatINR(result.one_time_total) : '—'}</div>
-            <div className="text-[11px] text-white/70">{t('home.heroOneTime')}</div>
-          </div>
+          {sessionId && <DocumentsCard sessionId={sessionId} />}
         </div>
-        {segments.length > 0 && (
-          <div className="mt-5">
-            <BreakdownBar segments={segments} dark />
-          </div>
-        )}
       </div>
 
-      <QuickActions />
-      <TrustStrip />
-
-      {sessionId && <DocumentsCard sessionId={sessionId} />}
-
-      <div className="mt-6 flex items-center justify-between">
-        <h2 className="section-label">Found for you</h2>
-        {result && result.cards.length > 0 && (
-          <span className="bg-coral-tint text-ink rounded-full px-2.5 py-0.5 text-xs font-bold">{result.cards.length}</span>
-        )}
-      </div>
-
-      <div className="card mt-3 divide-y divide-[color:var(--color-line)] overflow-hidden">
-        {loading && (
-          <>
-            <CardSkeleton />
-            <CardSkeleton />
-          </>
-        )}
-        {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('home.empty')}</p>}
-        {result?.cards.map((card) => (
-          <ResultRow
-            key={card.card_id}
-            icon={LOOK[card.card_id]?.icon ?? 'wallet'}
-            tone={LOOK[card.card_id]?.tone ?? 'slate'}
-            title={card.title}
-            subtitle={card.source_chip}
-            amount={card.amount}
-            unitLabel={card.unit_label}
-            onOpen={() => {
-              setActive(card)
-              drawer.open(card.card_id)
-            }}
-          />
-        ))}
-      </div>
-
-      <div id="tax-checkup" className="scroll-mt-24">
-        {sessionId && !loading && result && result.cards.length > 0 && <CheckupCard sessionId={sessionId} kind="tax" />}
-      </div>
-
-      <p className="text-muted mt-6 text-center text-xs">{t('home.feeNote')}</p>
+      <p className="text-muted mt-8 text-center text-xs">{t('home.feeNote')}</p>
 
       <SourceDrawer
         entry={drawer.entry}

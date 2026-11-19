@@ -32,7 +32,7 @@ export function QuickActions() {
           <span className="bg-navy/[0.06] text-ink flex h-12 w-12 items-center justify-center rounded-full">
             <Icon name={a.icon} size={22} />
           </span>
-          <span className="text-ink text-center text-[11px] font-semibold leading-tight">{a.label}</span>
+          <span className="text-ink text-center text-[11px] font-semibold leading-tight truncate w-full px-0.5">{a.label}</span>
         </button>
       ))}
     </nav>
