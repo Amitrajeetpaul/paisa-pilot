@@ -1,9 +1,9 @@
 {
-  "_comment": "Supplementary loan facts for the Leak Fixer 'high-interest loan, switch advice' feature. A bank statement only shows the EMI debit (see bank_statement_riya_sharma_q3fy26.json), not the interest rate or outstanding principal -- those come from the user's loan statement or manual entry. Not an AI Studio reader target; feeds rules_engine/tests fixtures directly in Milestone 2. Rate is illustrative/sample, not a verified current market rate -- real comparison rates belong in config/rules/<fy>.yaml marked UNVERIFIED until a CA/analyst sources them.",
+  "_comment": "Supplementary loan facts for the Leak Fixer 'high-interest loan, switch advice' feature. A bank statement only shows the EMI debit (see bank_statement_riya_sharma_q3fy26.json), not the interest rate or outstanding principal -- those come from the user's loan statement or manual entry. Not an AI Studio reader target; feeds rules_engine/tests fixtures directly in Milestone 2. Rate is illustrative/sample, not a verified current market rate -- real comparison rates belong in config/rules/<fy>.yaml marked UNVERIFIED until a CA/analyst sources them. outstanding_principal is set to the value that makes monthly_emi exactly consistent with annual_interest_rate_percent and remaining_tenure_months under the standard amortization formula (rules_engine/loans.py), so this fixture self-checks.",
   "lender": "QuickCash Loans",
   "loan_type": "personal_loan",
   "loan_reference": "LN00988123",
-  "outstanding_principal": 258000,
+  "outstanding_principal": 226967,
   "annual_interest_rate_percent": 24.0,
   "monthly_emi": 12000,
   "remaining_tenure_months": 24,

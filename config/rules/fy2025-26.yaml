@@ -1,0 +1,96 @@
+# Tax/PF configuration for FY 2025-26 (AY 2026-27).
+#
+# Every number below either carries its own source_url + as_of, or is marked
+# UNVERIFIED for a CA to confirm before this is used for anything but a demo.
+# Checked 2026-11-19 against multiple independent tax-advisory sources that
+# cite the Finance Act 2025 / incometax.gov.in (the official portal's slab
+# tables are rendered client-side and couldn't be fetched directly as a
+# flat document) -- cross-checked across sources that agreed, but still
+# needs a CA sign-off per README.md before any figure here drives a real
+# filing decision. This file is parsed by rules_engine/config.py; nothing
+# in rules_engine/ hard-codes a rate -- it all reads from here.
+
+fy: "2025-26"
+assessment_year: "2026-27"
+as_of: "2026-11-19"
+ca_review_status: "PENDING -- demo/sample use only until a CA signs off"
+
+tax_regimes:
+  new:
+    label: "New regime (default)"
+    standard_deduction: 75000
+    slabs:
+      # [income_from, income_to_or_null, rate_percent]
+      - { from: 0, to: 400000, rate_percent: 0 }
+      - { from: 400000, to: 800000, rate_percent: 5 }
+      - { from: 800000, to: 1200000, rate_percent: 10 }
+      - { from: 1200000, to: 1600000, rate_percent: 15 }
+      - { from: 1600000, to: 2000000, rate_percent: 20 }
+      - { from: 2000000, to: 2400000, rate_percent: 25 }
+      - { from: 2400000, to: null, rate_percent: 30 }
+    rebate_87a:
+      taxable_income_threshold: 1200000
+      max_rebate: 60000
+    chapter_via_allowed: false
+    source_url: "https://www.incometax.gov.in/iec/foportal/"
+    as_of: "2026-11-19"
+  old:
+    label: "Old regime"
+    standard_deduction: 50000
+    slabs:
+      - { from: 0, to: 250000, rate_percent: 0 }
+      - { from: 250000, to: 500000, rate_percent: 5 }
+      - { from: 500000, to: 1000000, rate_percent: 20 }
+      - { from: 1000000, to: null, rate_percent: 30 }
+    rebate_87a:
+      taxable_income_threshold: 500000
+      max_rebate: 12500
+    chapter_via_allowed: true
+    chapter_via:
+      section_80c_limit: 150000
+      section_80d:
+        self_non_senior: 25000
+        self_senior: 50000
+        max_with_senior_parents: 100000
+    source_url: "https://www.incometax.gov.in/iec/foportal/"
+    as_of: "2026-11-19"
+
+cess:
+  health_education_cess_percent: 4
+  source_url: "https://www.incometax.gov.in/iec/foportal/"
+  as_of: "2026-11-19"
+
+surcharge:
+  # Applies to both regimes above the stated total-income bands; marginal
+  # relief provisions are NOT implemented in rules_engine -- out of scope
+  # for the demo persona (income well below the lowest surcharge band).
+  bands:
+    - { total_income_from: 5000000, total_income_to: 10000000, rate_percent: 10 }
+    - { total_income_from: 10000000, total_income_to: 20000000, rate_percent: 15 }
+    - { total_income_from: 20000000, total_income_to: 50000000, rate_percent: 25 }
+    - { total_income_from: 50000000, total_income_to: null, rate_percent: 25, regime: "new" }
+    - { total_income_from: 50000000, total_income_to: null, rate_percent: 37, regime: "old" }
+  status: "UNVERIFIED -- marginal relief rules not modeled; CA review required before use above Rs. 50 lakh total income."
+  source_url: "https://www.incometax.gov.in/iec/foportal/"
+  as_of: "2026-11-19"
+
+epf:
+  employee_contribution_percent: 12
+  employer_contribution_percent: 12
+  employer_eps_percent: 8.33
+  employer_eps_cap_monthly: 1250
+  interest_rate_percent_fy2025_26: 8.25
+  source_url: "https://www.epfindia.gov.in/"
+  as_of: "2026-03-02"
+  note: "Rate declared by the EPFO Central Board of Trustees at its 239th meeting, 2026-03-02."
+
+fd_rd:
+  default_compounding: "quarterly"
+  status: "No specific bank's FD/RD rate is hardcoded -- rules_engine/fd_sip.py always computes against a rate the user supplies. 'quarterly' compounding is a general Indian-bank convention used only when the user doesn't state otherwise, not a verified single source."
+
+loan_switch:
+  status: "UNVERIFIED -- no personal-loan market benchmark rate is hardcoded. rules_engine/loans.py only compares the user's current loan terms against an alternative rate the user explicitly supplies (e.g. a quote they've received), never against an assumed 'market rate'."
+
+phone_plans:
+  status: "UNVERIFIED placeholder -- needs a teammate to source current telecom plan prices before this list drives any real comparison."
+  comparison_list: []

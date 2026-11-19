@@ -64,6 +64,31 @@ by then, update this log.
   data must reproduce exactly — our numbers just need to be internally consistent and
   demonstrate the same features.
 
+### 2026-11-19 — rules_engine implementation choices (Milestone 2, first slice)
+- Tax slabs/rebate/standard-deduction for FY2025-26 were cross-checked against
+  several independent tax-advisory sources citing the Finance Act / incometax.gov.in
+  (the official portal's tables are client-side rendered and couldn't be fetched as
+  a flat document). Recorded with `as_of` in `config/rules/fy2025-26.yaml` and
+  `ca_review_status: PENDING` -- treat as demo-grade, not filing-grade, until a CA
+  signs off, per brief §12.
+- `sample_data/ground_truth/loan_details_riya_sharma.json`'s `outstanding_principal`
+  was adjusted from an arbitrary 258,000 to 226,967 so the fixture's EMI/rate/tenure
+  self-amortize exactly under the standard formula -- caught by writing
+  `rules_engine/tests/test_loans.py` against the original number and seeing the
+  implied EMI didn't match. Real loan statements can have small mismatches of this
+  kind (fees baked into EMI, original vs current principal), but a *test fixture*
+  should be internally consistent so it's actually testing the formula, not masking
+  a data-entry mistake.
+- `rules_engine/leaks.py` excludes "EMI" from the loan-detection keyword list even
+  though it's the obvious English word for the concept, because it's a substring of
+  unrelated merchant names (e.g. "...PREMIUM..." contains "EMI") and the matcher is
+  plain substring search, not tokenized. "LOAN", "LN0" (common loan-reference
+  prefix), and "NBFC" are specific enough to stay safe as substrings.
+- `rules_engine/tax.py`'s `compare_regimes` trusts the Form16-confirmed Chapter VI-A
+  total as already per-section-capped rather than re-deriving individual 80C/80D
+  caps from one combined number -- re-deriving them would require assuming how the
+  total splits across sections, which isn't given.
+
 ---
 
 ## Things I will NOT decide unilaterally (will check first)

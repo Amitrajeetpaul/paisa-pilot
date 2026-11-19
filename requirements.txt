@@ -1,0 +1,6 @@
+# Backend dependencies (rules_engine/, and from Milestone 2 onward: api/, llm/).
+# agents/ (Milestone 3) adds google-adk and google-genai separately once that
+# slice starts, so this list only grows alongside the code that needs it.
+
+PyYAML==6.0.3
+pydantic==2.14.3

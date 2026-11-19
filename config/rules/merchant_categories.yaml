@@ -1,0 +1,44 @@
+# Heuristic keyword lists for rules_engine/leaks.py's subscription/AutoPay
+# classification. Unlike fy2025-26.yaml, nothing here is an official rate --
+# it's a product heuristic for guessing a starting "idle" vs "active" label,
+# which the Leak Fixer UI always lets the user override. Kept in its own
+# file so it can be edited freely without touching tax/PF config.
+
+subscription_keywords:
+  - NETFLIX
+  - SPOTIFY
+  - HOTSTAR
+  - PRIME VIDEO
+  - CLOUDNOTES
+  - YOUTUBE PREMIUM
+  - APPLE.COM/BILL
+  - GOOGLE PLAY
+  - AUDIBLE
+  - SONYLIV
+
+autopay_keywords:
+  - GYM
+  - FITNESS
+  - INSURANCE
+  - PREMIUM EMI
+  - BROADBAND
+  - FIBER
+  - JIOFIBER
+  - DTH
+  - RENT
+
+loan_emi_keywords:
+  # "EMI" is deliberately excluded: it's a substring of too many unrelated
+  # merchant names (e.g. "...PREMIUM...") to match safely without proper
+  # word-boundary tokenization. "LOAN", "LN0" (common loan-reference
+  # prefix), and "NBFC" are specific enough to match as plain substrings.
+  - LOAN
+  - LN0
+  - NBFC
+
+default_status_for_subscription: "idle"
+default_status_for_autopay: "active"
+note: >
+  Heuristic starting label only, not a verified fact about the user's actual
+  usage -- the Leak Fixer UI must let the user confirm or override every
+  label before any cancel/draft action is taken.
