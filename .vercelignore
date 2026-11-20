@@ -6,3 +6,9 @@ infra
 docs
 ai_studio
 .git
+*.apk
+*.pdf
+paisa_pilot_pitch_deck.html
+android
+scripts
+sample_data
