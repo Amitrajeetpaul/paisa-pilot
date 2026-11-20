@@ -155,7 +155,7 @@ export function LandingScreen() {
             </a>
           </div>
           <p className="text-muted mt-4 flex items-center justify-center gap-2 text-sm md:justify-start">
-            <Icon name="lock" size={14} /> No sign-up needed. Delete your data anytime.
+            <Icon name="lock" size={14} /> No sign-up needed to try it. Delete your data anytime.
           </p>
           <div className="text-muted mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold md:justify-start">
             <span>Built on</span>
