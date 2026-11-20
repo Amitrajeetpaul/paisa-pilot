@@ -5,6 +5,7 @@ import { CheckupCard } from '../components/CheckupCard'
 import { LeakBarChart } from '../components/LeakBarChart'
 import { ResultRow } from '../components/ResultRow'
 import { CardSkeleton } from '../components/Skeleton'
+import { SubscriptionUsage } from '../components/SubscriptionUsage'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { TrustStrip } from '../components/TrustStrip'
 import type { IconName } from '../components/Icon'
@@ -122,6 +123,8 @@ export function FixScreen() {
               )
             })}
           </div>
+
+          {sessionId && result && result.cards.some((c) => c.card_id.startsWith('subscription_')) && <SubscriptionUsage sessionId={sessionId} />}
         </div>
 
         {/* Right Column: AI Assistant Leaks Explanation (Sticky on Desktop) */}

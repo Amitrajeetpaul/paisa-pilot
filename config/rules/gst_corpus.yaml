@@ -1,0 +1,230 @@
+# Plain-language notes on Indian GST law that the GST Assistant retrieves from (RAG).
+# Written by us as short summaries of the CGST Act 2017, CGST Rules 2017 and CBIC notifications.
+# NOT legal advice and not a substitute for the official text: each passage names the section
+# and links to the official site. Needs review by a practising CA/GST advocate before launch,
+# and must be refreshed when the GST Council changes a rule (as_of below).
+as_of: "2026-11"
+reviewed_by_ca: false
+passages:
+  - id: reg-threshold
+    section: "CGST Act Sec 22, 24"
+    title: When you must register for GST
+    keywords: [registration, register, threshold, limit, turnover, freelancer, shop, 40 lakh, 20 lakh]
+    source_url: https://www.gst.gov.in/
+    text: >
+      A supplier of goods must register once aggregate turnover in a financial year crosses Rs 40 lakh
+      (Rs 20 lakh in special category states). A supplier of services must register above Rs 20 lakh
+      (Rs 10 lakh in special category states). Registration is compulsory whatever the turnover for
+      inter-state supply of goods and for most e-commerce sellers (Sec 24). A freelancer providing only
+      services therefore needs GST once annual receipts cross Rs 20 lakh.
+  - id: composition
+    section: "CGST Act Sec 10"
+    title: Composition scheme for small businesses
+    keywords: [composition, scheme, small, trader, restaurant, 1%, 6%, flat rate, CMP-08, GSTR-4]
+    source_url: https://www.gst.gov.in/
+    text: >
+      A small business with turnover up to Rs 1.5 crore in the previous year (Rs 75 lakh in some special
+      category states) can opt for the composition scheme and pay a flat percentage of turnover: 1% for
+      manufacturers and traders, 5% for restaurants without alcohol, and 6% for service providers whose
+      turnover is up to Rs 50 lakh (Sec 10(2A)). A composition dealer cannot claim input tax credit, cannot
+      collect GST from customers, cannot make inter-state outward supplies and cannot sell through
+      e-commerce operators. It pays quarterly using CMP-08 and files GSTR-4 once a year.
+  - id: due-dates-returns
+    section: "CGST Rules 59, 61"
+    title: Due dates for GSTR-1 and GSTR-3B
+    keywords: [due date, deadline, GSTR-1, GSTR-3B, monthly, quarterly, QRMP, 11th, 20th, 22nd, 24th]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Monthly filers file GSTR-1 (outward supplies) by the 11th of the next month and GSTR-3B (summary
+      return and tax payment) by the 20th of the next month. Under the QRMP scheme (turnover up to Rs 5
+      crore) GSTR-1 is filed quarterly by the 13th of the month after the quarter, and GSTR-3B quarterly by
+      the 22nd or 24th depending on the state. Under QRMP tax is paid each month using the PMT-06 challan
+      by the 25th. Nil returns must still be filed.
+  - id: annual-return
+    section: "CGST Act Sec 44"
+    title: Annual return GSTR-9
+    keywords: [annual return, GSTR-9, 31 December, reconciliation]
+    source_url: https://www.gst.gov.in/
+    text: >
+      The annual return GSTR-9 is due on 31 December after the financial year. Taxpayers with aggregate
+      turnover up to Rs 2 crore have been allowed to skip it by notification, so check the current notification
+      for the year before relying on this.
+  - id: late-fee
+    section: "CGST Act Sec 47"
+    title: Late fee for filing late
+    keywords: [late fee, penalty, delay, GSTR-3B, per day, Rs 50, Rs 20, nil return, cap]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Filing a return after the due date attracts a late fee of Rs 50 a day (Rs 25 CGST plus Rs 25 SGST), or
+      Rs 20 a day for a nil return. For GSTR-3B the total is capped by turnover: Rs 500 for a nil return,
+      Rs 2,000 where turnover is up to Rs 1.5 crore, Rs 5,000 for Rs 1.5 to 5 crore and Rs 10,000 above Rs 5
+      crore. The cap figures come from CBIC notifications and can change.
+  - id: interest
+    section: "CGST Act Sec 50"
+    title: Interest on late tax
+    keywords: [interest, 18%, 24%, late payment, wrong ITC, excess credit]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Tax paid after the due date carries interest at 18% a year, counted from the day after the due date. It
+      is charged on the tax paid in cash, that is the liability left after set-off of input tax credit. Interest
+      on input tax credit that was taken or used wrongly is 24% a year.
+  - id: itc-conditions
+    section: "CGST Act Sec 16(2)"
+    title: Conditions to claim input tax credit
+    keywords: [ITC, input tax credit, conditions, invoice, GSTR-2B, supplier, claim, eligible]
+    source_url: https://www.gst.gov.in/
+    text: >
+      You can claim input tax credit only if you hold a valid tax invoice, you have received the goods or
+      services, the supplier has actually paid the tax to the government, and you have filed your own return.
+      The invoice should also show in your auto-drafted statement GSTR-2B. If the supplier has not filed,
+      the credit is at risk.
+  - id: itc-time-limit
+    section: "CGST Act Sec 16(4)"
+    title: Last date to claim credit on an invoice
+    keywords: [ITC, time limit, 30 November, deadline, claim, late, expire]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Input tax credit on an invoice for a financial year can be claimed up to 30 November following the end of
+      that financial year, or the date of filing the annual return, whichever is earlier. After that the credit
+      is lost.
+  - id: itc-blocked
+    section: "CGST Act Sec 17(5)"
+    title: Credit you cannot claim (blocked credits)
+    keywords: [blocked, not allowed, car, motor vehicle, food, beverages, catering, beauty, health, club, gym, fitness, cab, insurance, gift, free sample, construction, personal, laptop]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Input tax credit is blocked for: motor vehicles for up to 13 people (unless used to resell, train drivers,
+      or transport goods or passengers), food and beverages, outdoor catering, beauty treatment and cosmetic
+      or plastic surgery, club or health and fitness membership, renting a cab or aircraft (with exceptions),
+      life and health insurance (with exceptions), leave or home travel benefits for employees, construction of
+      an immovable property you own (other than plant and machinery), and goods given away as gifts or free
+      samples or lost, stolen or destroyed. Anything used for personal rather than business use is also not
+      eligible. A laptop or office equipment used for business is not on this list.
+  - id: itc-business-use
+    section: "CGST Act Sec 17(1)-(2), Rules 42-43"
+    title: Credit only for business use
+    keywords: [personal use, business use, apportion, exempt supplies, mixed use, home]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Input tax credit is allowed only on goods and services used for business. If an item is used partly for
+      business and partly for personal use, only the business share is claimable. If you also make exempt
+      supplies, credit must be reduced in proportion under Rules 42 and 43.
+  - id: itc-setoff
+    section: "CGST Act Sec 49A, 49B; Rule 88A"
+    title: Order in which credit is used against tax
+    keywords: [set off, utilisation, IGST, CGST, SGST, order, cash ledger, credit ledger, payable]
+    source_url: https://www.gst.gov.in/
+    text: >
+      IGST credit is used first, against IGST, then CGST, then SGST. CGST credit is used against CGST and then
+      IGST, but never against SGST. SGST credit is used against SGST and then IGST, never against CGST. Whatever
+      liability is left after credit has to be paid in cash through the electronic cash ledger. Unused credit is
+      carried forward.
+  - id: place-of-supply
+    section: "IGST Act Sec 10, 12, 13; CGST Act Sec 7"
+    title: CGST plus SGST, or IGST
+    keywords: [intra-state, inter-state, IGST, CGST, SGST, place of supply, same state, other state]
+    source_url: https://www.gst.gov.in/
+    text: >
+      If the supplier and the place of supply are in the same state, the tax is CGST plus SGST, each half of the
+      rate. If they are in different states, the tax is IGST at the full rate. For services to a business
+      customer the place of supply is generally the customer's location.
+  - id: invoice-rules
+    section: "CGST Act Sec 31; Rules 46-47"
+    title: Issuing a tax invoice
+    keywords: [invoice, tax invoice, 30 days, bill of supply, GSTIN, HSN, SAC]
+    source_url: https://www.gst.gov.in/
+    text: >
+      A tax invoice for services must be issued within 30 days of the supply, and for goods at the time of
+      removal or delivery. It must show the supplier's GSTIN, a serial number, date, description, HSN or SAC
+      code, taxable value, rate and tax amount. A composition dealer or a supplier of exempt goods issues a bill
+      of supply, not a tax invoice.
+  - id: e-invoice
+    section: "CGST Rule 48(4)"
+    title: E-invoicing
+    keywords: [e-invoice, IRN, QR code, 5 crore, threshold]
+    source_url: https://www.gst.gov.in/
+    text: >
+      E-invoicing is mandatory for businesses with aggregate turnover above Rs 5 crore (since 1 August 2023).
+      Smaller businesses are not required to generate an invoice reference number through the e-invoice portal.
+  - id: reverse-charge
+    section: "CGST Act Sec 9(3), 9(4)"
+    title: Reverse charge
+    keywords: [reverse charge, RCM, GTA, transport, advocate, legal services, unregistered supplier]
+    source_url: https://www.gst.gov.in/
+    text: >
+      For some notified supplies, such as goods transport agency services and services by an advocate, the
+      buyer and not the seller pays the GST. This is called reverse charge. The buyer pays it in cash and can
+      then claim it as input tax credit if the purchase was for business.
+  - id: export-services
+    section: "IGST Act Sec 2(6), 16"
+    title: Exporting services and LUT
+    keywords: [export, foreign client, freelancer, LUT, zero rated, refund, convertible foreign exchange, abroad]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Export of services is a zero-rated supply: no GST is charged to the foreign client. The conditions are
+      that the supplier is in India, the recipient is outside India, the place of supply is outside India, and
+      payment is received in convertible foreign exchange (or in rupees where the RBI allows). A registered
+      exporter can file a Letter of Undertaking (LUT) each year to export without paying IGST, or pay IGST and
+      claim a refund.
+  - id: time-of-supply
+    section: "CGST Act Sec 12, 13"
+    title: When the tax becomes due
+    keywords: [time of supply, advance, payment received, invoice date, when to pay GST]
+    source_url: https://www.gst.gov.in/
+    text: >
+      For services, tax becomes payable at the earlier of the invoice date (if issued within 30 days) or the
+      date you receive payment. For goods it is the earlier of removal or the invoice date, or receipt of
+      payment. So an advance you receive is included in the return for the month it is received.
+  - id: gstr2b
+    section: "CGST Rule 60(7)"
+    title: GSTR-2B, your credit statement
+    keywords: [GSTR-2B, auto-drafted, ITC statement, 14th, matching, supplier invoices]
+    source_url: https://www.gst.gov.in/
+    text: >
+      GSTR-2B is an auto-drafted statement of input tax credit available to you for a month, built from your
+      suppliers' GSTR-1 filings and generated on the 14th of the following month. Claim credit in GSTR-3B only
+      for invoices that appear in it.
+  - id: gstr3b-tables
+    section: "GSTR-3B form"
+    title: What goes in GSTR-3B
+    keywords: [GSTR-3B, table 3.1, table 4, table 6, outward supplies, ITC available, payment, summary return]
+    source_url: https://www.gst.gov.in/
+    text: >
+      GSTR-3B is a monthly summary. Table 3.1 shows tax on outward supplies (your sales). Table 4 shows the input
+      tax credit you claim and the credit that is reversed or ineligible. Table 6 shows how the tax is paid: first
+      by credit, then the balance in cash. Detailed invoice data goes in GSTR-1, not GSTR-3B.
+  - id: rates
+    section: "GST Council, CBIC rate notifications"
+    title: GST rate slabs
+    keywords: [rate, slab, 5%, 18%, 40%, 12%, 28%, 0%, how much GST]
+    source_url: https://cbic-gst.gov.in/gst-goods-services-rates.html
+    text: >
+      From 22 September 2025 most goods and services moved to two main slabs, 5% and 18%, with a 40% rate for
+      sin and luxury goods, and nil rate for some essentials. Most professional and freelance services are taxed
+      at 18%. The exact rate depends on the HSN or SAC code, so check the CBIC rate list before invoicing.
+  - id: nil-return
+    section: "CGST Act Sec 39"
+    title: No sales this month
+    keywords: [nil return, no sales, no business, zero, still file]
+    source_url: https://www.gst.gov.in/
+    text: >
+      A registered person must file GSTR-3B even in a month with no sales or purchases. A nil return can be
+      filed quickly, and skipping it earns a late fee of Rs 20 a day up to the cap.
+  - id: refund-itc
+    section: "CGST Act Sec 54"
+    title: Refund of unused credit
+    keywords: [refund, unutilised ITC, inverted duty, zero rated, 2 years, RFD-01]
+    source_url: https://www.gst.gov.in/
+    text: >
+      Unused input tax credit can be refunded only in limited cases, mainly exports without payment of tax and
+      inverted duty structure, where the tax on inputs is higher than on outputs. The refund application must be
+      filed within two years of the relevant date.
+  - id: credit-notes
+    section: "CGST Act Sec 34"
+    title: Credit and debit notes
+    keywords: [credit note, debit note, return, discount, cancel, reduce tax]
+    source_url: https://www.gst.gov.in/
+    text: >
+      If you reduce the value of a supply after issuing the invoice, for a return or a discount, you issue a
+      credit note and reduce your tax liability in the return. The credit note must be declared by 30 November
+      after the financial year, or the date of the annual return, whichever is earlier.

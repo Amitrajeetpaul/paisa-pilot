@@ -5,6 +5,7 @@ import { ConfirmScreen } from './screens/ConfirmScreen'
 import { ConsentUploadScreen } from './screens/ConsentUploadScreen'
 import { DraftsScreen } from './screens/DraftsScreen'
 import { FixScreen } from './screens/FixScreen'
+import { GstScreen } from './screens/GstScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { PrivacyScreen, TermsScreen } from './screens/LegalScreens'
 import { LandingScreen } from './screens/LandingScreen'
@@ -39,6 +40,14 @@ export default function App() {
         element={
           <AppShell>
             <AdviseScreen />
+          </AppShell>
+        }
+      />
+      <Route
+        path="/app/gst"
+        element={
+          <AppShell>
+            <GstScreen />
           </AppShell>
         }
       />

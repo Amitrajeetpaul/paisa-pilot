@@ -4,6 +4,7 @@ const en = {
   'nav.find': 'Find',
   'nav.fix': 'Fix',
   'nav.advise': 'Advise',
+  'nav.gst': 'GST',
 
   'common.sampleData': 'Sample data',
   'common.pleaseCheck': 'Please check',

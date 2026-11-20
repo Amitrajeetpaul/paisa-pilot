@@ -1,0 +1,42 @@
+# Which apps Paisa Pilot can match to a subscription on the bank statement, and
+# how we judge "barely used". Product heuristics, not official figures.
+# `keywords` are matched against the bank-statement line (upper-case);
+# `packages` are the Android package names the phone app can measure.
+window_days: 30
+# days opened in the window -> label
+unused_max_days: 0
+rare_max_days: 3
+light_max_days: 8
+apps:
+  netflix:
+    name: Netflix
+    keywords: [NETFLIX]
+    packages: [com.netflix.mediaclient]
+  prime_video:
+    name: Amazon Prime Video
+    keywords: [PRIME VIDEO, AMAZON PRIME, PRIMEVIDEO]
+    packages: [com.amazon.avod.thirdpartyclient, in.amazon.mShop.android.shopping]
+  hotstar:
+    name: JioHotstar
+    keywords: [HOTSTAR, JIOHOTSTAR]
+    packages: [in.startv.hotstar, in.startv.hotstar.dplus]
+  spotify:
+    name: Spotify
+    keywords: [SPOTIFY]
+    packages: [com.spotify.music]
+  youtube_premium:
+    name: YouTube Premium
+    keywords: [YOUTUBE PREMIUM, YOUTUBE MUSIC]
+    packages: [com.google.android.youtube, com.google.android.apps.youtube.music]
+  sonyliv:
+    name: SonyLIV
+    keywords: [SONYLIV]
+    packages: [com.sonyliv]
+  audible:
+    name: Audible
+    keywords: [AUDIBLE]
+    packages: [com.audible.application]
+  cloudnotes:
+    name: CloudNotes
+    keywords: [CLOUDNOTES]
+    packages: [com.cloudnotes.app]

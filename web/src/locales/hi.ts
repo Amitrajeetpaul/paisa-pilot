@@ -6,6 +6,7 @@ const hi: Record<TranslationKey, string> = {
   'nav.find': 'खोजें',
   'nav.fix': 'ठीक करें',
   'nav.advise': 'सलाह',
+  'nav.gst': 'जीएसटी',
 
   'common.sampleData': 'नमूना डेटा',
   'common.pleaseCheck': 'कृपया जाँचें',

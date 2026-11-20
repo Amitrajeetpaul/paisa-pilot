@@ -3,10 +3,11 @@ import { useApp } from '../state/AppContext'
 import { Icon, type IconName } from './Icon'
 import { Wordmark } from './Logo'
 
-const NAV_ITEMS: { to: string; icon: IconName; key: 'nav.find' | 'nav.fix' | 'nav.advise' }[] = [
+const NAV_ITEMS: { to: string; icon: IconName; key: 'nav.find' | 'nav.fix' | 'nav.advise' | 'nav.gst' }[] = [
   { to: '/app/home', icon: 'search', key: 'nav.find' },
   { to: '/app/fix', icon: 'wrench', key: 'nav.fix' },
   { to: '/app/advise', icon: 'chat', key: 'nav.advise' },
+  { to: '/app/gst', icon: 'receipt', key: 'nav.gst' },
 ]
 
 /** Mobile: a standard fixed tab bar, as in every payments app. The active tab takes the brand colour. */

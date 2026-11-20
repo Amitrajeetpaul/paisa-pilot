@@ -14,6 +14,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(UsageAccessPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Edge-to-edge full screen with matching status & navigation bar colours

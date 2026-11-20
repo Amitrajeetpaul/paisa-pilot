@@ -1,0 +1,30 @@
+# Numbers the GST draft uses. Each cites the passage in gst_corpus.yaml it comes from.
+# Reviewed by a CA: NO. Verify against the CBIC notifications before relying on them.
+as_of: "2026-11"
+late_fee_per_day: 50          # Rs, CGST 25 + SGST 25  (corpus: late-fee)
+late_fee_per_day_nil: 20      # Rs  (corpus: late-fee)
+late_fee_cap_nil: 500
+late_fee_caps_by_turnover:    # upper turnover (Rs) -> cap (Rs)
+  - {up_to: 15000000, cap: 2000}
+  - {up_to: 50000000, cap: 5000}
+  - {up_to: null, cap: 10000}
+interest_rate_percent: 18     # (corpus: interest)
+gstr3b_due_day: 20            # of the next month (corpus: due-dates-returns)
+composition:
+  turnover_limit: 15000000    # Rs 1.5 crore (corpus: composition)
+  rates_percent: {trader: 1, manufacturer: 1, restaurant: 5, service: 6}
+  service_turnover_limit: 5000000
+# ITC blocked under Sec 17(5) (corpus: itc-blocked). Keyword -> label, matched on the
+# invoice's category and description columns.
+blocked_categories:
+  rent_a_cab: {label: "Cab or aircraft rental", keywords: [car rental, car hire, cab, taxi, ola, uber, aircraft]}
+  motor_vehicle: {label: "Motor vehicle for up to 13 people", keywords: [car, vehicle, motor, scooter, bike]}
+  food_beverage: {label: "Food and beverages", keywords: [food, meal, restaurant, lunch, dinner, snack, beverage]}
+  outdoor_catering: {label: "Outdoor catering", keywords: [catering]}
+  beauty_health: {label: "Beauty or health treatment", keywords: [salon, spa, beauty, cosmetic, surgery]}
+  club_fitness: {label: "Club, gym or fitness membership", keywords: [gym, club, fitness, membership]}
+  insurance: {label: "Life or health insurance", keywords: [insurance]}
+  employee_travel: {label: "Employee leave or home travel", keywords: [lta, leave travel, vacation]}
+  construction: {label: "Building an immovable property", keywords: [construction, building, civil work]}
+  gifts_samples: {label: "Gifts or free samples", keywords: [gift, sample]}
+  personal: {label: "Personal use, not business", keywords: [personal, home use, family]}

@@ -188,6 +188,28 @@ export const api = {
     }
   },
 
+  gstAsk: (question: string) =>
+    request<GstAskResult>('/gst/ask', { method: 'POST', body: JSON.stringify({ question }) }),
+
+  gstSample: () => request<{ csv_text: string; period: string; annual_turnover: number; business_type: string }>('/gst/sample'),
+
+  gstDraft: (body: { csv_text: string; period?: string; annual_turnover?: number; business_type?: string }) =>
+    request<GstDraftResult>('/gst/draft', { method: 'POST', body: JSON.stringify(body) }),
+
+  getUsageApps: () => request<UsageApps>('/usage/apps'),
+
+  calculateSubscriptionUsage: (sessionId: string, usage: { app_key: string; days_used: number }[], windowDays: number) =>
+    request<SubscriptionUsageResult>(`/sessions/${sessionId}/calculate/subscription-usage`, {
+      method: 'POST',
+      body: stateBody(sessionId, { usage, window_days: windowDays }),
+    }),
+
+  historyDays: (appKey: string, csvText: string) =>
+    request<{ app_key: string; days_used: number; window_days: number }>('/usage/history-days', {
+      method: 'POST',
+      body: JSON.stringify({ app_key: appKey, csv_text: csvText }),
+    }),
+
   runAgent: async (
     sessionId: string,
     agent: 'money_finder' | 'leak_fixer' | 'consultant' | 'ca_assistant',
@@ -300,6 +322,80 @@ export interface LeakFixerCard {
   source_chip: string
   action_label: string
   months_seen: string[]
+}
+
+export interface GstCitation {
+  id: string
+  section: string
+  title: string
+  excerpt: string
+  source_url: string
+}
+
+export interface GstAskResult {
+  answer: string
+  citations: GstCitation[]
+  grounded: boolean
+  mode: 'ai' | 'notes_only' | 'not_found'
+  notes_as_of: string
+  reviewed_by_ca: boolean
+  disclaimer: string
+}
+
+type Split = { igst: number; cgst: number; sgst: number }
+
+export interface GstDraftResult {
+  period: string
+  due_date: string
+  available_periods: string[]
+  invoice_count: number
+  outward_taxable: number
+  output_tax: Split
+  output_tax_total: number
+  eligible_itc: Split
+  eligible_itc_total: number
+  blocked: { invoice: string; description: string; tax: number; reason: string; section: string }[]
+  blocked_total: number
+  blocked_source: { section: string; excerpt: string; source_url: string } | null
+  cash_payable: Split
+  carry_forward: Split
+  days_late: number
+  late_fee: number
+  interest: number
+  total_to_pay: number
+  composition: null | { eligible: false; reasons: string[] } | { eligible: true; rate_percent: number; composition_tax: number; regular_cash_tax: number; cheaper: string; difference: number; note: string }
+  steps: string[]
+  notes_as_of: string
+  reviewed_by_ca: boolean
+  disclaimer: string
+}
+
+export interface UsageApps {
+  window_days: number
+  apps: { app_key: string; name: string; packages: string[] }[]
+}
+
+export interface UsageAlert {
+  app_key: string
+  app_name: string
+  title: string
+  level: 'unused' | 'rare' | 'light' | 'regular'
+  days_used: number
+  window_days: number
+  monthly_amount: number
+  cost_per_day_used: number | null
+  monthly_saving: number
+  annual_saving: number
+  message: string
+}
+
+export interface SubscriptionUsageResult {
+  window_days: number
+  monthly_saving: number
+  annual_saving: number
+  alerts: UsageAlert[]
+  tracked_app_keys: string[]
+  source: string
 }
 
 export interface LeakFixerResult {

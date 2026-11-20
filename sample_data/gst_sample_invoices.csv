@@ -1,0 +1,10 @@
+type,invoice_no,date,taxable_value,rate,supply,description
+sale,INV-101,2026-10-03,85000,18,intra,Website design for local client
+sale,INV-102,2026-10-11,42000,18,intra,Logo and branding package
+sale,INV-103,2026-10-19,60000,18,inter,App design for Bengaluru client
+sale,INV-104,2026-10-27,18000,18,intra,Social media graphics
+purchase,BILL-11,2026-10-05,64000,18,intra,Laptop for design work
+purchase,BILL-12,2026-10-09,8500,18,intra,Adobe software licence
+purchase,BILL-13,2026-10-14,6200,5,intra,Team lunch food and snacks
+purchase,BILL-14,2026-10-21,22000,18,inter,Car rental for client visit cab
+purchase,BILL-15,2026-10-24,9000,18,intra,Co-working desk rent
