@@ -366,6 +366,7 @@ class LoanSwitchRequest(BaseModel):
     remaining_tenure_months: int
     new_annual_rate_percent: float
     processing_fee_percent: float
+    foreclosure_charge_percent: float = 0.0
 
 
 @router.post("/calculate/loan-switch")

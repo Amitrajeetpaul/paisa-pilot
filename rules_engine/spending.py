@@ -31,8 +31,12 @@ def spending_profile(transactions: list[dict], cats: list[dict] | None = None) -
     income = sum(float(t["amount"]) for t in transactions if t["type"] == "credit" and "SALARY" in t["description"].upper())
     other_in = sum(float(t["amount"]) for t in transactions if t["type"] == "credit") - income
     by: dict[str, dict] = {}
+    failed_skipped = 0
     for t in transactions:
         if t["type"] != "debit":
+            continue
+        if re.search(r"\b(FAILED|FAILURE|REVERSED)\b", t["description"].upper()):
+            failed_skipped += 1  # not money spent: it is reversed, or Refund Hunter is chasing it
             continue
         c = categorize(t["description"], cats)
         e = by.setdefault(c["key"], {"key": c["key"], "label": c["label"], "kind": c["kind"], "total": 0.0, "count": 0})
@@ -64,5 +68,5 @@ def spending_profile(transactions: list[dict], cats: list[dict] | None = None) -
         "spending_per_month": round(spend / n), "invested_per_month": round(saved / n),
         "left_over_per_month": surplus_m,
         "savings_rate_percent": round((income_m * n - spend_ex_saving) / (income_m * n) * 100, 1) if income else None,
-        "categories": rows, "flags": flags,
+        "categories": rows, "flags": flags, "failed_payments_skipped": failed_skipped,
     }

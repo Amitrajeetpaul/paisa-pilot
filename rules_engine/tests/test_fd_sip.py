@@ -19,10 +19,14 @@ def test_fd_maturity_zero_rate_returns_principal():
 
 
 def test_rd_maturity_two_year_known_value():
+    # Indian banks compound RDs quarterly: a deposit with m months left grows by (1 + 0.07/4) ** (m / 3).
     result = rd_maturity(monthly_installment=5000, annual_rate_percent=7.0, tenure_months=12)
     assert result.total_deposited == 60000
-    assert result.maturity_value == pytest.approx(62324.38, abs=0.01)
+    assert result.maturity_value == pytest.approx(62310.66, abs=0.01)
     assert result.interest_earned > 0
+    # monthly compounding (the older assumption) is a touch higher, as expected
+    monthly = rd_maturity(monthly_installment=5000, annual_rate_percent=7.0, tenure_months=12, compounding="monthly")
+    assert monthly.maturity_value == pytest.approx(62324.38, abs=0.01) and monthly.maturity_value > result.maturity_value
 
 
 def test_sip_future_value_five_year_known_demo_figure():

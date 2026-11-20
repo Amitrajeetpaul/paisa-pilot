@@ -1,0 +1,19 @@
+# Recurring Indian tax and GST dates (month, day). Each names the law passage it comes from in tax_corpus.yaml /
+# gst_corpus.yaml. Dates can be moved by the government (extensions are common): the app says to confirm on the portal.
+# NOT reviewed by a CA yet.
+as_of: "2026-11"
+advance_tax:                      # corpus: advance-tax
+  threshold: 10000                # applies when tax payable after TDS is Rs 10,000 or more
+  instalments:
+    - {month: 6, day: 15, cumulative_percent: 15}
+    - {month: 9, day: 15, cumulative_percent: 45}
+    - {month: 12, day: 15, cumulative_percent: 75}
+    - {month: 3, day: 15, cumulative_percent: 100}
+yearly:
+  - {id: form16_due, month: 6, day: 15, title: "Employer's Form 16 is due", fy_basis: previous, detail: "Your employer must give you Form 16 by 15 June. Chase it if it has not come.", law: tds-salary, audience: salaried}
+  - {id: itr_due, month: 7, day: 31, title: "File your income-tax return", fy_basis: previous, detail: "Last date for most individuals without an audit. A late return costs a fee under Section 234F.", law: due-dates, audience: everyone}
+  - {id: itr_belated, month: 12, day: 31, title: "Last date for a late or revised return", fy_basis: previous, detail: "After this date you can no longer file a belated or revised return for last year (an updated return ITR-U is still possible).", law: due-dates, audience: everyone}
+  - {id: tax_saving_last, month: 3, day: 31, title: "Last day to make tax-saving investments", fy_basis: previous, detail: "80C, 80D and NPS payments for this financial year must be made by 31 March (old regime).", law: sec-80c, audience: old_regime}
+monthly_gst:                      # corpus (gst): due-dates-returns
+  - {id: gstr1, day: 11, title: "GSTR-1 (your sales) is due", detail: "Monthly filers file GSTR-1 by the 11th.", law: due-dates-returns}
+  - {id: gstr3b, day: 20, title: "GSTR-3B (summary and tax payment) is due", detail: "Monthly filers file GSTR-3B and pay by the 20th.", law: due-dates-returns}

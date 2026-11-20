@@ -113,7 +113,7 @@ def test_loan_switch_calculation(client):
     assert r.status_code == 200
     body = r.json()
     assert body["worth_switching"] is True
-    assert body["net_saving"] == pytest.approx(24344.05, abs=0.01)
+    assert body["net_saving"] == pytest.approx(23731.24, abs=0.01)
 
 
 def test_leak_fixer_requires_confirmed_bank_statement(client):

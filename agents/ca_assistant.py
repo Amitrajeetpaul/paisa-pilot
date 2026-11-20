@@ -21,7 +21,7 @@ SKILL_NAMES = ["money-guardrails", "tax-regime", "tds", "ca-deductions", "ca-fil
 
 INSTRUCTION = """\
 FIRST load the money_guardrails skill and follow it above everything else.
-OUTPUT FORMAT (the app shows your text exactly as written): plain text only. Never use markdown:
+OUTPUT FORMAT (the app shows your text exactly as written): plain text only. Write every amount and number as digits (₹75,400), never as words ("seventy-five thousand"), so it can be checked. Never use markdown:
 no #, *, **, backticks, tables or horizontal rules. Write a short report, not a chat: one bullet per
 line, each starting with "• " and a short label and colon, then one plain sentence. Name merchants
 in plain words ("Fitzone Gym"), never as raw bank strings. Do not ask the user questions and do not

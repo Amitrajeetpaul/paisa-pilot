@@ -55,3 +55,12 @@ def test_new_calculators_through_the_chat():
     assert "Sec 10(12)" in b
     d = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "Is gift money from my parents taxable?"}).json()["answer"]
     assert "Sec 56(2)(x)" in d and "regime" not in d
+
+
+def test_itr_prefill_endpoint():
+    sid = _sid()
+    r = c.post(f"/sessions/{sid}/calculate/itr-prefill", json={}).json()
+    assert r["schema"] == "paisa-pilot-itr-prefill/1" and r["tds"]["credit_to_claim"] == 92500 and r["ready_to_file"]
+    assert "not the official ITR JSON" in r["disclaimer"]
+    empty = c.post("/consent", json={"consent_given": True}).json()["session_id"]
+    assert c.post(f"/sessions/{empty}/calculate/itr-prefill", json={}).status_code == 400

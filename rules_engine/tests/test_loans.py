@@ -28,9 +28,11 @@ def test_riya_sharma_loan_switch_worth_it():
     assert result.current_monthly_emi == 12000
     assert result.new_monthly_emi == pytest.approx(10843.81, abs=0.01)
     assert result.total_payment_if_stay == 288000
-    assert result.processing_fee == pytest.approx(3404.51, abs=0.01)
-    assert result.net_saving == pytest.approx(24344.05, abs=0.01)
+    # 1.5% fee is 3,404.50; lenders add 18% GST on it, which is a real cost of switching
+    assert result.processing_fee == pytest.approx(4017.32, abs=0.01)
+    assert result.net_saving == pytest.approx(23731.24, abs=0.01)
     assert result.worth_switching is True
+    assert result.emi_mismatch_percent < 0.1  # the EMI given matches the rate and tenure given
 
 
 def test_switch_not_worth_it_when_new_rate_is_higher():
@@ -44,3 +46,15 @@ def test_switch_not_worth_it_when_new_rate_is_higher():
     )
     assert result.worth_switching is False
     assert result.net_saving < 0
+
+
+def test_foreclosure_charge_can_erase_the_saving():
+    base = dict(outstanding_principal=226967, current_annual_rate_percent=24.0, current_monthly_emi=12000, remaining_tenure_months=24, new_annual_rate_percent=13.5, processing_fee_percent=1.5)
+    assert loan_switch_saving(**base).worth_switching
+    heavy = loan_switch_saving(**base, foreclosure_charge_percent=12.0)
+    assert heavy.foreclosure_charge == pytest.approx(27236.04) and heavy.worth_switching is False
+
+
+def test_inconsistent_emi_is_reported():
+    r = loan_switch_saving(outstanding_principal=226967, current_annual_rate_percent=24.0, current_monthly_emi=15000, remaining_tenure_months=24, new_annual_rate_percent=13.5, processing_fee_percent=1.5)
+    assert r.emi_mismatch_percent > 20  # the figures given do not describe the same loan

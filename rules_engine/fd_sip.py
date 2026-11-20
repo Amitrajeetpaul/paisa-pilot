@@ -58,16 +58,16 @@ def rd_maturity(
     monthly_installment: float,
     annual_rate_percent: float,
     tenure_months: int,
+    compounding: str = "quarterly",
 ) -> RdResult:
-    """Simulates each monthly deposit compounding monthly for its own
-    remaining time until maturity. This is a simplification of how banks
-    actually compound RDs (commonly quarterly, aligned to calendar
-    quarters) -- close enough for planning purposes, not for matching a
-    specific bank's RD certificate to the rupee.
-    """
-    monthly_rate = annual_rate_percent / 100 / 12
+    """Each monthly deposit earns interest for its own remaining time. Indian banks compound RDs quarterly,
+    so the default is quarterly (a deposit with m months left grows by (1 + r/4) ** (m / 3)); monthly
+    compounding is available for comparison. Close to a bank's maturity figure, not a certificate."""
+    periods_per_year = _COMPOUNDING_PERIODS_PER_YEAR[compounding]
+    rate_per_period = annual_rate_percent / 100 / periods_per_year
+    months_per_period = 12 / periods_per_year
     maturity_value = sum(
-        monthly_installment * (1 + monthly_rate) ** (tenure_months - deposit_month + 1)
+        monthly_installment * (1 + rate_per_period) ** ((tenure_months - deposit_month + 1) / months_per_period)
         for deposit_month in range(1, tenure_months + 1)
     )
     total_deposited = monthly_installment * tenure_months

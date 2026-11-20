@@ -31,6 +31,7 @@ tax_regimes:
     rebate_87a:
       taxable_income_threshold: 1200000
       max_rebate: 60000
+      marginal_relief: true   # Sec 87A proviso: tax cannot exceed income above Rs 12 lakh
     chapter_via_allowed: false
     source_url: "https://www.incometax.gov.in/iec/foportal/"
     as_of: "2026-11-19"

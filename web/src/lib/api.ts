@@ -161,7 +161,7 @@ export const api = {
     )
     if (isLocalSession(sessionId) && result.fields) saveConfirmedDoc(sessionId, documentType, result.fields)
     // Signed in with saving on: keep a copy in the account (best effort; the confirm itself already worked).
-    if (opts.sync !== false && currentUser() && savingOn()) void api.meSaveDocument(documentType, result.fields ?? fields).catch(() => undefined)
+    if (opts.sync !== false && !isSampleSession(sessionId) && currentUser() && savingOn()) void api.meSaveDocument(documentType, result.fields ?? fields).catch(() => undefined)
     return result
   },
 
@@ -232,6 +232,17 @@ export const api = {
 
   spending: (sessionId: string) =>
     request<SpendingProfile>(`/sessions/${sessionId}/calculate/spending`, { method: 'POST', body: stateBody(sessionId) }),
+
+  deadlines: (sessionId: string) =>
+    request<DeadlinesResult>(`/sessions/${sessionId}/calculate/deadlines`, { method: 'POST', body: stateBody(sessionId, { days: 240 }) }),
+
+  gstReconcileSample: () => request<{ books_csv: string; gstr2b_csv: string }>('/gst/reconcile-sample'),
+
+  gstReconcile: (books_csv: string, gstr2b_csv: string) =>
+    request<GstReconcileResult>('/gst/reconcile', { method: 'POST', body: JSON.stringify({ books_csv, gstr2b_csv }) }),
+
+  itrPrefill: (sessionId: string) =>
+    request<ItrPack>(`/sessions/${sessionId}/calculate/itr-prefill`, { method: 'POST', body: stateBody(sessionId) }),
 
   getUsageApps: () => request<UsageApps>('/usage/apps'),
 
@@ -459,6 +470,82 @@ export interface MeProgress {
   latest_at: string | null
   previous_at: string | null
   changes: { metric: string; label: string; before: number; after: number; delta: number; better: boolean | null; text: string }[]
+}
+
+export interface Deadline {
+  id: string
+  title: string
+  detail: string
+  date: string
+  days_left: number
+  applies: boolean
+  amount_so_far: number | null
+  domain: 'income_tax' | 'gst'
+  law: { section: string; excerpt: string; source_url: string } | null
+}
+
+export interface DeadlinesResult {
+  deadlines: Deadline[]
+  tax_payable_after_tds: number | null
+  note: string
+}
+
+export interface ReconFinding {
+  status: 'matched' | 'amount_mismatch' | 'probable_match' | 'missing_in_2b' | 'not_in_books'
+  supplier_gstin: string
+  supplier_name: string
+  invoice_no: string
+  books_tax: number | null
+  gstr2b_tax: number | null
+  itc_at_risk: number
+  credit_not_yet_recorded: number
+  message: string
+  what_to_do: string
+  gstin_valid: boolean
+}
+
+export interface GstReconcileResult {
+  summary: {
+    books_invoices: number
+    gstr2b_invoices: number
+    counts: Record<string, number>
+    safe_to_claim: number
+    itc_at_risk: number
+    credit_not_yet_recorded: number
+    invalid_gstins: string[]
+  }
+  findings: ReconFinding[]
+  law: { section: string; title: string; excerpt: string; source_url: string }[]
+  notes_as_of: string
+  reviewed_by_ca: boolean
+  disclaimer: string
+}
+
+export interface ItrPack {
+  schema: string
+  financial_year: string
+  assessment_year: string
+  disclaimer: string
+  taxpayer: { name: string; pan: string | null }
+  suggested_form: string
+  income: { salary_gross: number; interest_from_deposits: number; gross_total_income: number }
+  tax: { old_regime_tax: number; new_regime_tax: number; cheaper_regime: 'old' | 'new'; tax_on_cheaper_regime: number; regime_saving: number }
+  tds: { credit_to_claim: number }
+  result: {
+    regime: 'old' | 'new'
+    tax_payable: number
+    tds_credit: number
+    refund: number
+    still_to_pay: number
+    alternative: { regime: 'old' | 'new'; tax_payable: number; refund: number; still_to_pay: number }
+    includes_interest: number
+  }
+  checklist: { item: string; status: 'ok' | 'missing' | 'check'; why: string }[]
+  missing_count: number
+  ready_to_file: boolean
+  summary_text: string
+  notes_as_of: string
+  reviewed_by_ca: boolean
 }
 
 export interface UsageApps {

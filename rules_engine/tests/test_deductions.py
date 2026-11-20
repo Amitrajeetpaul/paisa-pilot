@@ -28,8 +28,8 @@ def test_donation_80g_categories_and_cash_limit():
 def test_extra_deduction_only_saves_if_old_regime_wins():
     r = saving_from_extra_deduction(1_000_000, 150000, 50000, CFG)
     assert r.saving == 0 and r.regime_after == "new"
-    r = saving_from_extra_deduction(1_300_000, 150000, 400000, CFG)
-    assert r.saving > 0 and r.regime_before == "new" and r.regime_after == "old"
+    r = saving_from_extra_deduction(1_500_000, 150000, 450000, CFG)
+    assert r.saving == 11700 and r.regime_before == "new" and r.regime_after == "old"
 
 
 def test_best_tax_picks_cheaper_regime():
@@ -48,13 +48,13 @@ def _docs(basic, hra, rent, donation, gross=1_300_000):
 
 
 def test_rent_and_donation_together_flip_the_regime():
-    s = {x.id: x for x in build_suggestions(_docs(70000, 40000, 40000, 140000), CFG)}
+    s = {x.id: x for x in build_suggestions(_docs(70000, 40000, 40000, 140000, gross=1_500_000), CFG)}
     assert s["hra"].saving == 0 and s["donation"].saving == 0  # each alone changes nothing
     assert s["combined"].saving > 0
     assert "80G" in s["donation"].title
 
 
-def test_hra_suggestion_has_real_saving_when_old_regime_wins_alone():
+def test_hra_suggestion_reports_the_exempt_amount():
     s = {x.id: x for x in build_suggestions(_docs(70000, 40000, 40000, 0, gross=1_500_000), CFG)}
     assert "combined" not in s
     assert s["hra"].evidence["hra_exempt"] == 336000

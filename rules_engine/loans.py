@@ -16,9 +16,11 @@ class LoanSwitchResult:
     new_monthly_emi: float
     total_payment_if_stay: float
     total_payment_if_switch: float
-    processing_fee: float
+    processing_fee: float  # fee plus GST
     net_saving: float
     worth_switching: bool
+    foreclosure_charge: float = 0.0
+    emi_mismatch_percent: float = 0.0  # how far the EMI you gave is from what the rate and tenure imply
 
 
 def monthly_emi(*, principal: float, annual_rate_percent: float, tenure_months: int) -> float:
@@ -38,6 +40,8 @@ def loan_switch_saving(
     remaining_tenure_months: int,
     new_annual_rate_percent: float,
     processing_fee_percent: float,
+    foreclosure_charge_percent: float = 0.0,
+    gst_on_fee_percent: float = 18.0,
 ) -> LoanSwitchResult:
     """Compares staying on the current loan vs refinancing the outstanding
     principal at a new rate for the same remaining tenure, net of a
@@ -48,9 +52,13 @@ def loan_switch_saving(
         tenure_months=remaining_tenure_months,
     )
     total_if_stay = current_monthly_emi * remaining_tenure_months
-    processing_fee = round(outstanding_principal * processing_fee_percent / 100, 2)
-    total_if_switch = new_emi * remaining_tenure_months + processing_fee
+    # Lenders charge GST (18%) on the processing fee, and some charge to close the old loan early.
+    processing_fee = round(outstanding_principal * processing_fee_percent / 100 * (1 + gst_on_fee_percent / 100), 2)
+    foreclosure = round(outstanding_principal * foreclosure_charge_percent / 100, 2)
+    total_if_switch = new_emi * remaining_tenure_months + processing_fee + foreclosure
     net_saving = round(total_if_stay - total_if_switch, 2)
+    implied = monthly_emi(principal=outstanding_principal, annual_rate_percent=current_annual_rate_percent, tenure_months=remaining_tenure_months)
+    mismatch = round(abs(implied - current_monthly_emi) / implied * 100, 1) if implied else 0.0
     return LoanSwitchResult(
         current_monthly_emi=current_monthly_emi,
         new_monthly_emi=new_emi,
@@ -59,4 +67,6 @@ def loan_switch_saving(
         processing_fee=processing_fee,
         net_saving=net_saving,
         worth_switching=net_saving > 0,
+        foreclosure_charge=foreclosure,
+        emi_mismatch_percent=mismatch,
     )

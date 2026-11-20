@@ -74,3 +74,19 @@ def test_composition_comparison():
     assert c["eligible"] and c["composition_tax"] == 1000.0 and c["cheaper"] == "composition"
     assert not composition_comparison(d, "trader", 3_000_000, True, CFG)["eligible"]
     assert not composition_comparison(d, "service", 6_000_000, False, CFG)["eligible"]
+
+
+def test_blocked_credit_keywords_match_whole_words_only():
+    from rules_engine.gst import Invoice, blocked_reason
+
+    def r(desc):
+        return blocked_reason(Invoice("purchase", "X", date(2026, 10, 1), 1000, 18, "intra", desc), CFG)
+
+    assert r("Co-working space rent") is None          # "spa" is not in "space"
+    assert r("Card reader for shop") is None            # "car" is not in "card"
+    assert r("Storage cabinet") is None                 # "cab" is not in "cabinet"
+    assert r("Tax-free sampling kit") is None           # "sample" is not "sampling"
+    assert r("Team lunch food") == "Food and beverages"
+    assert r("Uber rides for client visit") == "Cab or aircraft rental"
+    assert r("Company car purchase") == "Motor vehicle for up to 13 people"
+    assert r("Gym membership for staff") == "Club, gym or fitness membership"

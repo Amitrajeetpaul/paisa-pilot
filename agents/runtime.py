@@ -230,8 +230,17 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
         return [("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]})]
     if "pf" in ql and "pf_passbook" in c:
         return [("review_pf_accounts_tool", {"accounts": c["pf_passbook"]["accounts"]})]
-    if "emergency" in ql and "payslip" in c:
-        return [("emergency_fund_target_tool", {"monthly_expense_basis": c["payslip"]["net_pay"]})]
+    if "emergency" in ql and ("payslip" in c or "bank_statement" in c):
+        bank = c.get("bank_statement")
+        if bank and bank.get("transactions"):
+            from rules_engine.spending import spending_profile
+
+            sp = spending_profile(bank["transactions"])
+            basis = sp["spending_per_month"] - sp["invested_per_month"]  # what you must keep paying, not what you save
+            if basis > 0:
+                return [("emergency_fund_target_tool", {"monthly_expense_basis": float(basis), "basis": "spending"})]
+        if "payslip" in c:
+            return [("emergency_fund_target_tool", {"monthly_expense_basis": c["payslip"]["net_pay"]})]
     if "insurance" in ql or "term cover" in ql:
         income = c.get("form16", {}).get("gross_salary_annual") or (c.get("payslip", {}).get("monthly_gross_salary", 0) * 12)
         return [("insurance_guide_tool", {"annual_income": income or 0})]
@@ -349,7 +358,10 @@ def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
                 "This is a rule of thumb, not a rule."
             )
         if name == "emergency_fund_target_tool":
-            return f"A common rule of thumb is {r['months']} months of expenses — about {_inr(r['target_amount'])} on your net pay."
+            if r.get("basis") == "spending":
+                return (f"A common rule of thumb is {r['months']} months of expenses. Your bank statement shows about {_inr(r['monthly_expense_basis'])} a month of real spending "
+                        f"(rent, bills, EMIs and everyday costs, not what you invest), so aim for about {_inr(r['target_amount'])}. Keep it somewhere easy to reach, such as a savings account or liquid fund.")
+            return f"A common rule of thumb is {r['months']} months of expenses: about {_inr(r['target_amount'])} using your net pay as a stand-in. Add a bank statement and we will use your real spending, which is usually lower."
         if name == "insurance_guide_tool":
             t = f"{r['term_explainer']} {r['health_explainer']}"
             if r["suggested_term_cover"]:

@@ -72,3 +72,17 @@ def spending(session_id: str, body: TaxSuggestionBody | None = None) -> dict:
     if bank is None:
         raise HTTPException(status_code=400, detail="Confirm a bank statement first")
     return {**spending_profile(bank["transactions"]), "note": "Labels are guesses from the bank descriptions. Correct any that look wrong."}
+
+
+@router.post("/calculate/itr-prefill")
+def itr_prefill(session_id: str, body: TaxSuggestionBody | None = None) -> dict:
+    """The filing pack: income, tax both ways, TDS credit, refund or amount to pay, and a checklist of what is missing."""
+    from rules_engine.itr_prefill import build_itr_prefill
+
+    if not get_db().session_exists(session_id):
+        raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")
+    docs = load_confirmed(session_id, (body or TaxSuggestionBody()).confirmed)
+    pack = build_itr_prefill(docs, RULES_CONFIG)
+    if pack is None:
+        raise HTTPException(status_code=400, detail="Confirm a Form 16 or payslip first")
+    return {**pack, "notes_as_of": tax_corpus().as_of, "reviewed_by_ca": tax_corpus().reviewed_by_ca}

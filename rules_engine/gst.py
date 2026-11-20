@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import io
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
@@ -100,7 +101,8 @@ def _tax(inv: Invoice) -> dict[str, float]:
 def blocked_reason(inv: Invoice, config: dict) -> str | None:
     hay = f"{inv.category} {inv.description}".lower()
     for entry in config["blocked_categories"].values():
-        if any(k in hay for k in entry["keywords"]):
+        # whole words only: "car" must not match "card", "cab" not "cabinet", "spa" not "workspace"
+        if any(re.search(r"(?<![a-z0-9])" + re.escape(k) + r"s?(?![a-z0-9])", hay) for k in entry["keywords"]):
             return entry["label"]
     return None
 

@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from agents.gst_assistant import answer_gst_question, corpus
+from rules_engine.gst_recon import parse_register, reconcile
 from rules_engine.gst import composition_comparison, compute_gstr3b, load_gst_config, parse_invoices_csv
 
 router = APIRouter(prefix="/gst", tags=["gst"])
@@ -86,3 +87,32 @@ def draft(body: DraftBody) -> dict:
         "notes_as_of": corpus().as_of, "reviewed_by_ca": corpus().reviewed_by_ca, "disclaimer": _DISCLAIMER,
         "invoice_count": sum(1 for i in invoices if i.date.strftime("%Y-%m") == period),
     }
+
+
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "config"
+
+
+class ReconBody(BaseModel):
+    books_csv: str
+    gstr2b_csv: str
+
+
+@router.get("/reconcile-sample")
+def reconcile_sample() -> dict:
+    return {"books_csv": (_CONFIG_DIR / "gst_sample_books.csv").read_text(), "gstr2b_csv": (_CONFIG_DIR / "gst_sample_2b.csv").read_text()}
+
+
+@router.post("/reconcile")
+def reconcile_2b(body: ReconBody) -> dict:
+    """Match your purchase register with GSTR-2B and say which input credit is safe to claim."""
+    if len(body.books_csv) > _MAX_CSV_CHARS or len(body.gstr2b_csv) > _MAX_CSV_CHARS:
+        raise HTTPException(status_code=413, detail="File is too large")
+    try:
+        books = parse_register(body.books_csv, "purchase register")
+        twob = parse_register(body.gstr2b_csv, "GSTR-2B")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail={"code": "bad_invoice_file", "message": str(exc)}) from None
+    result = reconcile(books, twob)
+    law = [p for p in corpus().passages if p.id in ("itc-conditions", "gstr2b")]
+    return {**result, "law": [{"section": p.section, "title": p.title, "excerpt": p.text, "source_url": p.source_url} for p in law],
+            "notes_as_of": corpus().as_of, "reviewed_by_ca": corpus().reviewed_by_ca, "disclaimer": _DISCLAIMER}

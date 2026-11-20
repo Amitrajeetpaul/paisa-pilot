@@ -1,4 +1,5 @@
 import { api, rememberSavingOn, type MeResult } from './api'
+import { isSampleSession } from './clientSession'
 
 const DOC_TYPES = ['payslip', 'form16', 'bank_statement', 'pf_passbook', 'ais'] as const
 
@@ -37,6 +38,8 @@ export async function restoreFromAccount(me: MeResult, s: SessionSetters): Promi
 
 /** When a person switches saving on, copy what they have already confirmed in this session into their account. */
 export async function pushCurrentDocs(sessionId: string): Promise<number> {
+  // The built-in sample profile is demo data, never someone's own: it must not end up in their account.
+  if (isSampleSession(sessionId)) return 0
   let n = 0
   for (const type of DOC_TYPES) {
     try {

@@ -27,3 +27,12 @@ def test_bad_file_gives_friendly_error():
 def test_ask_returns_citation():
     r = c.post("/gst/ask", json={"question": "Can I claim GST credit on a car?"}).json()
     assert r["citations"][0]["section"] == "CGST Act Sec 17(5)" and r["reviewed_by_ca"] is False
+
+
+def test_reconcile_endpoint_with_the_sample_files():
+    s = c.get("/gst/reconcile-sample").json()
+    r = c.post("/gst/reconcile", json={"books_csv": s["books_csv"], "gstr2b_csv": s["gstr2b_csv"]}).json()
+    assert r["summary"]["itc_at_risk"] == 15000 and r["summary"]["credit_not_yet_recorded"] == 7200
+    assert {p["section"] for p in r["law"]} >= {"CGST Act Sec 16(2)"}
+    bad = c.post("/gst/reconcile", json={"books_csv": "a,b\n1,2\n", "gstr2b_csv": s["gstr2b_csv"]})
+    assert bad.status_code == 422 and "needs the columns" in bad.json()["detail"]["message"]

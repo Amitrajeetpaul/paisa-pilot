@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { GstReconcile } from '../components/GstReconcile'
 import { ApiError, api, type GstAskResult, type GstDraftResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 
@@ -135,6 +136,8 @@ export function GstScreen() {
         {err && <p className="mt-3 text-sm text-red-700" role="alert">{err}</p>}
         {draft && <Draft d={draft} />}
       </section>
+
+      <GstReconcile />
     </div>
   )
 }

@@ -44,6 +44,39 @@ def _known(value: float, pool: set[float]) -> bool:
     return any(abs(value - p) <= _TOLERANCE for p in pool)
 
 
+_UNITS = {w: i for i, w in enumerate("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split())}
+_TENS = {w: 10 * (i + 2) for i, w in enumerate("twenty thirty forty fifty sixty seventy eighty ninety".split())}
+_SCALES = {"hundred": 100, "thousand": 1_000, "lakh": 100_000, "lakhs": 100_000, "lac": 100_000, "lacs": 100_000, "crore": 10_000_000, "crores": 10_000_000, "million": 1_000_000}
+_WORD = re.compile(r"\b(?:" + "|".join(list(_UNITS) + list(_TENS) + list(_SCALES) + ["and"]) + r")(?:[\s-]+(?:" + "|".join(list(_UNITS) + list(_TENS) + list(_SCALES) + ["and"]) + r"))*\b", re.I)
+
+
+def numbers_in_words(text: str) -> list[float]:
+    """Amounts the model wrote out in words ("seventy-five thousand", "3 lakh" is digits and handled elsewhere).
+    Only phrases with a scale word (hundred, thousand, lakh, crore, million) count: "two accounts" is not an amount."""
+    out: list[float] = []
+    for m in _WORD.finditer(text):
+        words = [w for w in re.split(r"[\s-]+", m.group(0).lower()) if w and w != "and"]
+        while words and words[0] in _SCALES and words[0] != "hundred":
+            words.pop(0)  # "3 lakh and two": the scale belongs to the digit before it, not to the words
+        if not any(w in _SCALES for w in words):
+            continue
+        total, current = 0, 0
+        for w in words:
+            if w in _UNITS:
+                current += _UNITS[w]
+            elif w in _TENS:
+                current += _TENS[w]
+            elif w == "hundred":
+                current = (current or 1) * 100
+            else:
+                total += (current or 1) * _SCALES[w]
+                current = 0
+        value = float(total + current)
+        if value >= 1000:
+            out.append(value)
+    return out
+
+
 def check_provenance(tool_calls: list[dict[str, Any]], answer: str, confirmed: dict, question: str) -> list[str]:
     """Returns a list of problems; empty means every number is traceable."""
     problems: list[str] = []
@@ -65,4 +98,7 @@ def check_provenance(tool_calls: list[dict[str, Any]], answer: str, confirmed: d
         n = float(m.replace(",", ""))
         if not _known(n, allowed):
             problems.append(f"answer states ₹{n:,.0f}, which no tool or document produced")
+    for n in numbers_in_words(answer):
+        if not _known(n, allowed):
+            problems.append(f"answer states {n:,.0f} in words, which no tool or document produced")
     return problems

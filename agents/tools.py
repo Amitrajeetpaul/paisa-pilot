@@ -170,9 +170,10 @@ def loan_switch_saving_tool(
     remaining_tenure_months: int,
     new_annual_rate_percent: float,
     processing_fee_percent: float,
+    foreclosure_charge_percent: float = 0.0,
 ) -> dict:
     """Compares staying on a current loan vs switching to a new rate for the
-    same remaining tenure, net of a processing fee.
+    same remaining tenure, net of the processing fee (with 18% GST) and any foreclosure charge.
 
     Returns:
         new_monthly_emi, net_saving, worth_switching.
@@ -184,10 +185,13 @@ def loan_switch_saving_tool(
         remaining_tenure_months=remaining_tenure_months,
         new_annual_rate_percent=new_annual_rate_percent,
         processing_fee_percent=processing_fee_percent,
+        foreclosure_charge_percent=foreclosure_charge_percent,
     )
     return {
         "new_monthly_emi": result.new_monthly_emi,
         "processing_fee": result.processing_fee,
+        "foreclosure_charge": result.foreclosure_charge,
+        "emi_mismatch_percent": result.emi_mismatch_percent,
         "net_saving": result.net_saving,
         "worth_switching": result.worth_switching,
     }
@@ -207,10 +211,16 @@ def sip_future_value_tool(monthly_amount: float, annual_return_percent: float, t
     return {"future_value": result.future_value, "gain": result.gain, "total_invested": result.total_invested}
 
 
-def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6) -> dict:
-    """Computes an emergency fund target as months of expenses."""
+def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6, basis: str = "net pay") -> dict:
+    """Computes an emergency fund target as months of expenses.
+
+    Args:
+        monthly_expense_basis: Monthly spending to cover (use real spending from the bank statement when you have it).
+        months: Months of expenses to hold (default 6).
+        basis: "spending" if the figure is real monthly spending, otherwise "net pay" (a rougher stand-in).
+    """
     result = emergency_fund_target(monthly_expense_basis, months=months)
-    return {"target_amount": result.target_amount, "months": result.months}
+    return {"target_amount": result.target_amount, "months": result.months, "monthly_expense_basis": monthly_expense_basis, "basis": basis}
 
 
 def savings_target_tool(net_monthly_income: float, savings_rate_percent: float = 20) -> dict:

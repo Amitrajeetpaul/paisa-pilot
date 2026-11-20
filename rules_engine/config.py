@@ -26,6 +26,8 @@ class TaxSlab:
 class Rebate87A:
     taxable_income_threshold: float
     max_rebate: float
+    # New regime: just above the threshold the tax is capped at the income above it, so a rupee more never costs more than a rupee.
+    marginal_relief: bool = False
 
 
 @dataclass(frozen=True)

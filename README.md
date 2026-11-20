@@ -34,13 +34,16 @@ not a dependency.
 
 ## What this is
 
-Three modules, one trust story:
+Modules, one trust story:
 
 | Module | Job |
 |---|---|
 | **Money Finder** | Old vs new tax regime, extra TDS, old PF accounts, failed/double bank payments |
-| **Leak Fixer** | Idle subscriptions, live UPI AutoPay, high-interest loan switching |
-| **AI Consultant** | Salary/Form16 explained, savings targets, FD/RD/SIP maths, goal categories |
+| **Leak Fixer** | Idle subscriptions, live UPI AutoPay, high-interest loan switching, where your money goes (spending profile), and which subscriptions you hardly use (Android Usage Access or a viewing-history file) |
+| **AI Consultant / CA Assistant** | Salary/Form16 explained, savings targets, FD/RD/SIP maths, and CA-style tax advice: deductions (HRA, 80G, 80D, NPS), tax on share/property/crypto sales, freelancer tax, grounded in a library of income-tax and GST law notes (RAG) with section citations |
+| **Filing pack and dates** | A "ready to file" summary (income, tax both ways, TDS credit, refund, checklist) and the dates that matter (advance tax, ITR), with Android reminders |
+| **GST** | Ask GST questions with citations, draft a GSTR-3B, and reconcile your purchases against GSTR-2B to see which input credit is at risk |
+| **Accounts (optional)** | Google Identity Platform sign-in; with consent, your confirmed values and results are saved so advice builds on earlier visits. Delete everything any time |
 
 **The AI never computes a number. `rules_engine/` does** -- a plain
 Python package with no AI and no network calls, with a worked-example

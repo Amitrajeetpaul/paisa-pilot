@@ -1,0 +1,6 @@
+supplier_gstin,supplier_name,invoice_no,invoice_date,taxable_value,igst,cgst,sgst
+29AAACS1111A1Z1,Sharma Stationers,INV-001,2026-10-03,50000,0,4500,4500
+29AAACS1111A1Z1,Sharma Stationers,INV-002,2026-10-10,20000,0,1500,1500
+07CCCDU3333C1Z3,Delhi Supplies,98,2026-10-15,30000,0,2700,2700
+29DDDEV4444D1Z4,Vijay Services,BL-71,2026-10-20,10000,0,900,900
+29EEEFW5555E1Z5,Eshwar Hardware,X-1,2026-10-22,40000,0,3600,3600

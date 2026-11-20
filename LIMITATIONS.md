@@ -84,12 +84,36 @@ repeats this.
 - Real payment processing (the "fee only after a verified win" line in
   the UI is not wired to any payment flow).
 
-## No real authentication
+## Accounts are optional and only on the main server
 
-A `session_id` from `/consent` is a bearer capability, not a login -- there
-is no user account system, password, or identity check anywhere.
-Acceptable for a demo; not acceptable for real user data without adding
-real auth first.
+Sign-in is Google Identity Platform (email + password); we never see a password. With consent ("Remember my details"),
+confirmed values, computed results and a short note of questions are saved per user in Firestore, with no expiry, and can
+be erased at any time. Without an account a `session_id` is still just a bearer capability, not a login. Accounts need
+the Cloud Run server (the Vercel backup keeps no data and refuses to run them). There is no account recovery beyond
+Google's password-reset email, no sign-up abuse protection (App Check / reCAPTCHA), and no rate limiting on any endpoint,
+so a public deployment can be hit hard and Gemini calls can cost money. Add rate limits and a daily Gemini cap before
+real traffic.
+
+## What the tax and GST engines do not model
+
+* **Financial year.** Rules are FY 2025-26 (AY 2026-27) under the Income-tax Act 1961. A new Income-tax Act, 2025 applies
+  from 1 April 2026 and renumbers sections; advice for FY 2026-27 onwards must be re-checked. Advance-tax amounts for the
+  current year are estimated from FY 2025-26 figures.
+* **Implemented carefully:** slabs, cess, Section 87A rebate **with marginal relief** (new regime), surcharge **with
+  marginal relief** and the 25% cap in the new regime. Verified against an independent reference implementation in
+  `rules_engine/tests/test_reference_tax.py`.
+* **Not modelled:** senior-citizen slabs (age is not read), professional-tax deduction, HRA for the expanded metro list,
+  Section 80D split between self and parents, set-off of capital gains against unused basic exemption, surcharge caps on
+  capital gains, house-property income, ESOP perquisites, foreign income. Capital-gains figures are for one sale.
+* **Approximations:** RD maturity is a planning figure (quarterly compounding), not a bank certificate. Loan-switch savings
+  use the EMI you give and add 18% GST on the processing fee; prepayment charges are an input you must supply.
+* **GST:** reverse charge, ITC reversals, zero-rated supplies and rate changes by date are not modelled. Blocked-credit
+  detection is keyword-based (whole words) and a hint, not a determination. GSTR-2B reconciliation matches on supplier GSTIN
+  plus a normalised invoice number and cannot read the portal's own JSON.
+* **Law notes** (`config/rules/*_corpus.yaml`) are our plain-language summaries, **not reviewed by a CA**. The app says so.
+* **Usage tracking:** Android keeps only about a week of daily app-usage detail, so a 30-day view builds up over time. The
+  Android plugin has not been run on a physical device. Reminders fire when the app is opened; they are not scheduled
+  background alarms.
 
 ## Upload TTL is day-granular on GCS, hour-granular locally
 

@@ -69,3 +69,14 @@ def test_run_agent_falls_through_to_the_next_model_when_one_is_out_of_quota(monk
     monkeypatch.setattr(rt, "_drive", drive)
     run = rt.run_agent("consultant", CONFIRMED, "hello", mode="live")
     assert run.engine == "gemini" and len(seen) == 2
+
+
+def test_amounts_written_in_words_are_checked_too():
+    from agents.provenance import check_provenance, numbers_in_words
+
+    assert numbers_in_words("it costs seventy-five thousand four hundred rupees") == [75400.0]
+    assert numbers_in_words("about 3 lakh and two accounts") == []  # digits are handled elsewhere; "two accounts" is no amount
+    assert numbers_in_words("five lakh") == [500000.0]
+    docs = {"form16": {"tds": 75400}}
+    assert check_provenance([], "You save seventy-five thousand four hundred.", docs, "q") == []
+    assert check_provenance([], "You save ninety-one thousand.", docs, "q")  # invented

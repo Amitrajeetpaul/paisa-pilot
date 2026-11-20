@@ -50,20 +50,45 @@ def _slab_tax(taxable_income: float, regime: RegimeConfig) -> float:
 
 def _rebate(slab_tax: float, taxable_income: float, regime: RegimeConfig) -> float:
     rebate_cfg = regime.rebate_87a
-    if taxable_income > rebate_cfg.taxable_income_threshold:
-        return 0.0
-    return min(slab_tax, rebate_cfg.max_rebate)
+    if taxable_income <= rebate_cfg.taxable_income_threshold:
+        return min(slab_tax, rebate_cfg.max_rebate)
+    if rebate_cfg.marginal_relief:
+        # Just above the limit the person should never pay more tax than the income above it.
+        excess = taxable_income - rebate_cfg.taxable_income_threshold
+        if slab_tax > excess:
+            return slab_tax - excess
+    return 0.0
 
 
-def _surcharge(tax_after_rebate: float, total_income: float, regime_name: str, config: RulesConfig) -> float:
-    applicable_rate = 0.0
+def _tax_after_rebate(taxable_income: float, regime: RegimeConfig) -> float:
+    slab = _slab_tax(taxable_income, regime)
+    return max(0.0, slab - _rebate(slab, taxable_income, regime))
+
+
+def _surcharge_rate(total_income: float, regime_name: str, config: RulesConfig) -> tuple[float, float]:
+    """(rate percent, lower limit of the band). A band applies only to income ABOVE its lower limit."""
+    rate, lower = 0.0, 0.0
     for band in config.surcharge_bands:
         if band.regime is not None and band.regime != regime_name:
             continue
         upper = band.total_income_to if band.total_income_to is not None else float("inf")
-        if band.total_income_from <= total_income <= upper:
-            applicable_rate = max(applicable_rate, band.rate_percent)
-    return tax_after_rebate * applicable_rate / 100
+        if band.total_income_from < total_income <= upper and band.rate_percent >= rate:
+            rate, lower = band.rate_percent, band.total_income_from
+    return rate, lower
+
+
+def _surcharge(tax_after_rebate: float, total_income: float, regime_name: str, regime: RegimeConfig, config: RulesConfig) -> float:
+    rate, lower = _surcharge_rate(total_income, regime_name, config)
+    if rate == 0:
+        return 0.0
+    surcharge = tax_after_rebate * rate / 100
+    # Marginal relief: tax plus surcharge must not rise by more than the income above the band's lower limit.
+    tax_at_limit = _tax_after_rebate(lower, regime)
+    prev_rate, _ = _surcharge_rate(lower, regime_name, config)
+    cap = tax_at_limit * (1 + prev_rate / 100) + (total_income - lower)
+    if tax_after_rebate + surcharge > cap:
+        surcharge = max(0.0, cap - tax_after_rebate)
+    return surcharge
 
 
 def compute_tax(
@@ -87,6 +112,7 @@ def compute_tax(
         tax_after_rebate,
         total_income_for_surcharge if total_income_for_surcharge is not None else taxable_income,
         regime_name,
+        regime,
         config,
     )
     cess = (tax_after_rebate + surcharge) * config.cess_percent / 100

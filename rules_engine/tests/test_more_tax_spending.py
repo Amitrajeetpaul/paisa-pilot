@@ -49,6 +49,8 @@ def test_spending_profile_on_the_sample_statement():
     bank = json.load(open("sample_data/ground_truth/bank_statement_riya_sharma_q3fy26.json"))
     p = spending_profile(bank["transactions"])
     assert p["months_covered"] == 3 and p["income_per_month"] == 83133
-    assert sum(c["total"] for c in p["categories"]) == pytest.approx(sum(t["amount"] for t in bank["transactions"] if t["type"] == "debit"))
+    real = [t for t in bank["transactions"] if t["type"] == "debit" and "FAILED" not in t["description"]]
+    assert p["failed_payments_skipped"] == 1  # the failed City Grocers payment is not spending
+    assert sum(c["total"] for c in p["categories"]) == pytest.approx(sum(t["amount"] for t in real))
     ids = {f["id"] for f in p["flags"]}
     assert "no_investing" in ids and "no_insurance" in ids and "emi_load" not in ids  # EMI is 14% of salary
