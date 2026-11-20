@@ -22,9 +22,10 @@ T = TypeVar("T", bound=BaseModel)
 _ATTEMPTS_PER_MODEL = 2
 _TOTAL_BUDGET_SECONDS = float(os.environ.get("GEMINI_TOTAL_BUDGET_SECONDS", "40"))  # stay inside a 60s serverless limit
 _PER_CALL_CAP_SECONDS = 25.0
-_DEFAULT_FALLBACK_MODELS = "gemini-3.5-flash-lite,gemini-flash-lite-latest,gemini-3.1-flash-lite"
+_DEFAULT_FALLBACK_MODELS = "gemini-flash-lite-latest,gemini-3.1-flash-lite,gemini-3.8-flash"
+_MIN_CALL_SECONDS = 10.0  # Gemini rejects a request deadline shorter than this
 
-DEFAULT_READER_MODEL = "gemini-3.8-flash"
+DEFAULT_READER_MODEL = "gemini-3.5-flash-lite"  # works on the free tier; 3.8-flash has no free quota
 DEFAULT_EXPLAINER_MODEL = "gemini-4-argon"
 
 
@@ -79,7 +80,7 @@ def generate_structured(
     for candidate in _model_chain(model):
         for attempt in range(1, _ATTEMPTS_PER_MODEL + 1):
             remaining = deadline - time.monotonic()
-            if remaining < 3:
+            if remaining < _MIN_CALL_SECONDS:
                 break  # out of budget: fail fast with a clear error instead of hitting the host's hard limit
             call_config = config.model_copy(
                 update={"http_options": types.HttpOptions(timeout=int(min(_PER_CALL_CAP_SECONDS, remaining) * 1000))}
@@ -100,7 +101,7 @@ def generate_structured(
                     time.sleep(1)
             except Exception as exc:  # noqa: BLE001 - a per-call timeout or network error: try the next model
                 last_error = exc
-        if response is not None or deadline - time.monotonic() < 3:
+        if response is not None or deadline - time.monotonic() < _MIN_CALL_SECONDS:
             break
     if response is None:
         raise last_error or TimeoutError("The reader ran out of time")
