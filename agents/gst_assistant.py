@@ -131,7 +131,8 @@ def answer_gst_question(question: str, mode: str | None = None) -> GstAnswer:
         return GstAnswer(_NO_ANSWER, [], False, "not_found")
     passages = [p for p, _ in hits]
     mode = mode or os.environ.get("READER_MODE", "fixture")
-    if mode == "live":
+    strong = hits[0][1] >= 7.0 or any(k.lower() in question.lower() for k in passages[0].keywords if " " in k or len(k) > 4)
+    if mode == "live" and not strong:
         try:
             from google.genai import types
 

@@ -63,7 +63,9 @@ def check_guardrail(answer_text: str) -> GuardrailResult:
                 rewritten_answer=_generic_rewrite(answer_text),
             )
     for pattern in _GUARANTEE_PATTERNS:
-        if re.search(pattern, answer_text, re.IGNORECASE):
+        m = re.search(pattern, answer_text, re.IGNORECASE)
+        # "Returns are not guaranteed" is the warning we want, not a promise: skip negated phrases
+        if m and not re.search(r"\b(not|no|never|cannot|can't|aren't|isn't|without)\b", m.group(0), re.IGNORECASE):
             return GuardrailResult(
                 flagged=True,
                 reason="Implied a guaranteed or specific future return.",

@@ -193,25 +193,45 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
 _PROGRESS_Q = re.compile(r"(last time|since (my )?last|progress|improv|compared|previous|my history|earlier visit|how am i doing|what changed|better than before)", re.I)
 
 
+RULES_CHIP = "Answered by our rules engine from your documents (no AI used)"
+_PRODUCT_PICK = re.compile(r"\b(which|best|top|good)\b[^?]{0,40}\b(mutual funds?|funds?|stocks?|shares?|polic(y|ies)|insurance plans?|credit cards?|banks?|demat|crypto(currency)?|coins?)\b(?![^?]{0,20}\b(tax|taxed|taxable)\b)", re.I)
+_PRODUCT_REPLY = (
+    "I can't recommend a specific fund, stock, policy, card or bank. Only a SEBI-registered investment adviser (or, for insurance, an "
+    "IRDAI-licensed adviser) can do that, and I don't earn anything from any product.\n"
+    "• What I can do: tell you the right category for your goal (for example FD or RD for goals under 3 years, a mix for 3 to 5 years, "
+    "equity funds for 5 years or more), work out how much to put aside each month, and show the tax on what you earn from it.\n"
+    "• Try: \"I need 5 lakh in 4 years\" or \"SIP of 5000 a month for 10 years\"."
+)
+AI_CHIP = "Explained by AI (Gemini) from your documents and our law notes"
+
+
 def answer_question(confirmed: dict[str, dict], question: str, mode: str | None = None, memory: dict | None = None) -> ConsultantAnswer:
     if _PROMPT_PROBE.search(question):
         return ConsultantAnswer(answer=_PROBE_REPLY, guardrail_flagged=True, source_chip="")
+    if _PRODUCT_PICK.search(question):
+        return ConsultantAnswer(answer=_PRODUCT_REPLY, guardrail_flagged=False, source_chip=RULES_CHIP)  # SEBI/IRDAI line, no AI needed
     if memory and memory.get("progress_text") and _PROGRESS_Q.search(question):
         # Straight from the saved snapshots: the comparison is arithmetic, not AI.
         return ConsultantAnswer(answer=memory["progress_text"], guardrail_flagged=False, source_chip="Source: your saved history")
     resolved_mode = mode or os.environ.get("READER_MODE", "fixture")
-    if resolved_mode == "live":
+    from agents.runtime import route_consultant
+    from llm.client import gemini_configured
+
+    _, confident = route_consultant(confirmed, question)
+    # Rules first: if a rule covers the question fully, answer from the rules engine and do not call Gemini at all.
+    # Gemini is only for questions no rule covers (and free text in Hindi). If Gemini fails, the offline brain
+    # gives an honest "can't answer that reliably" rather than a different answer.
+    use_gemini = resolved_mode == "live" and not confident and gemini_configured()
+    if use_gemini:
         try:
             answer_text, source_chip = _live_answer(confirmed, question, memory)
         except Exception:
-            # Gemini quota / overload / network trouble: degrade to the
-            # deterministic rules-engine answer instead of a 500.
             logger.exception("Live consultant failed; falling back to the offline ADK agent")
             try:
                 from agents.runtime import run_offline
 
                 answer_text = run_offline("consultant", confirmed, question).answer
-                source_chip = "Source: your confirmed numbers + our tax and savings rules"
+                source_chip = RULES_CHIP
             except Exception:
                 logger.exception("Offline agent failed; using fixture answer")
                 answer_text, source_chip = _fixture_answer(confirmed, question)
@@ -220,7 +240,7 @@ def answer_question(confirmed: dict[str, dict], question: str, mode: str | None 
             from agents.runtime import run_offline
 
             run = run_offline("consultant", confirmed, question)
-            answer_text, source_chip = run.answer, "Source: your confirmed numbers + our tax and savings rules"
+            answer_text, source_chip = run.answer, (RULES_CHIP if confident else "Source: Paisa Pilot")
         except Exception:
             logger.exception("Offline agent failed; using template answer")
             answer_text, source_chip = _fixture_answer(confirmed, question)
@@ -282,5 +302,5 @@ def _live_answer(confirmed: dict[str, dict], question: str, memory: dict | None 
     run = run_agent("consultant", confirmed, question, mode="live", memory=memory)
     return (
         run.answer or "I couldn't produce an answer just now.",
-        "Source: your confirmed numbers + our tax and savings rules",
+        AI_CHIP if run.engine == "gemini" else RULES_CHIP,
     )

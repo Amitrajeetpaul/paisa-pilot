@@ -44,7 +44,8 @@ def test_spending_endpoint_and_open_questions_use_the_users_own_numbers():
     p = c.post(f"/sessions/{sid}/calculate/spending", json={}).json()
     assert p["income_per_month"] == 83133 and p["categories"][0]["monthly_average"] > 0
     r = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "Should I buy a car on loan or pay cash?"}).json()
-    assert "₹83,133" in r["answer"]
+    # no rule covers this and there is no Gemini in tests: an honest answer, never an unrelated one
+    assert "reliably" in r["answer"] and "₹" not in r["answer"]
 
 
 def test_new_calculators_through_the_chat():

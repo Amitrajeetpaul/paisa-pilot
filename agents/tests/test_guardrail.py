@@ -41,3 +41,10 @@ def test_guardrail_matches_expected_verdict(case):
 
 def test_at_least_8_cases_loaded():
     assert len(CASES) >= 8
+
+
+def test_a_negated_guarantee_is_a_warning_not_a_promise():
+    from agents.guardrail import check_guardrail
+
+    assert not check_guardrail("Returns are not guaranteed; past performance may or may not be sustained.").flagged
+    assert check_guardrail("This fund gives guaranteed returns of 12%.").flagged

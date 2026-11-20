@@ -191,3 +191,18 @@ def breakeven_chapter_via(*, gross_salary_annual: float, config: RulesConfig) ->
         else:
             lo = mid + 1
     return float(lo)
+
+
+def slab_breakdown(taxable_income: float, regime_name: str, config: RulesConfig) -> list[dict]:
+    """Slab-by-slab working for a taxable income: each band, its rate and the tax on it. Used to show
+    "how is my tax calculated" the way a CA writes it out."""
+    regime = config.regimes[regime_name]
+    rows = []
+    for slab in regime.slabs:
+        upper = slab.to if slab.to is not None else float("inf")
+        if taxable_income <= slab.from_:
+            break
+        band = min(taxable_income, upper) - slab.from_
+        rows.append({"from": slab.from_, "to": None if slab.to is None else slab.to, "rate_percent": slab.rate_percent,
+                     "amount_in_band": round(band, 2), "tax": round(band * slab.rate_percent / 100, 2)})
+    return rows

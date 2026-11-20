@@ -209,14 +209,14 @@ def _tax_knowledge_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str,
     return []
 
 
-def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+def _consultant_specific(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
     import re
 
     ql = q.lower()
     knowledge = _tax_knowledge_plan(c, q)
     if knowledge:
         return knowledge
-    if "payslip" in c and any(k in ql for k in ("salary", "take home", "take-home", "in-hand", "in hand", "ctc", "gross", "payslip", "explain my finances")):
+    if "payslip" in c and any(k in ql for k in ("my salary", "my payslip", "take home", "take-home", "in-hand", "in hand", "my ctc", "my gross", "explain my finances", "salary breakdown")):
         p = c["payslip"]
         return [("explain_salary_tool", {
             "monthly_gross_salary": p["monthly_gross_salary"], "basic_pay": p["basic_pay"],
@@ -225,7 +225,7 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
         })]
     if "payslip" in c and any(k in ql for k in ("save every month", "save each month", "monthly saving", "savings target", "how much should i save", "how much to save")):
         return [("savings_target_tool", {"net_monthly_income": c["payslip"]["net_pay"]})]
-    if ("tax" in ql or "regime" in ql) and "form16" in c:
+    if "form16" in c and any(k in ql for k in ("regime", "tax option", "old or new", "new or old", "better for me", "should i switch", "which is better", "choose")):
         f = c["form16"]
         return [("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]})]
     if "pf" in ql and "pf_passbook" in c:
@@ -252,14 +252,176 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
         if amt_m:
             return [("spare_money_plan_tool", {"amount": float(amt_m.group(1).replace(",", "")), "goal_years": years})]
         return [("goal_category_tool", {"goal_years": years})]
-    # Anything else: ground the answer in the law notes when they clearly cover it. Otherwise fall back
-    # to the person's own money picture, so the answer is still about them and never a bare refusal.
+    return []
+
+
+def _consultant_fallback(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+    """No rule covers the question and Gemini is not available: say so honestly and list what we can answer.
+    Never answer a different question than the one asked."""
+    return [("capabilities_tool", {"unanswered": True, "has_documents": bool(c)})]
+
+
+# --- rules-first routing: answer from the rules engine whenever a rule covers the question ---------
+
+import re as _re
+
+_DEVANAGARI = _re.compile(r"[\u0900-\u097F]")
+_GREETING = _re.compile(r"^\s*(hi|hello|hey|namaste|namaskar|good (morning|afternoon|evening))\b|what can you do|how can you help|what do you do|help me\b|^help\b", _re.I)
+_RATE = _re.compile(r"(\d+(?:\.\d+)?)\s*%")
+_MONTHLY = ("per month", "monthly", "a month", "every month", "/month", "each month", "pm ")
+_GOAL_TYPES = (("education", ("education", "college", "school", "study", "studies", "degree", "mba")), ("wedding", ("wedding", "marriage", "shaadi")),
+               ("car", ("car", "bike", "vehicle")), ("home", ("house", "home", "flat", "down payment", "downpayment")),
+               ("retirement", ("retire",)), ("travel", ("trip", "travel", "vacation", "holiday")), ("medical", ("medical", "surgery", "hospital")))
+
+
+def _rate(ql: str) -> float | None:
+    m = _RATE.search(ql)
+    return float(m.group(1)) if m else None
+
+
+def _lpa(ql: str) -> float | None:
+    m = _re.search(r"(\d+(?:\.\d+)?)\s*(lpa|lakhs? per annum|lakh a year|lakh per year)", ql)
+    return float(m.group(1)) * 1e5 if m else None
+
+
+def _intent_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+    """Questions the rules engine answers completely on its own. Order matters: most specific first."""
+    ql = q.lower().strip()
+    amounts = _amounts(q)
+    months = _months_held(ql)
+    rate = _rate(ql)
+    bank = c.get("bank_statement")
+    gv = _gross_and_via(c)
+    monthly_cue = any(k in ql + " " for k in _MONTHLY)
+    selling = any(k in ql for k in ("sold", "sell", "profit", "gain", "booked"))
+
+    if _GREETING.search(ql) and len(ql) < 60:
+        return [("capabilities_tool", {})]
+
+    # "What is X?" about a rule or a term: the law notes, never a personal calculation
+    if _re.match(r"^\s*(what is|what's|what are|whats|explain|meaning of|define|tell me about)\b", ql) and not _re.search(r"\b(my|mine|me|i)\b", ql) \
+            and not amounts and not _lpa(ql) and _law_answer_is_specific(q):
+        return [("search_tax_law_tool", {"query": q})]
+
+    # "Is X taxable / tax-free / deductible?": a rule question, answered by the matching law note
+    if _re.search(r"\b(taxable|tax[- ]free|exempt|taxed|deductible|allowed)\b", ql) and not amounts and _law_answer_is_specific(q) \
+            and not _re.search(r"\bmy (tax|salary|income)\b", ql):
+        return [("search_tax_law_tool", {"query": q})]
+
+    other_income = any(k in ql for k in ("freelanc", "business", "44ad", "profession", "crypto", "bitcoin", "share", "stock", "mutual fund", "property",
+                                          "flat", "land", "rent received", "rental income", "gst"))
+
+    # GST on an amount
+    if "gst" in ql and amounts and not any(k in ql for k in ("register", "registration", "late fee", "turnover", "threshold", "composition", "return", "gstr")):
+        r = rate if rate in (0, 0.25, 1.5, 3, 5, 12, 18, 28, 40) else 18.0
+        return [("gst_amount_tool", {"amount": amounts[0], "rate_percent": r, "inclusive": any(k in ql for k in ("incl", "including", "with gst")),
+                                     "inter_state": any(k in ql for k in ("igst", "inter-state", "inter state", "another state", "other state"))})]
+
+    # deposits and SIP maths
+    if _re.search(r"\b(fd|fixed deposit)\b", ql) and amounts and rate and months:
+        return [("fd_maturity_tool", {"principal": amounts[0], "annual_rate_percent": rate, "tenure_months": months})]
+    if _re.search(r"\b(rd|recurring deposit)\b", ql) and amounts and rate and months:
+        return [("rd_maturity_tool", {"monthly_installment": amounts[0], "annual_rate_percent": rate, "tenure_months": int(months)})]
+    if not selling and amounts and months and (_re.search(r"\bsip\b", ql) or ("invest" in ql and monthly_cue)):
+        return [("sip_future_value_tool", {"monthly_amount": amounts[0], "annual_return_percent": rate if rate else 10.0, "tenure_months": int(months)})]
+
+    # goal planning: "20 lakh for my child's education in 10 years"
+    goal = next((g for g, words in _GOAL_TYPES if any(w in ql for w in words)), None)
+    if goal and amounts and months and not selling and any(k in ql for k in ("save", "need", "plan", "goal", "buy", "for", "afford", "fund")):
+        return [("goal_plan_tool", {"cost_today": amounts[0], "years": months / 12, "goal_type": goal})]
+
+    # tax on a stated salary ("tax on 15 lakh", "18 LPA")
+    salary = _lpa(ql) or (amounts[0] if amounts and amounts[0] >= 100000 else None)
+    if "tax" in ql and salary and not selling and not other_income \
+            and any(k in ql for k in ("salary", "income", "earn", "ctc", "package", "lpa", "lakh", "per annum", "a year", "tax on", "tax for", "tax if")):
+        return [("tax_for_salary_tool", {"gross_salary_annual": salary, "deductions_old_regime": 0.0})]
+
+    # is my TDS right?
+    f16, ais = c.get("form16"), c.get("ais")
+    if "tds" in ql and f16 and ais and any(k in ql for k in ("correct", "right", "check", "match", "mismatch", "extra", "excess", "wrong", "missing")):
+        return [("tds_reconciliation_tool", {"form16_tds": f16["tds_deducted_annual"], "ais_tds_entries": [e["tds_deducted"] for e in ais["tds_entries"]]})]
+
+    # my own tax, worked out
+    if gv and not selling and not other_income and any(k in ql for k in ("how much tax", "my tax", "tax do i pay", "tax will i pay", "tax calculated", "calculate my tax", "why is my tax",
+                                     "tax liability", "taxable income", "how is tax", "how is my tax", "tax breakdown", "slab")):
+        from rules_engine.deductions import professional_tax_deduction
+
+        return [("tax_for_salary_tool", {"gross_salary_annual": gv[0], "deductions_old_regime": gv[1] + professional_tax_deduction(c.get("payslip"))})]
+
+    # refund and filing
+    if gv and any(k in ql for k in ("refund", "money back", "get back", "excess tds", "extra tds", "filing pack", "ready to file", "itr summary")):
+        return [("itr_pack_tool", {"documents": c})]
+    if any(k in ql for k in ("which itr", "itr form", "which form", "itr-1", "itr 1", "itr-2", "itr-3", "itr-4")):
+        return [("itr_form_tool", {"has_capital_gains": selling or "capital gain" in ql, "has_business_or_profession_income": any(k in ql for k in ("freelanc", "business", "profession"))})]
+    if any(k in ql for k in ("documents do i need", "documents needed", "what do i need to file", "papers", "documents required", "what documents")):
+        return [("filing_readiness_tool", {"documents_present": sorted(c)})]
+
+    # dates
+    if not any(k in ql for k in ("late fee", "penalty", "interest", "miss", "missed", "happens if", "after the")) and any(k in ql for k in (
+            "deadline", "due date", "last date", "when should i file", "when do i file", "when to file", "when is my itr", "when to pay", "when should i pay",
+            "important dates", "dates to remember", "when is the itr", "advance tax due")):
+        return [("deadlines_tool", {"documents": c, "gst_registered": "gst" in ql})]
+
+    # subscriptions, AutoPay and leaks on the statement (only when the question is clearly about them)
+    if bank and any(k in ql for k in ("subscription", "autopay", "auto pay", "leak", "wasting money", "recurring", "netflix", "spotify", "ott", "hotstar", "prime video", "standing instruction")):
+        return [("detect_recurring_charges_tool", {"transactions": bank["transactions"]})]
+    # the person's own loan EMIs ("my EMI", "my loan"), not general loan advice such as "car loan or cash?"
+    if bank and _re.search(r"\bmy (loan|emi|emis)\b", ql) and not any(k in ql for k in ("should i", "or pay", "or cash", "take a loan", "get a loan")):
+        return [("detect_recurring_charges_tool", {"transactions": bank["transactions"]})]
+    return []
+
+
+def route_consultant(c: dict[str, dict], q: str) -> tuple[list[tuple[str, dict[str, Any]]], bool]:
+    """(tool calls, confident). Confident means the rules engine answers it fully, so Gemini is not needed."""
+    if _DEVANAGARI.search(q):
+        return [], False  # free text in Hindi: Gemini understands and answers it far better
+    calls = _intent_plan(c, q)
+    if calls:
+        return calls, True
+    calls = _consultant_specific(c, q)
+    if not calls:
+        return [], False
+    first = calls[0][0]
+    if first == "goal_category_tool":
+        return calls, bool(_months_held(q.lower()))  # a bare "where should I invest" is better explained by Gemini
+    if first == "search_tax_law_tool" and len(calls) == 1:
+        return calls, _law_answer_is_specific(q)
+    return calls, True
+
+
+_GENERIC = {"tax", "taxes", "income", "what", "is", "are", "the", "my", "me", "gst", "section", "sec", "rule", "rules", "explain", "how", "does", "do",
+            "i", "a", "an", "of", "on", "for", "to", "in", "and", "or", "can", "about", "tell", "under", "act", "law", "it", "this", "that", "should",
+            "much", "when", "why", "who", "which", "will", "need", "pay", "file", "india", "indian", "meaning", "mean", "means", "full", "form"}
+
+
+def _law_answer_is_specific(q: str) -> bool:
+    """The law notes answer a question fully when its distinctive term (80D, TDS, HRA, GSTR-3B...) is what the top
+    passage is about, or when the match is strong. Otherwise the notes might be answering a different question."""
     from agents.tax_knowledge import search_law
 
     top = search_law(q, 1)
-    if (not top or top[0]["score"] < 6.0) and c.get("bank_statement"):
-        return [("spending_profile_tool", {"transactions": c["bank_statement"]["transactions"]})]
-    return [("search_tax_law_tool", {"query": q})]
+    if not top:
+        return False
+    if top[0]["score"] >= 6.0:
+        return True
+    p = top[0]
+    about = " ".join([p["section"], p["title"], p["text"][:0]]).lower()
+    from agents.gst_assistant import corpus as gst_corpus
+    from agents.tax_knowledge import tax_corpus
+
+    passage = next((x for x in tax_corpus().passages + gst_corpus().passages if x.id == p["id"]), None)
+    keys = {k.lower() for k in (passage.keywords if passage else ())}
+    terms = {t for t in _re.findall(r"[a-z0-9][a-z0-9()-]*", q.lower()) if t not in _GENERIC and len(t) >= 2}
+    def word_in(t: str, text: str) -> bool:
+        return bool(_re.search(r"(?<![a-z0-9])" + _re.escape(t) + r"(?![a-z0-9])", text))
+
+    return any(t in keys or any(word_in(t, k) for k in keys) or word_in(t, about) for t in terms)
+
+
+def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+    """The offline brain's plan: only answers it is sure of; otherwise the honest "can't answer that reliably"."""
+    calls, confident = route_consultant(c, q)
+    return calls if confident else _consultant_fallback(c, q)
 
 
 def _opportunity_lines(opps: list[dict[str, Any]], limit: int = 4) -> list[str]:
@@ -277,6 +439,88 @@ def _opportunity_lines(opps: list[dict[str, Any]], limit: int = 4) -> list[str]:
 
 
 _NOT_A_FILING = "\n\nThese are estimates from this year's published rules, worked out from your own documents. Nothing has been filed for you, and a CA should confirm before you claim."
+
+
+def _rules_summary(name: str, r: dict[str, Any]) -> str | None:
+    """Plain-language answers for the rules-engine tools, written the way a CA would set out the working."""
+    if name == "capabilities_tool":
+        topics = "\n".join(f"• {t}" for t in r["topics"])
+        if r.get("unanswered") and not r.get("has_documents"):
+            return ("I don't have enough information yet to answer that, so I won't guess. Confirm your Form 16, payslip or bank statement first. "
+                    "Then I can work out, exactly:\n" + topics)
+        if r.get("unanswered"):
+            return ("I can't answer that one reliably yet, so I won't guess. Here is what I can work out for you exactly, from your documents and the rules:\n"
+                    + topics + "\n\nFor anything else, a CA or a SEBI-registered adviser is the right person to ask.")
+        return "Namaste! I'm Paisa Pilot. I work out your numbers from your own documents and the tax rules, and show the working. Ask me about:\n" + topics
+    if name == "tax_for_salary_tool":
+        def lines(side: dict, label: str) -> str:
+            slabs = "; ".join(
+                f"{_inr(x['from'])}–{_inr(x['to']) if x['to'] else 'above'} at {x['rate_percent']:g}% = {_inr(x['tax'])}" for x in side["slabs"] if x["tax"] or x["rate_percent"] == 0
+            )
+            out = (f"{label}: salary {_inr(r['gross_salary_annual'])} minus standard deduction {_inr(side['standard_deduction'])}"
+                   + (f" and deductions {_inr(r['deductions_old_regime'])}" if label.startswith("Old") and r["deductions_old_regime"] else "")
+                   + f" = taxable {_inr(side['taxable_income'])}. Slabs: {slabs}. Slab tax {_inr(side['slab_tax'])}")
+            if side["rebate"]:
+                out += f", less rebate {_inr(side['rebate'])}"
+            if side["surcharge"]:
+                out += f", plus surcharge {_inr(side['surcharge'])}"
+            return out + f", plus 4% cess {_inr(side['cess'])} = {_inr(side['total_tax'])} a year (about {_inr(side['monthly'])} a month)."
+        head = (f"On a salary of {_inr(r['gross_salary_annual'])}, the {r['cheaper']} regime is cheaper by {_inr(r['difference'])} a year."
+                if r["difference"] else f"On a salary of {_inr(r['gross_salary_annual'])}, both regimes cost the same.")
+        return head + "\n• " + lines(r["new"], "New regime") + "\n• " + lines(r["old"], "Old regime") + \
+            "\n\nWorked out with this year's published slabs (FY 2025-26). Not a filing; a CA should confirm before you file."
+    if name == "itr_pack_tool":
+        if r.get("error"):
+            return "I need your Form 16 or payslip to prepare your filing pack."
+        res = r["result"]
+        head = (f"You can expect a refund of about {_inr(res['refund'])} if you file under the {res['regime']} regime"
+                if res["refund"] > 0 else f"You may still owe about {_inr(res['still_to_pay'])} if you file under the {res['regime']} regime")
+        alt = res["alternative"]
+        alt_line = (f"On the {alt['regime']} regime instead: " + (f"a refund of about {_inr(alt['refund'])}." if alt["refund"] > 0 else f"you would pay about {_inr(alt['still_to_pay'])}."))
+        missing = [c["item"] for c in r["checklist"] if c["status"] == "missing"]
+        return (f"{head}: tax {_inr(res['tax_payable'])}, less {_inr(res['tds_credit'])} already deducted (TDS).\n• {alt_line}\n• Likely form: {r['suggested_form']}."
+                + (f"\n• Still needed: {', '.join(missing)}." if missing else "\n• You have the documents you need.")
+                + "\n\nEstimates from your documents and this year's rules. Nothing is filed for you.")
+    if name == "deadlines_tool":
+        ds = r["deadlines"]
+        if not ds:
+            return "No tax dates fall in the next few months for you."
+        body = "\n".join(f"• {d['title']}: {d['date']} (in {d['days_left']} days)." + (f" Pay about {_inr(d['amount_so_far'])} in total by then." if d.get("amount_so_far") else "") for d in ds)
+        adv = ""
+        owed = r.get("tax_payable_after_tds")
+        if owed is not None and not any(d["id"].startswith("advance_tax") for d in ds):
+            adv = (f"\n• Advance tax: not needed for you. Your tax after TDS is {_inr(owed)}, and advance tax applies only when it is ₹10,000 or more "
+                   "(instalments by 15 June, 15 September, 15 December and 15 March).")
+        return "Your next tax dates:\n" + body + adv + "\n\nDates can be extended by the government, so check the official portal."
+    if name == "gst_amount_tool":
+        split = f"IGST {_inr(r['igst'])}" if r["inter_state"] else f"CGST {_inr(r['cgst'])} + SGST {_inr(r['sgst'])}"
+        if r["inclusive_input"]:
+            return f"A price of {_inr(r['total'])} including {r['rate_percent']:g}% GST is {_inr(r['taxable_value'])} plus {_inr(r['gst'])} GST ({split})."
+        return f"GST at {r['rate_percent']:g}% on {_inr(r['taxable_value'])} is {_inr(r['gst'])} ({split}), so the total is {_inr(r['total'])}."
+    if name == "fd_maturity_tool":
+        return (f"Your FD would grow to about {_inr(r['maturity_value'])}, earning {_inr(r['interest_earned'])} in interest (quarterly compounding, the usual bank method). "
+                "The interest is taxable, and the bank cuts TDS once interest passes ₹50,000 a year (₹1 lakh for seniors).")
+    if name == "rd_maturity_tool":
+        return (f"You would deposit {_inr(r['total_deposited'])} and get about {_inr(r['maturity_value'])} at maturity, so {_inr(r['interest_earned'])} of interest "
+                "(quarterly compounding, as banks do). The interest is taxable.")
+    if name == "sip_future_value_tool":
+        capped = " (we kept the assumed return within the 2%–13% range calculators are allowed to use)" if r.get("return_was_capped") else ""
+        return (f"Investing {_inr(r['total_invested'])} in total could grow to about {_inr(r['future_value'])} at an assumed {r['assumed_return_percent']:g}% a year{capped}, "
+                f"a gain of {_inr(r['gain'])}. {r.get('disclaimer', '')} This is a category-level illustration, not advice on a specific fund.")
+    if name == "goal_plan_tool":
+        return (f"In today's money that goal is {_inr(r['cost_today'])}; with prices rising {r['inflation_percent']:g}% a year it will cost about {_inr(r['future_cost'])} "
+                f"in {r['years']:g} years. Put aside about {_inr(r['monthly_needed'])} a month (or {_inr(r['lump_sum_needed_today'])} today). "
+                f"Where it could go: {r['category']}. {r['note']}")
+    if name == "detect_recurring_charges_tool":
+        return _leak_fixer_summary([(name, r)])
+    if name == "itr_form_tool":
+        why = ". ".join(x.rstrip(".") for x in (r.get("reasons") or []))
+        return f"You would most likely file {r['form']}" + (f" ({why})" if why else "") + ". Capital gains, business income, a second house or foreign assets would change it."
+    if name == "filing_readiness_tool":
+        if r["ready"]:
+            return "You have the documents you need to file: Form 16, AIS and your bank statement."
+        return "To file, you still need: " + "; ".join(r["missing_descriptions"]) + "."
+    return None
 
 
 def _knowledge_summary(name: str, r: dict[str, Any], limit: int = 2) -> str | None:
@@ -326,7 +570,23 @@ def _knowledge_summary(name: str, r: dict[str, Any], limit: int = 2) -> str | No
     return None
 
 
+def _tds_summary(r: dict[str, Any]) -> str:
+    if r["claimable_extra_tds"] > 0:
+        return (f"Your AIS shows {_inr(r['ais_tds_total'])} of tax deducted, {_inr(r['claimable_extra_tds'])} more than your Form 16's {_inr(r['form16_tds'])}. "
+                "The extra is usually TDS on bank interest: claim it as credit when you file.")
+    if r["missing_from_ais"] > 0:
+        return (f"Your Form 16 shows {_inr(r['form16_tds'])} of TDS but your AIS shows only {_inr(r['ais_tds_total'])}, {_inr(r['missing_from_ais'])} less. "
+                "Ask your employer whether all of it was deposited, because you can only claim what reaches your PAN.")
+    return f"Your TDS matches: Form 16 and AIS both show {_inr(r['form16_tds'])}."
+
+
 def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
+    if len(results) == 1 and results[0][0] == "tds_reconciliation_tool":
+        return _tds_summary(results[0][1])
+    if len(results) == 1:
+        direct = _rules_summary(*results[0])
+        if direct:
+            return direct
     limit = 2 if len(results) == 1 else 1  # next to a calculation, show only the single best rule
     parts = [k for name, r in results if (k := _knowledge_summary(name, r, limit))]
     if parts:

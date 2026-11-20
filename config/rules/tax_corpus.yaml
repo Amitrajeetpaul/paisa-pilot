@@ -324,3 +324,24 @@ passages:
       2025-26 (assessment year 2026-27) are still filed under the 1961 Act, which is what these notes describe. For FY
       2026-27 onwards the new Act applies, so section numbers, forms and some details may differ. Check the current rates,
       limits and section numbers on the official portal or with a CA before relying on these notes for a later year.
+  - id: ais-26as
+    section: "Income-tax Rules 114-I; Form 26AS / Form 168"
+    title: AIS, TIS and Form 26AS
+    keywords: [AIS, annual information statement, TIS, 26AS, form 26AS, form 168, tax credit statement, what is AIS]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      The Annual Information Statement (AIS) is the department's record of income and transactions reported against your PAN:
+      salary, interest, dividends, share and mutual-fund sales, property purchases and the TDS deducted on them. The Taxpayer
+      Information Summary (TIS) totals it by category. Form 26AS shows the tax credited to your PAN; from FY 2026-27 it is
+      replaced by Form 168. Check your return against the AIS so nothing is missed, and give feedback online if an entry is wrong.
+  - id: form16-ctc
+    section: "Income-tax Act Sec 192, 203; Form 16"
+    title: Form 16, CTC and in-hand salary
+    keywords: [form 16, CTC, cost to company, in-hand, take home, gross salary, net salary, what is form 16, what is ctc]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Form 16 is the certificate your employer gives after the year ends, showing your salary, the deductions it allowed and the
+      tax it deducted (TDS). CTC (cost to company) is everything the employer spends on you, including its own PF contribution and
+      gratuity. Gross salary is what you earn before deductions, and in-hand or take-home pay is what reaches your bank after your
+      PF, professional tax and TDS are taken out.
+

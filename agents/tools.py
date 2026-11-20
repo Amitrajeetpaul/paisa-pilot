@@ -513,6 +513,86 @@ def goal_plan_tool(cost_today: float, years: float, goal_type: str = "other", al
     return plan_goal(cost_today, years, goal_type, annual_return_percent=annual_return_percent, already_saved=already_saved)
 
 
+def tax_for_salary_tool(gross_salary_annual: float, deductions_old_regime: float = 0.0, age_band: str = "below_60") -> dict:
+    """Tax on a yearly salary under both regimes, worked out slab by slab (standard deduction, rebate with marginal
+    relief, surcharge, 4% cess), and which regime is cheaper.
+
+    Args:
+        gross_salary_annual: Yearly gross salary in rupees.
+        deductions_old_regime: Deductions claimed under the old regime (80C, 80D, HRA and so on).
+        age_band: below_60, 60_79 or 80_plus.
+    """
+    from rules_engine.deductions import OLD_REGIME_BY_AGE, best_tax
+    from rules_engine.tax import slab_breakdown
+
+    t = best_tax(gross_salary_annual, deductions_old_regime, RULES_CONFIG, age_band)
+    old_name = OLD_REGIME_BY_AGE.get(age_band, "old")
+
+    def side(res, name, std):
+        return {"taxable_income": res.taxable_income, "standard_deduction": std, "slabs": slab_breakdown(res.taxable_income, name, RULES_CONFIG),
+                "slab_tax": res.slab_tax, "rebate": res.rebate, "surcharge": res.surcharge, "cess": res.cess, "total_tax": res.total_tax,
+                "monthly": round(res.total_tax / 12, 2)}
+
+    return {"gross_salary_annual": gross_salary_annual, "deductions_old_regime": deductions_old_regime, "age_band": age_band,
+            "new": side(t.new, "new", RULES_CONFIG.regimes["new"].standard_deduction),
+            "old": side(t.old, old_name, RULES_CONFIG.regimes[old_name].standard_deduction),
+            "cheaper": t.regime, "difference": round(abs(t.old.total_tax - t.new.total_tax), 2)}
+
+
+def itr_pack_tool(documents: dict) -> dict:
+    """The filing pack from the confirmed documents: income, tax both ways, TDS credit, refund or tax still to pay,
+    and a checklist of what is missing."""
+    from rules_engine.itr_prefill import build_itr_prefill
+
+    pack = build_itr_prefill(documents, RULES_CONFIG)
+    return pack or {"error": "needs a Form 16 or payslip"}
+
+
+def deadlines_tool(documents: dict, gst_registered: bool = False) -> dict:
+    """The next tax and GST dates for this person, with their own advance-tax amount when it applies."""
+    from datetime import date
+
+    from rules_engine.deadlines import upcoming_deadlines
+    from rules_engine.itr_prefill import build_itr_prefill
+
+    pack = build_itr_prefill(documents, RULES_CONFIG)
+    payable = pack["result"]["still_to_pay"] if pack else None
+    regime = pack["result"]["regime"] if pack else None
+    items = upcoming_deadlines(date.today(), 240, tax_payable_after_tds=payable, gst_registered=gst_registered, regime=regime)
+    return {"deadlines": [d for d in items if d["applies"]][:6], "tax_payable_after_tds": payable}
+
+
+def gst_amount_tool(amount: float, rate_percent: float = 18.0, inclusive: bool = False, inter_state: bool = False) -> dict:
+    """GST on an amount (or the GST inside a GST-inclusive price), split into CGST and SGST, or IGST for another state."""
+    from rules_engine.gst_quick import gst_on_amount
+
+    return gst_on_amount(amount, rate_percent, inclusive, inter_state)
+
+
+def rd_maturity_tool(monthly_installment: float, annual_rate_percent: float, tenure_months: int) -> dict:
+    """Recurring deposit maturity with quarterly compounding, the way Indian banks calculate it."""
+    r = rd_maturity(monthly_installment=monthly_installment, annual_rate_percent=annual_rate_percent, tenure_months=tenure_months)
+    return {"total_deposited": r.total_deposited, "maturity_value": r.maturity_value, "interest_earned": r.interest_earned}
+
+
+def capabilities_tool(unanswered: bool = False, has_documents: bool = True) -> dict:
+    """What Paisa Pilot can help with, for greetings and "what can you do" questions.
+
+    Args:
+        unanswered: True when the question could not be answered reliably and we are saying so.
+    """
+    return {"unanswered": unanswered, "has_documents": has_documents, "topics": [
+        "Which tax regime is cheaper for you, and your tax worked out slab by slab",
+        "Your refund, TDS and filing pack, and which ITR form to use",
+        "Ways to pay less tax: HRA, 80C, 80D, NPS, donations (80G)",
+        "Tax on selling shares, property or crypto, and freelancer tax (44ADA)",
+        "Subscriptions and AutoPay you hardly use, and where your money goes",
+        "Emergency fund, insurance cover, goals, SIP, FD and RD maths",
+        "GST: amounts, registration, GSTR-3B, input credit and deadlines",
+        "Important tax dates for you",
+    ]}
+
+
 LEAK_FIXER_TOOLS = [
     FunctionTool(func=detect_recurring_charges_tool),
     FunctionTool(func=loan_switch_saving_tool),
@@ -536,6 +616,16 @@ CA_ASSISTANT_TOOLS = [
 ]
 
 CONSULTANT_TOOLS = [
+    FunctionTool(func=tds_reconciliation_tool),
+    FunctionTool(func=tax_for_salary_tool),
+    FunctionTool(func=itr_pack_tool),
+    FunctionTool(func=deadlines_tool),
+    FunctionTool(func=gst_amount_tool),
+    FunctionTool(func=rd_maturity_tool),
+    FunctionTool(func=capabilities_tool),
+    FunctionTool(func=detect_recurring_charges_tool),
+    FunctionTool(func=filing_readiness_tool),
+    FunctionTool(func=itr_form_tool),
     FunctionTool(func=goal_plan_tool),
     FunctionTool(func=capital_gains_tool),
     FunctionTool(func=presumptive_tax_tool),

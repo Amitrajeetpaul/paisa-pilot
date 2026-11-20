@@ -23,8 +23,8 @@ def test_leak_fixer_agent_has_tools_and_skills():
 def test_consultant_agent_has_all_six_skills_and_most_tools():
     agent = build_consultant_agent()
     assert agent.name == "consultant"
-    # SkillToolset (1) + 20 FunctionTools from CONSULTANT_TOOLS.
-    assert len(agent.tools) == 21
+    # SkillToolset (1) + 30 FunctionTools from CONSULTANT_TOOLS.
+    assert len(agent.tools) == 31
 
 
 def test_consultant_runner_wiring():
