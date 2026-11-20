@@ -20,7 +20,7 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 
 _ATTEMPTS_PER_MODEL = 2
-_DEFAULT_FALLBACK_MODELS = "gemini-flash-lite-latest,gemini-3.1-flash-lite"
+_DEFAULT_FALLBACK_MODELS = "gemini-3.5-flash-lite,gemini-flash-lite-latest,gemini-3.1-flash-lite"
 
 DEFAULT_READER_MODEL = "gemini-3.8-flash"
 DEFAULT_EXPLAINER_MODEL = "gemini-4-argon"

@@ -52,6 +52,7 @@ def test_run_agent_falls_through_to_the_next_model_when_one_is_out_of_quota(monk
     real_build = rt._build
     real_drive = rt._drive
     monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "second-model")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key-not-used")
 
     def build(name, model=None):
         seen.append(str(model))
