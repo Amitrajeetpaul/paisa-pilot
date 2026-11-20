@@ -15,8 +15,10 @@ import {
   saveTrails,
 } from './clientSession'
 
-// Production API default: live Vercel backend with new Gemini API key
-export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://paisa-pilot-api.vercel.app'
+// Primary: Google Cloud Run (Asia South 1); Backup: Vercel serverless
+export const GCP_BASE = 'https://paisa-pilot-api-316611436028.asia-south1.run.app'
+export const VERCEL_BASE = 'https://paisa-pilot-api.vercel.app'
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? GCP_BASE
 
 /** The friendly message the API sends for expected problems (locked PDF, unreadable file, ...). */
 export class ApiError extends Error {
@@ -45,12 +47,38 @@ async function apiError(res: Response): Promise<ApiError> {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  if (!res.ok) throw await apiError(res)
-  return res.json() as Promise<T>
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    })
+    if (res.ok) return (await res.json()) as T
+    if (res.status >= 500 && BASE === GCP_BASE) {
+      try {
+        const backupRes = await fetch(`${VERCEL_BASE}${path}`, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options,
+        })
+        if (backupRes.ok) return (await backupRes.json()) as T
+      } catch {
+        /* ignore backup failure, throw original */
+      }
+    }
+    throw await apiError(res)
+  } catch (err) {
+    if (BASE === GCP_BASE && !(err instanceof ApiError)) {
+      try {
+        const backupRes = await fetch(`${VERCEL_BASE}${path}`, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options,
+        })
+        if (backupRes.ok) return (await backupRes.json()) as T
+      } catch {
+        /* ignore */
+      }
+    }
+    throw err
+  }
 }
 
 /** Values the browser holds for a stateless ("local-") session, sent with each request. */
@@ -84,9 +112,29 @@ export const api = {
   extractDocument: async (sessionId: string, documentType: string, file: File) => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(`${BASE}/sessions/${sessionId}/documents/${documentType}/extract`, { method: 'POST', body: form })
-    if (!res.ok) throw await apiError(res)
-    return (await res.json()) as Record<string, unknown>
+    try {
+      const res = await fetch(`${BASE}/sessions/${sessionId}/documents/${documentType}/extract`, { method: 'POST', body: form })
+      if (res.ok) return (await res.json()) as Record<string, unknown>
+      if (res.status >= 500 && BASE === GCP_BASE) {
+        try {
+          const backupRes = await fetch(`${VERCEL_BASE}/sessions/${sessionId}/documents/${documentType}/extract`, { method: 'POST', body: form })
+          if (backupRes.ok) return (await backupRes.json()) as Record<string, unknown>
+        } catch {
+          /* ignore backup failure, throw original */
+        }
+      }
+      throw await apiError(res)
+    } catch (err) {
+      if (BASE === GCP_BASE && !(err instanceof ApiError)) {
+        try {
+          const backupRes = await fetch(`${VERCEL_BASE}/sessions/${sessionId}/documents/${documentType}/extract`, { method: 'POST', body: form })
+          if (backupRes.ok) return (await backupRes.json()) as Record<string, unknown>
+        } catch {
+          /* ignore */
+        }
+      }
+      throw err
+    }
   },
 
   confirmDocument: async (sessionId: string, documentType: string, fields: Record<string, unknown>) => {
