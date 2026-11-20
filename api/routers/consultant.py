@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from api.auth import AuthUser, optional_user
 from api.confirmed import load_confirmed
 from api.db import get_db
 
@@ -36,11 +37,15 @@ def _require_session(session_id: str) -> None:
 
 
 @router.post("/ask", response_model=AskResponse)
-def ask_consultant(session_id: str, body: AskRequest) -> AskResponse:
+def ask_consultant(session_id: str, body: AskRequest, user: AuthUser | None = Depends(optional_user)) -> AskResponse:
     from agents.consultant import answer_question  # heavy: loaded only when this route is used
+    from api.routers.me import memory_for, remember_question
 
     _require_session(session_id)
     confirmed = load_confirmed(session_id, body.confirmed)
+    memory = memory_for(user)
 
-    result = answer_question(confirmed, body.question, mode=os.environ.get("READER_MODE", "fixture"))
+    result = answer_question(confirmed, body.question, mode=os.environ.get("READER_MODE", "fixture"), memory=memory)
+    if user is not None:
+        remember_question(user, body.question)
     return AskResponse(answer=result.answer, guardrail_flagged=result.guardrail_flagged, source_chip=result.source_chip)

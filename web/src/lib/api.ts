@@ -5,6 +5,7 @@ import {
   SAMPLE_SOURCE_TRAILS,
   SAMPLE_CONSULTANT_ANSWERS,
 } from './sampleFallback'
+import { currentUser, getIdToken } from './auth'
 import {
   clearClientSession,
   getConfirmedDocs,
@@ -46,19 +47,21 @@ async function apiError(res: Response): Promise<ApiError> {
   return new ApiError(`${res.status} ${res.statusText}: ${body}`)
 }
 
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = currentUser() ? await getIdToken() : null
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = { 'Content-Type': 'application/json', ...(await authHeaders()) }
+  // Accounts live only on the main server (the backup host remembers nothing), so /me never fails over.
+  const canFailOver = BASE === GCP_BASE && !path.startsWith('/me')
   try {
-    const res = await fetch(`${BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
-      ...options,
-    })
+    const res = await fetch(`${BASE}${path}`, { headers, ...options })
     if (res.ok) return (await res.json()) as T
-    if (res.status >= 500 && BASE === GCP_BASE) {
+    if (res.status >= 500 && canFailOver) {
       try {
-        const backupRes = await fetch(`${VERCEL_BASE}${path}`, {
-          headers: { 'Content-Type': 'application/json' },
-          ...options,
-        })
+        const backupRes = await fetch(`${VERCEL_BASE}${path}`, { headers, ...options })
         if (backupRes.ok) return (await backupRes.json()) as T
       } catch {
         /* ignore backup failure, throw original */
@@ -66,18 +69,32 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     }
     throw await apiError(res)
   } catch (err) {
-    if (BASE === GCP_BASE && !(err instanceof ApiError)) {
+    if (canFailOver && !(err instanceof ApiError)) {
       try {
-        const backupRes = await fetch(`${VERCEL_BASE}${path}`, {
-          headers: { 'Content-Type': 'application/json' },
-          ...options,
-        })
+        const backupRes = await fetch(`${VERCEL_BASE}${path}`, { headers, ...options })
         if (backupRes.ok) return (await backupRes.json()) as T
       } catch {
         /* ignore */
       }
     }
     throw err
+  }
+}
+
+const SAVING_KEY = 'pp_saving_on'
+/** Whether this signed-in person switched saving on (remembered so confirmations sync without an extra call). */
+export const savingOn = () => {
+  try {
+    return localStorage.getItem(SAVING_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+export const rememberSavingOn = (v: boolean) => {
+  try {
+    localStorage.setItem(SAVING_KEY, v ? '1' : '0')
+  } catch {
+    /* ignore */
   }
 }
 
@@ -137,14 +154,25 @@ export const api = {
     }
   },
 
-  confirmDocument: async (sessionId: string, documentType: string, fields: Record<string, unknown>) => {
+  confirmDocument: async (sessionId: string, documentType: string, fields: Record<string, unknown>, opts: { sync?: boolean } = {}) => {
     const result = await request<{ status: string; fields?: Record<string, unknown> }>(
       `/sessions/${sessionId}/documents/${documentType}/confirm`,
       { method: 'POST', body: JSON.stringify(fields) },
     )
     if (isLocalSession(sessionId) && result.fields) saveConfirmedDoc(sessionId, documentType, result.fields)
+    // Signed in with saving on: keep a copy in the account (best effort; the confirm itself already worked).
+    if (opts.sync !== false && currentUser() && savingOn()) void api.meSaveDocument(documentType, result.fields ?? fields).catch(() => undefined)
     return result
   },
+
+  // --- my account (signed-in people only) ---
+  me: () => request<MeResult>('/me'),
+  meConsent: (save: boolean) => request<{ saving_on: boolean }>('/me/consent', { method: 'POST', body: JSON.stringify({ save }) }),
+  meSaveDocument: (documentType: string, fields: Record<string, unknown>) =>
+    request<{ saved: boolean }>(`/me/documents/${documentType}`, { method: 'PUT', body: JSON.stringify({ fields }) }),
+  meSnapshot: () => request<{ recorded: boolean }>('/me/snapshot', { method: 'POST', body: '{}' }),
+  meProgress: () => request<MeProgress>('/me/progress'),
+  meDelete: () => request<{ deleted: boolean }>('/me', { method: 'DELETE' }),
 
   getConfirmed: async (sessionId: string, documentType: string): Promise<Record<string, unknown>> => {
     if (isLocalSession(sessionId)) {
@@ -414,6 +442,23 @@ export interface SpendingProfile {
   categories: { key: string; label: string; kind: string; total: number; monthly_average: number; share_percent: number }[]
   flags: { id: string; text: string; level: string }[]
   note: string
+}
+
+export interface MeResult {
+  uid: string
+  email: string | null
+  saving_on: boolean
+  documents: Record<string, Record<string, unknown>>
+  documents_saved_at: Record<string, string | null>
+  snapshots: { id: string; at: string; money_found_yearly?: number; leak_monthly?: number; tax_now?: number; cheaper_regime?: string }[]
+}
+
+export interface MeProgress {
+  has_history: boolean
+  summary: string
+  latest_at: string | null
+  previous_at: string | null
+  changes: { metric: string; label: string; before: number; after: number; delta: number; better: boolean | null; text: string }[]
 }
 
 export interface UsageApps {

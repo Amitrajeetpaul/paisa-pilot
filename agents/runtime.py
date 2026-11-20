@@ -545,7 +545,7 @@ def run_offline(agent_name: str, confirmed: dict[str, dict], question: str) -> A
     return asyncio.run(_drive(agent, agent_name, confirmed, question, "offline"))
 
 
-def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None = None, mode: str = "fixture") -> AgentRun:
+def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None = None, mode: str = "fixture", memory: dict | None = None) -> AgentRun:
     """live -> Gemini decides the tool calls (one retry); on any failure, or in
     fixture mode, the deterministic offline model drives the same agent."""
     if agent_name not in AGENT_NAMES:
@@ -563,7 +563,7 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
             try:
                 from agents.tax_knowledge import grounding
 
-                ground, facts = grounding(confirmed, q)  # RAG: retrieved law + the person's computed opportunities
+                ground, facts = grounding(confirmed, q, memory)  # RAG: retrieved law + the person's computed opportunities
             except Exception:
                 logger.warning("Could not build tax grounding", exc_info=True)
         for candidate in _model_chain(explainer_model()):

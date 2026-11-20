@@ -22,6 +22,23 @@ class TaxSuggestionBody(BaseModel):
     metro_city: bool = False
 
 
+def tax_picture(docs: dict[str, dict]) -> dict | None:
+    """Annual salary, tax under both regimes and which is cheaper, from the confirmed documents."""
+    f16, pay = docs.get("form16"), docs.get("payslip")
+    if f16 and f16.get("gross_salary_annual"):
+        gross, via = float(f16["gross_salary_annual"]), float(f16.get("deductions_chapter_via_total") or 0)
+    elif pay and pay.get("monthly_gross_salary"):
+        gross, via = float(pay["monthly_gross_salary"]) * 12, min(150000.0, float(pay.get("pf_employee_deduction") or 0) * 12)
+    else:
+        return None
+    t = best_tax(gross, via, RULES_CONFIG)
+    return {
+        "gross_salary_annual": gross, "old_regime_tax": t.old.total_tax, "new_regime_tax": t.new.total_tax,
+        "cheaper_regime": t.regime, "tax_now": t.total_tax,
+        "documents_used": sorted(k for k in docs if k in ("payslip", "form16", "bank_statement")),
+    }
+
+
 @router.post("/calculate/tax-suggestions")
 def tax_suggestions(session_id: str, body: TaxSuggestionBody | None = None) -> dict:
     if not get_db().session_exists(session_id):
@@ -32,19 +49,10 @@ def tax_suggestions(session_id: str, body: TaxSuggestionBody | None = None) -> d
         raise HTTPException(status_code=400, detail="Confirm a payslip or Form 16 first")
     opps = opportunities(docs, metro=body.metro_city)
 
-    f16, pay = docs.get("form16"), docs.get("payslip")
-    if f16 and f16.get("gross_salary_annual"):
-        gross, via = float(f16["gross_salary_annual"]), float(f16.get("deductions_chapter_via_total") or 0)
-    else:
-        assert pay is not None
-        gross, via = float(pay["monthly_gross_salary"]) * 12, min(150000.0, float(pay.get("pf_employee_deduction") or 0) * 12)
-    t = best_tax(gross, via, RULES_CONFIG)
+    picture = tax_picture(docs)
+    assert picture is not None
     return {
-        "picture": {
-            "gross_salary_annual": gross, "old_regime_tax": t.old.total_tax, "new_regime_tax": t.new.total_tax,
-            "cheaper_regime": t.regime, "tax_now": t.total_tax,
-            "documents_used": sorted(k for k in docs if k in ("payslip", "form16", "bank_statement")),
-        },
+        "picture": picture,
         "suggestions": opps,
         "notes_as_of": tax_corpus().as_of,
         "reviewed_by_ca": tax_corpus().reviewed_by_ca,

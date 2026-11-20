@@ -52,6 +52,8 @@ def _save_trail(session_id: str, card_id: str, label: str, inputs_used: dict, ru
         "source_url": source_url,
     }
     _TRAILS.get({})[card_id] = entry
+    if session_id.startswith("local-"):
+        return  # stateless session: the trail goes back in the response, nothing to store
     try:
         get_db().save_source_trail_entry(session_id, card_id, entry)
     except Exception:  # noqa: BLE001 - a missing store must never break a calculation

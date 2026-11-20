@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api } from '../lib/api'
+import { pushCurrentDocs } from '../lib/account'
+import { api, rememberSavingOn, savingOn } from '../lib/api'
+import { deleteAuthAccount, signOut, useAuth } from '../lib/auth'
 import { track } from '../lib/track'
 import { useApp } from '../state/AppContext'
 import { Icon } from './Icon'
@@ -12,6 +14,9 @@ export function AccountMenu() {
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const user = useAuth()
+  const [saving, setSaving] = useState<boolean>(() => savingOn())
+  const [note, setNote] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -45,9 +50,47 @@ export function AccountMenu() {
     window.location.assign('/')
   }
 
-  async function deleteEverything() {
-    if (!sessionId) return leave()
+  async function toggleSaving() {
     setBusy(true)
+    setNote(null)
+    try {
+      const next = !saving
+      await api.meConsent(next)
+      rememberSavingOn(next)
+      setSaving(next)
+      if (next && sessionId) {
+        const n = await pushCurrentDocs(sessionId)
+        setNote(n > 0 ? `Saved ${n} document${n === 1 ? '' : 's'} to your account.` : 'Saving is on. New documents you confirm will be kept.')
+      } else if (!next) {
+        setNote('Saving is off. Nothing new will be kept. Your earlier data stays until you delete it.')
+      }
+    } catch {
+      setNote('Could not change that right now. Please try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function doSignOut() {
+    signOut()
+    leave()
+  }
+
+  async function deleteEverything() {
+    setBusy(true)
+    if (user) {
+      try {
+        await api.meDelete() // our copy first, then the sign-in account itself
+        await deleteAuthAccount()
+        rememberSavingOn(false)
+      } catch {
+        /* if the server is unreachable the person can try again; do not pretend it worked */
+        setNote('We could not delete your account just now. Please try again in a moment.')
+        setBusy(false)
+        return
+      }
+    }
+    if (!sessionId) return leave()
     try {
       track('data_deleted')
       await api.deleteMyData(sessionId)
@@ -79,8 +122,34 @@ export function AccountMenu() {
         >
           <div className="px-3 py-2">
             <p className="text-ink text-sm font-bold">{displayName || t('account.session')}</p>
-            <p className="text-muted text-xs">{sampleData ? t('account.sampleNote') : t('account.realNote')}</p>
+            <p className="text-muted break-all text-xs">{user ? user.email : sampleData ? t('account.sampleNote') : t('account.realNote')}</p>
           </div>
+          {!user ? (
+            <button
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                navigate('/login')
+              }}
+              className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
+            >
+              <Icon name="user" size={18} /> Sign in or create account
+            </button>
+          ) : (
+            <>
+              <button
+                role="menuitemcheckbox"
+                aria-checked={saving}
+                onClick={toggleSaving}
+                disabled={busy}
+                className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 text-left text-sm font-semibold disabled:opacity-60"
+              >
+                <span className="flex items-center gap-3"><Icon name="lock" size={18} /> Remember my details</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${saving ? 'bg-emerald-500/15 text-emerald-600' : 'bg-slate-500/15 text-muted'}`}>{saving ? 'On' : 'Off'}</span>
+              </button>
+              {note && <p className="text-muted px-3 pb-1 text-xs" role="status">{note}</p>}
+            </>
+          )}
           <button
             role="menuitem"
             onClick={() => {
@@ -91,18 +160,27 @@ export function AccountMenu() {
           >
             <Icon name="upload" size={18} /> {t('account.add')}
           </button>
+          {user && (
+            <button
+              role="menuitem"
+              onClick={doSignOut}
+              className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
+            >
+              <Icon name="user" size={18} /> Sign out
+            </button>
+          )}
           {!confirming ? (
             <button
               role="menuitem"
               onClick={() => setConfirming(true)}
               className="text-ink hover:bg-coral-tint flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold"
             >
-              <Icon name="trash" size={18} /> {sampleData ? t('account.startOver') : t('account.delete')}
+              <Icon name="trash" size={18} /> {user ? 'Delete my account and data' : sampleData ? t('account.startOver') : t('account.delete')}
             </button>
           ) : (
             <div className="bg-warning-card mx-1 mb-1 rounded-xl p-3">
               <p className="text-ink text-xs leading-relaxed">
-                {sampleData ? t('account.confirmSample') : t('account.confirmReal')}
+                {user ? 'This permanently deletes your account, your saved documents and your history. It cannot be undone.' : sampleData ? t('account.confirmSample') : t('account.confirmReal')}
               </p>
               <div className="mt-2 flex gap-2">
                 <button

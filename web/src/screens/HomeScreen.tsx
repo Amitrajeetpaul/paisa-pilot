@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BreakdownBar, type Segment } from '../components/BreakdownBar'
+import { ProgressCard } from '../components/ProgressCard'
 import { TaxSuggestions } from '../components/TaxSuggestions'
 import { CheckupCard } from '../components/CheckupCard'
 import { CountUp } from '../components/CountUp'
@@ -140,6 +141,7 @@ export function HomeScreen() {
             ))}
           </div>
 
+          <ProgressCard ready={!loading && !!result} />
           {sessionId && !loading && result && result.cards.length > 0 && <TaxSuggestions sessionId={sessionId} />}
         </div>
 

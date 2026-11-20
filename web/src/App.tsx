@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { AdviseScreen } from './screens/AdviseScreen'
+import { AuthScreen } from './screens/AuthScreen'
 import { ConfirmScreen } from './screens/ConfirmScreen'
 import { ConsentUploadScreen } from './screens/ConsentUploadScreen'
 import { DraftsScreen } from './screens/DraftsScreen'
@@ -14,6 +15,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingScreen />} />
+      <Route path="/login" element={<AuthScreen />} />
       <Route path="/privacy" element={<PrivacyScreen />} />
       <Route path="/terms" element={<TermsScreen />} />
       <Route path="/app/consent" element={<ConsentUploadScreen />} />

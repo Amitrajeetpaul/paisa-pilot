@@ -190,13 +190,19 @@ def _fixture_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str
     )
 
 
-def answer_question(confirmed: dict[str, dict], question: str, mode: str | None = None) -> ConsultantAnswer:
+_PROGRESS_Q = re.compile(r"(last time|since (my )?last|progress|improv|compared|previous|my history|earlier visit|how am i doing|what changed|better than before)", re.I)
+
+
+def answer_question(confirmed: dict[str, dict], question: str, mode: str | None = None, memory: dict | None = None) -> ConsultantAnswer:
     if _PROMPT_PROBE.search(question):
         return ConsultantAnswer(answer=_PROBE_REPLY, guardrail_flagged=True, source_chip="")
+    if memory and memory.get("progress_text") and _PROGRESS_Q.search(question):
+        # Straight from the saved snapshots: the comparison is arithmetic, not AI.
+        return ConsultantAnswer(answer=memory["progress_text"], guardrail_flagged=False, source_chip="Source: your saved history")
     resolved_mode = mode or os.environ.get("READER_MODE", "fixture")
     if resolved_mode == "live":
         try:
-            answer_text, source_chip = _live_answer(confirmed, question)
+            answer_text, source_chip = _live_answer(confirmed, question, memory)
         except Exception:
             # Gemini quota / overload / network trouble: degrade to the
             # deterministic rules-engine answer instead of a 500.
@@ -268,12 +274,12 @@ async def _run_agent(confirmed: dict[str, dict], question: str) -> str:
     return final_text
 
 
-def _live_answer(confirmed: dict[str, dict], question: str) -> tuple[str, str]:
+def _live_answer(confirmed: dict[str, dict], question: str, memory: dict | None = None) -> tuple[str, str]:
     """Gemini-driven answer through the shared, provenance-checked runner. It
     returns the deterministic answer itself if Gemini fails or invents a number."""
     from agents.runtime import run_agent
 
-    run = run_agent("consultant", confirmed, question, mode="live")
+    run = run_agent("consultant", confirmed, question, mode="live", memory=memory)
     return (
         run.answer or "I couldn't produce an answer just now.",
         "Source: your confirmed numbers + our tax and savings rules",

@@ -123,6 +123,9 @@ export function LandingScreen() {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link to="/login" className="px-2 text-sm font-semibold underline">
+            Sign in
+          </Link>
           <Link to="/app/consent">
             <Button variant="primary">Try it</Button>
           </Link>

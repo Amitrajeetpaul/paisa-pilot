@@ -59,6 +59,14 @@ export function PrivacyScreen() {
         The AI reads your documents and explains results in plain words. Every rupee figure comes from a tested rules
         engine, not from the AI. Nothing is filed, sent or paid for you, and we never ask for passwords or OTPs.
       </p>
+      <H>If you create an account</H>
+      <p>
+        Creating an account is optional. Sign-in is handled by Google's Identity Platform, so your password goes to Google and
+        we never see it. If you also choose "Remember my details", we keep in your account the values you confirmed from your
+        documents (not the uploaded files), the results we worked out from them on each visit, and a short note of the questions
+        you asked, so advice can build on your earlier visits. We do not use your data to train AI models. This is off unless you
+        turn it on, you can turn it off at any time, and "Delete my account and data" erases it all straight away.
+      </p>
       <H>Your choices</H>
       <p>
         You can use the sample profile without uploading anything. To remove your email from the pilot list or ask a

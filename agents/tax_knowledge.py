@@ -61,7 +61,7 @@ def opportunities(documents: dict[str, dict], metro: bool = False) -> list[dict[
     return out
 
 
-def grounding(confirmed: dict[str, dict], question: str) -> tuple[str, dict[str, Any]]:
+def grounding(confirmed: dict[str, dict], question: str, memory: dict | None = None) -> tuple[str, dict[str, Any]]:
     """Text appended to the model's prompt, and the same facts for the number-provenance check."""
     law = search_law(question, 3)
     opps = opportunities(confirmed)
@@ -83,4 +83,8 @@ def grounding(confirmed: dict[str, dict], question: str) -> tuple[str, dict[str,
             f"spending ₹{profile['spending_per_month']:,.0f}/month, savings rate {profile['savings_rate_percent']}%. Biggest costs: {top}. "
             + " ".join(f["text"] for f in profile["flags"])
         )
-    return "\n\n".join(parts), {"law": law, "opportunities": opps, "spending": profile}
+    if memory:
+        from api.memory import memory_text
+
+        parts.append("What we remember about this person from earlier visits (use it to personalise, and say when it is from before):\n" + memory_text(memory))
+    return "\n\n".join(parts), {"law": law, "opportunities": opps, "spending": profile, "memory": memory}

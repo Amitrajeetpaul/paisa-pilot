@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import agents, calculate, confirm, consent, consultant, demo, documents, pilot, session, usage, gst, tax_advice
+from api.routers import agents, calculate, confirm, consent, consultant, demo, documents, pilot, session, usage, gst, tax_advice, me
 
 app = FastAPI(title="Paisa Pilot API", version="0.1.0")
 
@@ -43,6 +43,7 @@ app.include_router(pilot.router)
 app.include_router(usage.router)
 app.include_router(gst.router)
 app.include_router(tax_advice.router)
+app.include_router(me.router)
 
 
 @app.get("/healthz")
