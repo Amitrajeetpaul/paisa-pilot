@@ -82,6 +82,7 @@ def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -
     _TRAILS.set({})
     docs = load_confirmed(session_id, body.confirmed if body else None)
     form16 = docs.get("form16")
+    payslip = docs.get("payslip")
     pf_passbook = docs.get("pf_passbook")
     bank_statement = docs.get("bank_statement")
     ais = docs.get("ais")
@@ -134,6 +135,53 @@ def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -
             "We worked out the tax you actually owe on your taxable income, then compared it with the tax your employer already deducted (TDS).",
             RULES_CONFIG.regimes[regime].source_url,
         )
+    elif payslip is not None and payslip.get("monthly_gross_salary"):
+        gross_annual = float(payslip["monthly_gross_salary"]) * 12
+        pf_deduction = float(payslip.get("pf_employee_deduction") or 0) * 12
+        comparison = compare_regimes(
+            gross_salary_annual=gross_annual,
+            chapter_via_total_old_regime=min(150000.0, pf_deduction),
+            config=RULES_CONFIG,
+        )
+        if comparison.recommended_regime == "new" and comparison.annual_saving_if_switch > 0:
+            cards.append({
+                "card_id": "tax_regime_switch",
+                "title": "Switch to new tax option",
+                "detail": f"Saves ₹{comparison.annual_saving_if_switch:,.0f} a year projected from your monthly payslip",
+                "amount": comparison.annual_saving_if_switch,
+                "unit_label": "every year",
+                "source_chip": "Source: Payslip",
+                "action_label": "See how",
+            })
+            yearly_total += comparison.annual_saving_if_switch
+        _save_trail(
+            session_id, "tax_regime_switch", "Switch to new tax option",
+            {"monthly_gross_salary": payslip["monthly_gross_salary"], "projected_annual_salary": gross_annual},
+            "We annualized your monthly gross salary (x 12) from your payslip and compared tax under both the old and new regime.",
+            RULES_CONFIG.regimes["new"].source_url,
+        )
+        monthly_tds = float(payslip.get("tds_deducted") or 0)
+        if monthly_tds > 0:
+            annual_tds = monthly_tds * 12
+            tax_result = compute_tax(regime_name="new", taxable_income=max(0.0, gross_annual - 75000.0), config=RULES_CONFIG)
+            extra_tds = annual_tds - tax_result.total_tax
+            if extra_tds > 0:
+                cards.append({
+                    "card_id": "extra_tds_refund",
+                    "title": "Extra tax cut (TDS)",
+                    "detail": f"Projected annual TDS exceeds your tax by ₹{extra_tds:,.0f} under the new regime",
+                    "amount": round(extra_tds, 2),
+                    "unit_label": "possible refund",
+                    "source_chip": "Source: Payslip",
+                    "action_label": "Check refund",
+                })
+                one_time_total += round(extra_tds, 2)
+            _save_trail(
+                session_id, "extra_tds_refund", "Extra tax cut (TDS)",
+                {"annual_tds": annual_tds, "projected_tax": tax_result.total_tax},
+                "We projected your annual TDS and compared it with tax owed under the new regime.",
+                RULES_CONFIG.regimes["new"].source_url,
+            )
 
     if form16 is not None and ais is not None:
         check = cross_check_tds(form16["tds_deducted_annual"], [e["tds_deducted"] for e in ais["tds_entries"]])
