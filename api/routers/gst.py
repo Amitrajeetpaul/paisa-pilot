@@ -19,7 +19,7 @@ from rules_engine.gst import composition_comparison, compute_gstr3b, load_gst_co
 router = APIRouter(prefix="/gst", tags=["gst"])
 
 GST_CONFIG = load_gst_config()
-_SAMPLE = Path(__file__).resolve().parent.parent.parent / "sample_data" / "gst_sample_invoices.csv"
+_SAMPLE = Path(__file__).resolve().parent.parent.parent / "config" / "gst_sample_invoices.csv"
 _MAX_CSV_CHARS = 1_000_000
 _DISCLAIMER = "A summary to help you prepare. It is not legal advice and is not filed for you. Check it with your CA before filing on the GST portal."
 
