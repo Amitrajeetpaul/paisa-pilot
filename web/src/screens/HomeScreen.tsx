@@ -12,7 +12,7 @@ import { CardSkeleton } from '../components/Skeleton'
 import { SourceDrawer } from '../components/SourceDrawer'
 import { TrustStrip } from '../components/TrustStrip'
 import type { Tone } from '../components/tones'
-import { api, type MoneyFinderCard, type MoneyFinderResult } from '../lib/api'
+import { ApiError, api, type MoneyFinderCard, type MoneyFinderResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 import { greetingForNow } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
@@ -27,7 +27,7 @@ const LOOK: Record<string, { icon: IconName; tone: Tone; label: string }> = {
 }
 
 export function HomeScreen() {
-  const { t, sessionId, sampleData, displayName, setDisplayName } = useApp()
+  const { t, sessionId, setSessionId, sampleData, displayName, setDisplayName } = useApp()
   const navigate = useNavigate()
   const [result, setResult] = useState<MoneyFinderResult | null>(null)
   const [loading, setLoading] = useState(true)
@@ -42,7 +42,10 @@ export function HomeScreen() {
     api
       .calculateMoneyFinder(sessionId)
       .then(setResult)
-      .catch(() => setResult(null))
+      .catch((e) => {
+        if (e instanceof ApiError && e.code === 'unknown_session') setSessionId(null) // back to the start, no raw error
+        setResult(null)
+      })
       .finally(() => setLoading(false))
 
     // Greet the person by the name on their own documents.

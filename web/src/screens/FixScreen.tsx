@@ -9,7 +9,7 @@ import { SourceDrawer } from '../components/SourceDrawer'
 import { TrustStrip } from '../components/TrustStrip'
 import type { IconName } from '../components/Icon'
 import type { Tone } from '../components/tones'
-import { api, type LeakFixerCard, type LeakFixerResult } from '../lib/api'
+import { ApiError, api, type LeakFixerCard, type LeakFixerResult } from '../lib/api'
 import { formatINR } from '../lib/format'
 import { prettyMerchant } from '../lib/plain'
 import { useSourceDrawer } from '../lib/useSourceDrawer'
@@ -22,7 +22,7 @@ function look(cardId: string): { icon: IconName; tone: Tone; label: string } {
 }
 
 export function FixScreen() {
-  const { t, sessionId } = useApp()
+  const { t, sessionId, setSessionId } = useApp()
   const navigate = useNavigate()
   const [result, setResult] = useState<LeakFixerResult | null>(null)
   const [loading, setLoading] = useState(true)
@@ -38,7 +38,10 @@ export function FixScreen() {
     api
       .calculateLeakFixer(sessionId)
       .then(setResult)
-      .catch(() => setErrorMessage('Confirm a bank statement first to see your leaks.'))
+      .catch((e) => {
+        if (e instanceof ApiError && e.code === 'unknown_session') setSessionId(null)
+        setErrorMessage('Confirm a bank statement first to see your leaks.')
+      })
       .finally(() => setLoading(false))
   }, [sessionId, navigate])
 

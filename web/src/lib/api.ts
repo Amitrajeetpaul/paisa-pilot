@@ -29,6 +29,10 @@ export class ApiError extends Error {
 
 async function apiError(res: Response): Promise<ApiError> {
   const body = await res.text()
+  if (res.status === 404 && body.includes('Unknown session')) {
+    // A session from an older visit that this server no longer knows. The app recovers quietly.
+    return new ApiError('Your session expired. Please try again.', 'unknown_session')
+  }
   try {
     const detail = JSON.parse(body)?.detail
     if (detail && typeof detail === 'object' && typeof detail.message === 'string') {

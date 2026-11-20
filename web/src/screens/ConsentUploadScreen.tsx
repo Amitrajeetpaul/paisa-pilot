@@ -63,7 +63,17 @@ export function ConsentUploadScreen() {
     setUploadingType(documentType)
     setError(null)
     try {
-      const readResult = await api.extractDocument(sessionId, documentType, file)
+      let readResult: Record<string, unknown>
+      try {
+        readResult = await api.extractDocument(sessionId, documentType, file)
+      } catch (e) {
+        if (!(e instanceof ApiError) || e.code !== 'unknown_session') throw e
+        // An old session this server no longer knows: you already agreed, so start a fresh one and carry on.
+        const fresh = await api.giveConsent(true)
+        setSessionId(fresh.session_id)
+        setSampleData(false)
+        readResult = await api.extractDocument(fresh.session_id, documentType, file)
+      }
       setUploadedKeys((prev) => ({ ...prev, [documentType]: file.name }))
       track('document_uploaded', documentType)
       navigate(`/app/confirm/${documentType}`, { state: { readResult } })
