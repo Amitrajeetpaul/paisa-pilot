@@ -32,7 +32,7 @@ from google.genai import types
 
 from agents.provenance import check_provenance
 from agents.text import clean_answer, pretty_merchant
-from llm.client import _model_chain, explainer_model
+from llm.client import _model_chain, explainer_model, gemini_configured
 
 logger = logging.getLogger(__name__)
 
@@ -552,7 +552,7 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
         raise ValueError(f"Unknown agent: {agent_name!r}")
     q = question or _default_question(agent_name)
     # No key means Gemini cannot answer, so do not make a person wait for it to fail.
-    if mode == "live" and os.environ.get("GEMINI_API_KEY"):
+    if mode == "live" and gemini_configured():
         # A person is waiting, so there is one total time budget. Within it, walk the model
         # chain: a 429 (quota) or 503 on one model says nothing about the next one. If every
         # model fails, or one invents a number, answer from the built-in model instead.

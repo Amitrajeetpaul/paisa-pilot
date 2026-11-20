@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, UploadFile
 
 from api.db import get_db
 from api.storage import get_storage
+from llm.client import gemini_configured
 from llm.reader import mime_type_for_filename, read_document
 from llm.schemas import READER_OUTPUT_MODELS
 
@@ -63,7 +64,7 @@ def _read_bytes(document_type: str, content: bytes, filename: str) -> dict:
     """Read one document. Fixture mode (tests, local dev) returns the sample; live mode asks Gemini."""
     if os.environ.get("READER_MODE", "fixture") == "fixture":
         return read_document(document_type, mode="fixture").model_dump(mode="json")
-    if not os.environ.get("GEMINI_API_KEY"):
+    if not gemini_configured():
         raise HTTPException(
             status_code=503,
             detail={
@@ -118,7 +119,7 @@ def read_uploaded_document(session_id: str, document_type: str, body: dict) -> d
         raise HTTPException(status_code=400, detail="upload_key is required")
     if os.environ.get("READER_MODE", "fixture") == "fixture":
         return _read_bytes(document_type, b"", upload_key)
-    if not os.environ.get("GEMINI_API_KEY"):
+    if not gemini_configured():
         return _read_bytes(document_type, b"", upload_key)  # raises the plain "not switched on" message
     try:
         content = get_storage().read(upload_key)

@@ -42,7 +42,25 @@ def explainer_model() -> str:
     return reader_model()
 
 
+def use_vertex() -> bool:
+    """True when Gemini should run on Vertex AI, using this server's own Google Cloud identity (no API key)."""
+    return os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower() in ("1", "true", "yes")
+
+
+def gemini_configured() -> bool:
+    """Can we make a live Gemini call at all: Vertex AI with a project, or an API key."""
+    if use_vertex():
+        return bool(os.environ.get("GOOGLE_CLOUD_PROJECT"))
+    return bool(os.environ.get("GEMINI_API_KEY"))
+
+
 def _client() -> genai.Client:
+    if use_vertex():
+        project = os.environ.get("GOOGLE_CLOUD_PROJECT")
+        if not project:
+            raise RuntimeError("GOOGLE_CLOUD_PROJECT is not set. Vertex AI needs it.")
+        # Billed to the project's own quota, using the service account Cloud Run runs as.
+        return genai.Client(vertexai=True, project=project, location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"))
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError(
