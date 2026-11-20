@@ -85,16 +85,16 @@ export function HomeScreen() {
           <div className="bg-hero-card animate-card-entrance rounded-[20px] p-5 text-white sm:p-6">
             <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('home.heroTitle')}</span>
             <div className="tabular mt-1 text-[44px] font-extrabold leading-none sm:text-5xl">
-              {result ? <CountUp value={result.total_found} /> : formatINR(0)}
+              {result ? <CountUp value={result.total_found} /> : <span className="animate-pulse bg-white/20 inline-block h-10 w-44 rounded-lg align-middle" aria-label="Loading" />}
             </div>
             <div className="mt-4 flex gap-2.5">
               <div className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2.5">
                 <div className="tabular text-base sm:text-lg font-bold truncate">{result ? formatINR(result.yearly_total) : '—'}</div>
-                <div className="text-[11px] text-white/70 truncate">{t('home.heroYearly')}</div>
+                <div className="text-[11px] leading-tight text-white/70">{t('home.heroYearly')}</div>
               </div>
               <div className="min-w-0 flex-1 rounded-xl bg-white/10 px-3 py-2.5">
                 <div className="tabular text-base sm:text-lg font-bold truncate">{result ? formatINR(result.one_time_total) : '—'}</div>
-                <div className="text-[11px] text-white/70 truncate">{t('home.heroOneTime')}</div>
+                <div className="text-[11px] leading-tight text-white/70">{t('home.heroOneTime')}</div>
               </div>
             </div>
             {segments.length > 0 && (

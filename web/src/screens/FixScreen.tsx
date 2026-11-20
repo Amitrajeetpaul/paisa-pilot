@@ -61,7 +61,7 @@ export function FixScreen() {
             <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
             <div className="mt-1 flex items-end gap-2">
               <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
-                {result ? formatINR(result.monthly_leak_total) : formatINR(0)}
+                {result ? formatINR(result.monthly_leak_total) : <span className="animate-pulse bg-white/20 inline-block h-10 w-36 rounded-lg align-middle" aria-label="Loading" />}
               </div>
               <span className="pb-1.5 text-sm font-semibold text-white/70">{t('fix.monthLabel')}</span>
             </div>

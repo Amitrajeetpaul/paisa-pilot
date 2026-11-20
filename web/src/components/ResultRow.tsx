@@ -22,16 +22,16 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
     <button
       type="button"
       onClick={onOpen}
-      className="press flex w-full items-center gap-3 px-4 py-3.5 text-left"
+      className="press flex w-full items-center gap-3 px-4 py-3.5 text-left sm:gap-3.5"
       aria-label={`${title}: ${formatINR(amount)} ${unitLabel}. Open details.`}
     >
       <IconTile icon={icon} tone={tone} />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <p className="text-ink text-[13px] sm:text-[14px] font-semibold leading-tight truncate">{title}</p>
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <p className="text-ink line-clamp-2 text-[14px] font-semibold leading-snug sm:text-[15px]">{title}</p>
           {badge && (
             <span
-              className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${
+              className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                 badgeTone === 'ok' ? 'bg-teal-tint text-ink' : 'bg-yellow text-ink'
               }`}
             >
@@ -39,11 +39,11 @@ export function ResultRow({ icon, tone = 'coral', title, subtitle, amount, unitL
             </span>
           )}
         </div>
-        <p className="text-muted mt-0.5 truncate text-[11px] sm:text-[12px] leading-tight">{subtitle}</p>
+        <p className="text-muted mt-0.5 line-clamp-2 text-[12px] leading-snug sm:text-[13px]">{subtitle}</p>
       </div>
       <div className="shrink-0 text-right pl-1.5">
-        <p className="tabular text-ink text-[14px] sm:text-[15px] font-bold leading-tight">{formatINR(amount)}</p>
-        <p className="text-muted mt-0.5 text-[10px] sm:text-[11px] leading-tight">{unitLabel}</p>
+        <p className="tabular text-ink text-[15px] font-bold leading-tight sm:text-[16px]">{formatINR(amount)}</p>
+        <p className="text-muted mt-0.5 max-w-[7.5rem] text-[11px] leading-tight">{unitLabel}</p>
       </div>
       <span className="text-muted shrink-0 text-lg leading-none" aria-hidden="true">
         ›
