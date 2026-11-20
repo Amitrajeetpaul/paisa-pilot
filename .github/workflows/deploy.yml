@@ -52,16 +52,14 @@ jobs:
       - name: Build and deploy API
         run: |
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/paisa-pilot/api:${GITHUB_SHA}"
-          gcloud builds submit --project "$PROJECT_ID" \
-            --config infra/cloudbuild-api.yaml --substitutions "_IMAGE=${IMAGE}" .
+          scripts/cloud_build.sh "$PROJECT_ID" infra/cloudbuild-api.yaml "_IMAGE=${IMAGE}"
           gcloud run deploy paisa-pilot-api --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE"
 
       - name: Build and deploy web (bakes in the API URL)
         run: |
           API_URL=$(gcloud run services describe paisa-pilot-api --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/paisa-pilot/web:${GITHUB_SHA}"
-          gcloud builds submit --project "$PROJECT_ID" \
-            --config infra/cloudbuild-web.yaml --substitutions "_IMAGE=${IMAGE},_API_URL=${API_URL}" .
+          scripts/cloud_build.sh "$PROJECT_ID" infra/cloudbuild-web.yaml "_IMAGE=${IMAGE},_API_URL=${API_URL}"
           gcloud run deploy paisa-pilot-web --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE"
 
       - name: Smoke test
