@@ -95,7 +95,7 @@ export function GstScreen() {
           }}
         >
           <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={600} placeholder="For example: can I claim credit on a car?" aria-label="Your GST question" className="border-line bg-white min-h-11 min-w-0 flex-1 rounded-xl border px-3 text-sm" />
-          <button type="submit" disabled={asking || !q.trim()} className="bg-coral text-ink press min-h-11 rounded-xl px-4 text-sm font-bold disabled:opacity-50">
+          <button type="submit" disabled={asking || !q.trim()} className="bg-coral-button press min-h-11 rounded-xl px-4 text-sm font-bold disabled:opacity-50">
             {asking ? 'Checking…' : 'Ask'}
           </button>
         </form>
@@ -124,7 +124,7 @@ export function GstScreen() {
           Upload a CSV of your sales and purchases with these columns: type (sale or purchase), invoice_no, date, taxable_value, rate, supply (intra or inter), description. We use it only to work this out and do not keep it.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <label className="bg-coral text-ink press inline-flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-sm font-bold">
+          <label className="bg-coral-button press inline-flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-sm font-bold">
             Upload invoices (CSV)
             <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => void onFile(e.target.files?.[0])} />
           </label>

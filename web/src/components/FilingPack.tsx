@@ -70,7 +70,7 @@ export function FilingPack({ sessionId }: { sessionId: string }) {
         ))}
       </ul>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" onClick={() => void copy()} className="bg-coral text-ink press min-h-11 rounded-xl px-4 text-sm font-bold">Copy summary</button>
+        <button type="button" onClick={() => void copy()} className="bg-coral-button press min-h-11 rounded-xl px-4 text-sm font-bold">Copy summary</button>
         <button type="button" onClick={download} className="bg-slate-500/15 text-ink press min-h-11 rounded-xl px-4 text-sm font-semibold">Download JSON</button>
       </div>
       {note && <p className="text-muted mt-2 text-xs" role="status">{note}</p>}

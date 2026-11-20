@@ -104,7 +104,7 @@ export function SubscriptionUsage({ sessionId }: { sessionId: string }) {
             <p className="text-muted mt-1 text-sm">
               Allow Paisa Pilot to see how many days you open Netflix, Prime, Spotify and other apps you pay for. This is read only, stays on your phone, and you can switch it off any time in Settings.
             </p>
-            <button type="button" className="bg-coral text-ink press mt-3 min-h-11 rounded-xl px-4 text-sm font-bold" onClick={() => void openUsageSettings()}>
+            <button type="button" className="bg-coral-button press mt-3 min-h-11 rounded-xl px-4 text-sm font-bold" onClick={() => void openUsageSettings()}>
               Allow usage access
             </button>
           </>
@@ -131,7 +131,7 @@ export function SubscriptionUsage({ sessionId }: { sessionId: string }) {
                   <option key={a.app_key} value={a.app_key}>{a.name}</option>
                 ))}
               </select>
-              <label className="bg-coral text-ink press inline-flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-sm font-bold">
+              <label className="bg-coral-button press inline-flex min-h-11 cursor-pointer items-center rounded-xl px-4 text-sm font-bold">
                 Add history file
                 <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => void onFile(e.target.files?.[0])} />
               </label>

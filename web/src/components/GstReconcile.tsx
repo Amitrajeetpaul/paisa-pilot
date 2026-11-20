@@ -65,7 +65,7 @@ export function GstReconcile() {
           {twob ? `GSTR-2B: ${twob.name}` : 'GSTR-2B file'}
           <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => void pick(setTwob)(e.target.files?.[0])} />
         </label>
-        <button type="button" disabled={!books || !twob || busy} onClick={() => books && twob && void run(books.text, twob.text)} className="bg-coral text-ink press min-h-11 rounded-xl px-4 text-sm font-bold disabled:opacity-50">
+        <button type="button" disabled={!books || !twob || busy} onClick={() => books && twob && void run(books.text, twob.text)} className="bg-coral-button press min-h-11 rounded-xl px-4 text-sm font-bold disabled:opacity-50">
           Compare
         </button>
         <button type="button" onClick={() => void sample()} className="text-ink min-h-11 rounded-xl px-3 text-sm font-semibold underline">

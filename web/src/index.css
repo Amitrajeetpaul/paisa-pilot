@@ -105,9 +105,9 @@ button:disabled {
   background: #14152e;
 }
 
-/* Primary action: one solid brand colour, white text (4.8:1). No gradients. */
+/* Primary action: one solid brand colour, white text (4.72:1, WCAG AA). No gradients. */
 .bg-coral-button {
-  background: #e23d43;
+  background: #d6363c;
   color: #fff !important;
 }
 
