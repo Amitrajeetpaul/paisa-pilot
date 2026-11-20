@@ -16,6 +16,7 @@ from api.confirmed import load_confirmed
 from api.db import get_db
 from rules_engine.config import load_merchant_categories
 from rules_engine.leaks import Transaction, detect_recurring_charges
+from rules_engine.clock import india_today
 from rules_engine.usage import (
     days_used_from_history, evaluate_usage, load_usage_config, total_monthly_saving,
 )
@@ -91,7 +92,7 @@ def history_days(body: HistoryRequest) -> dict:
     if len(body.csv_text) > _MAX_CSV_CHARS:
         raise HTTPException(status_code=413, detail="File is too large")
     try:
-        days = days_used_from_history(body.csv_text, date.today(), body.window_days)
+        days = days_used_from_history(body.csv_text, india_today(), body.window_days)
     except ValueError:
         raise HTTPException(status_code=422, detail={"code": "no_date_column", "message": "We could not find a Date column in that file. Please upload the viewing-history file you downloaded."}) from None
     return {"app_key": body.app_key, "days_used": days, "window_days": body.window_days}

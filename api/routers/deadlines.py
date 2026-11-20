@@ -14,6 +14,7 @@ from api.db import get_db
 from api.routers.tax_advice import RULES_CONFIG, tax_picture
 from rules_engine.deadlines import upcoming_deadlines
 from rules_engine.itr_prefill import build_itr_prefill
+from rules_engine.clock import india_today
 
 router = APIRouter(tags=["deadlines"])
 
@@ -33,7 +34,7 @@ def _with_law(items: list[dict]) -> list[dict]:
 
 @router.get("/deadlines")
 def deadlines(days: int = 180, gst: bool = False) -> dict:
-    items = upcoming_deadlines(date.today(), min(max(days, 7), 400), gst_registered=gst)
+    items = upcoming_deadlines(india_today(), min(max(days, 7), 400), gst_registered=gst)
     return {"deadlines": _with_law(items), "note": "Dates can be extended by the government. Always confirm on the official portal."}
 
 
@@ -59,6 +60,6 @@ def personal_deadlines(session_id: str, body: DeadlineBody | None = None) -> dic
         regime = pack["result"]["regime"]
     elif pic:
         regime = pic["cheaper_regime"]
-    items = upcoming_deadlines(date.today(), body.days, tax_payable_after_tds=payable, gst_registered=body.gst_registered, regime=regime)
+    items = upcoming_deadlines(india_today(), body.days, tax_payable_after_tds=payable, gst_registered=body.gst_registered, regime=regime)
     return {"deadlines": _with_law(items), "tax_payable_after_tds": payable, "notes_as_of": tax_corpus().as_of,
             "note": "Dates can be extended by the government, so always confirm on the official portal. Advance-tax amounts are estimated from your latest documents using FY 2025-26 rules. Nothing is filed or paid for you."}

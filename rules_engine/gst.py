@@ -15,6 +15,8 @@ from pathlib import Path
 
 import yaml
 
+from rules_engine.clock import india_today
+
 _CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "rules" / "gst.yaml"
 _ALLOWED_RATES = {0, 0.1, 0.25, 1, 1.5, 3, 5, 6, 7.5, 12, 18, 28, 40}
 _MAX_INVOICES = 5000
@@ -179,7 +181,7 @@ def compute_gstr3b(
                 itc[k] += v
     cash, carry = setoff({k: round(v, 2) for k, v in output.items()}, {k: round(v, 2) for k, v in itc.items()})
     due = due_date_for(period, config)
-    when = filing_date or date.today()
+    when = filing_date or india_today()
     days_late = max(0, (when - due).days)
     cash_total = round(sum(cash.values()), 2)
     nil = not sales and not purchases

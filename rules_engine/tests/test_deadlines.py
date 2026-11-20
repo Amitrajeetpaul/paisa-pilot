@@ -35,3 +35,12 @@ def test_gst_dates_only_for_registered_people_and_roll_over_the_month():
 def test_sorted_soonest_first():
     ds = upcoming_deadlines(date(2026, 11, 21), 400)
     assert [d["date"] for d in ds] == sorted(d["date"] for d in ds)
+
+
+def test_india_today_is_ahead_of_utc_after_midnight():
+    from datetime import datetime, timezone
+
+    from rules_engine.clock import IST, india_today
+
+    assert india_today() == datetime.now(IST).date()
+    assert datetime(2026, 11, 20, 20, 0, tzinfo=timezone.utc).astimezone(IST).date().day == 21  # 1:30 am IST on the 21st

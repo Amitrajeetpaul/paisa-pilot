@@ -550,15 +550,14 @@ def itr_pack_tool(documents: dict) -> dict:
 
 def deadlines_tool(documents: dict, gst_registered: bool = False) -> dict:
     """The next tax and GST dates for this person, with their own advance-tax amount when it applies."""
-    from datetime import date
-
+    from rules_engine.clock import india_today
     from rules_engine.deadlines import upcoming_deadlines
     from rules_engine.itr_prefill import build_itr_prefill
 
     pack = build_itr_prefill(documents, RULES_CONFIG)
     payable = pack["result"]["still_to_pay"] if pack else None
     regime = pack["result"]["regime"] if pack else None
-    items = upcoming_deadlines(date.today(), 240, tax_payable_after_tds=payable, gst_registered=gst_registered, regime=regime)
+    items = upcoming_deadlines(india_today(), 240, tax_payable_after_tds=payable, gst_registered=gst_registered, regime=regime)
     return {"deadlines": [d for d in items if d["applies"]][:6], "tax_payable_after_tds": payable}
 
 
