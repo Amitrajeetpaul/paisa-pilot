@@ -225,7 +225,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                   className="bg-coral text-navy min-h-11 rounded-[18px] px-4 py-2 text-sm font-bold hover:opacity-90 flex items-center justify-center gap-1.5 w-full sm:w-auto text-center"
                 >
                   <Icon name="check" size={16} />
-                  Download CA Action Plan
+                  Download my tax summary
                 </button>
                 {regimeResult?.recommended_regime && (
                   <button
@@ -233,7 +233,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
                     onClick={downloadRegimeMessage}
                     className="border-line text-ink min-h-11 rounded-[18px] border bg-cream px-4 py-2 text-sm font-semibold hover:border-coral flex items-center justify-center w-full sm:w-auto text-center"
                   >
-                    Form 12BB Declaration
+                    Draft message to employer
                   </button>
                 )}
                 <button
