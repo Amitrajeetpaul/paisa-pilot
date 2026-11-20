@@ -24,7 +24,7 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
     <div>
       <div className="flex gap-3" role="img" aria-describedby={tableId}>
         {entries.map(([month, value]) => {
-          const heightPct = Math.max(6, (value / max) * 100)
+          const heightPct = 25 + (value / max) * 55 // 25-80% of the track, so equal months read as bars, not solid blocks
           const isHovered = hovered === month
           return (
             <div key={month} className="flex flex-1 flex-col items-center gap-1.5">
@@ -36,7 +36,7 @@ export function LeakBarChart({ data }: { data: Record<string, number> }) {
                 )}
                 <div
                   className="w-3/5 max-w-16 cursor-default rounded-t-md transition-opacity"
-                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.92, background: '#ffffff' }}
+                  style={{ height: `${heightPct}%`, opacity: isHovered ? 1 : 0.92, background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.7) 100%)' }}
                   onMouseEnter={() => setHovered(month)}
                   onMouseLeave={() => setHovered(null)}
                   tabIndex={0}

@@ -253,6 +253,21 @@ def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -
     }
 
 
+def _payment_lines(transactions: list[Transaction], description: str) -> dict[str, str]:
+    """The actual statement lines behind a recurring charge, as {"Payment 1": "Rs. 199 on 2 Aug 2026"}."""
+    from datetime import date
+
+    lines: dict[str, str] = {}
+    matching = sorted((t for t in transactions if t.description == description and t.type == "debit"), key=lambda t: t.date)
+    for i, t in enumerate(matching, start=1):
+        try:
+            when = date.fromisoformat(str(t.date)[:10]).strftime("%-d %b %Y")
+        except ValueError:
+            when = str(t.date)
+        lines[f"Payment {i}"] = f"\u20b9{t.amount:,.0f} on {when}"
+    return lines
+
+
 @router.post("/calculate/leak-fixer")
 def calculate_leak_fixer(session_id: str, body: ConfirmedBody | None = None) -> dict:
     _require_session(session_id)
@@ -281,9 +296,16 @@ def calculate_leak_fixer(session_id: str, body: ConfirmedBody | None = None) -> 
                 "unit_label": "per month",
                 "status_label": charge.status_label,
                 "source_chip": "Source: bank statement",
-                "action_label": "Cancel",
+                "action_label": "Draft cancel request",
                 "months_seen": charge.months_seen,
             })
+            _save_trail(
+                session_id, f"subscription_{charge.description}", charge.description,
+                {**_payment_lines(transactions, charge.description), "Months in a row": len(charge.months_seen)},
+                "The same payment, for the same amount, left your account every month. "
+                + ("It looks unused, which is our best guess from the pattern. Check before you cancel."
+                   if charge.status_label == "idle" else "It looks like you may still be using it."),
+            )
         elif charge.category == "autopay":
             cards.append({
                 "card_id": f"autopay_{charge.description}",
@@ -296,6 +318,12 @@ def calculate_leak_fixer(session_id: str, body: ConfirmedBody | None = None) -> 
                 "action_label": "Draft message",
                 "months_seen": charge.months_seen,
             })
+            _save_trail(
+                session_id, f"autopay_{charge.description}", charge.description,
+                {**_payment_lines(transactions, charge.description), "Months in a row": len(charge.months_seen)},
+                "A UPI AutoPay mandate took this amount every month. It is still live. Keep it if you use it, "
+                "otherwise cancel the mandate in your UPI app.",
+            )
         elif charge.category == "loan_emi":
             cards.append({
                 "card_id": f"loan_{charge.description}",
@@ -308,6 +336,11 @@ def calculate_leak_fixer(session_id: str, body: ConfirmedBody | None = None) -> 
                 "action_label": "Draft message to lender",
                 "months_seen": charge.months_seen,
             })
+            _save_trail(
+                session_id, f"loan_{charge.description}", charge.description,
+                {**_payment_lines(transactions, charge.description), "Months in a row": len(charge.months_seen)},
+                "A loan EMI is not counted as a leak. If your credit record has improved, a lender may offer a lower rate, so a polite request is worth sending.",
+            )
 
     _save_trail(
         session_id, "leak_fixer_monthly_total", "Leaking every month",

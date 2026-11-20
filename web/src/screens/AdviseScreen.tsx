@@ -106,6 +106,7 @@ export function AdviseScreen() {
               <span className="typing-dot" />
               <span className="typing-dot" style={{ animationDelay: '0.15s' }} />
               <span className="typing-dot" style={{ animationDelay: '0.3s' }} />
+              <span className="text-muted ml-2 text-xs">Checking your numbers…</span>
             </div>
           </div>
         )}
