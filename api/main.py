@@ -24,8 +24,8 @@ origins = list(set(_default_origins + configured)) if configured else _default_o
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$|^capacitor://localhost$",
+    allow_origins=["*"],
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
