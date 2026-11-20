@@ -63,7 +63,7 @@ export function CheckupCard({ sessionId, kind }: { sessionId: string; kind: Kind
     setLoading(true)
     setError(false)
     api
-      .runAgent(sessionId, AGENT_FOR[kind])
+      .runAgent(sessionId, AGENT_FOR[kind], undefined, true)
       .then((r) => {
         cache.set(key, r)
         setRun(r)

@@ -136,11 +136,16 @@ export const api = {
     }
   },
 
-  runAgent: async (sessionId: string, agent: 'money_finder' | 'leak_fixer' | 'consultant' | 'ca_assistant', question?: string) => {
+  runAgent: async (
+    sessionId: string,
+    agent: 'money_finder' | 'leak_fixer' | 'consultant' | 'ca_assistant',
+    question?: string,
+    fast = false,
+  ) => {
     try {
       return await request<AgentRunResult>(`/sessions/${sessionId}/agents/${agent}/run`, {
         method: 'POST',
-        body: stateBody(sessionId, { question: question ?? null }),
+        body: stateBody(sessionId, { question: question ?? null, fast }),
       })
     } catch (e) {
       if (!sampleOnly(sessionId)) throw e

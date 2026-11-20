@@ -23,6 +23,8 @@ DOCUMENT_TYPES = ["payslip", "form16", "bank_statement", "pf_passbook", "ais"]
 class RunRequest(BaseModel):
     question: str | None = None
     confirmed: dict[str, dict] | None = None
+    # Cards that must appear at once ask for the built-in (rules-engine) answer instead of waiting on Gemini.
+    fast: bool = False
 
 
 class RunResponse(BaseModel):
@@ -43,7 +45,8 @@ def run_agent_endpoint(session_id: str, agent_name: str, body: RunRequest | None
 
     confirmed = load_confirmed(session_id, body.confirmed if body else None)
 
-    run = run_agent(agent_name, confirmed, body.question if body else None, mode=os.environ.get("READER_MODE", "fixture"))
+    mode = "fixture" if (body and body.fast) else os.environ.get("READER_MODE", "fixture")
+    run = run_agent(agent_name, confirmed, body.question if body else None, mode=mode)
     guardrail = check_guardrail(run.answer)
     answer = guardrail.rewritten_answer if guardrail.flagged and guardrail.rewritten_answer else run.answer
     return RunResponse(
