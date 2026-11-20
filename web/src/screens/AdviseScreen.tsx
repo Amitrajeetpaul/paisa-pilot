@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Button } from '../components/Button'
+import { GoalPlanner } from '../components/GoalPlanner'
 import { Icon } from '../components/Icon'
 import { api } from '../lib/api'
 import { stripMarkdown } from '../lib/plain'
@@ -74,6 +75,11 @@ export function AdviseScreen() {
                 </button>
               ))}
             </div>
+            {sessionId && (
+              <div className="mt-6">
+                <GoalPlanner sessionId={sessionId} />
+              </div>
+            )}
           </div>
         )}
         {messages.map((m, i) => (

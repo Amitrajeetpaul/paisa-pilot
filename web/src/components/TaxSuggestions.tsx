@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { api, type TaxSuggestion, type TaxSuggestionsResult } from '../lib/api'
+import { api, type AgeBand, type TaxSuggestion, type TaxSuggestionsResult } from '../lib/api'
+import { useApp } from '../state/AppContext'
 import { formatINR } from '../lib/format'
 
 function Card({ s }: { s: TaxSuggestion }) {
@@ -21,7 +22,7 @@ function Card({ s }: { s: TaxSuggestion }) {
       {s.law && (
         <>
           <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="text-coral-dark mt-1 min-h-9 text-xs font-semibold underline">
-            {open ? 'Hide the rule' : `The rule: ${s.law.section}`}
+            {open ? 'Hide the rule' : `The rule: ${s.law.section}${s.law.new_act_section ? ` (${s.law.new_act_section} from FY 2026-27)` : ''}`}
           </button>
           {open && (
             <div className="bg-slate-500/10 mt-1 rounded-xl p-3 text-xs">
@@ -37,20 +38,50 @@ function Card({ s }: { s: TaxSuggestion }) {
 
 /** Ways to legally pay less tax, worked out from the person's own documents. */
 export function TaxSuggestions({ sessionId }: { sessionId: string }) {
+  const { t } = useApp()
   const [data, setData] = useState<TaxSuggestionsResult | null>(null)
   const [failed, setFailed] = useState(false)
+  const [age, setAge] = useState<AgeBand>(() => {
+    try {
+      return (localStorage.getItem('pp_age_band') as AgeBand) || 'below_60'
+    } catch {
+      return 'below_60'
+    }
+  })
 
   useEffect(() => {
-    setData(null)
-    setFailed(false)
-    api.taxSuggestions(sessionId).then(setData).catch(() => setFailed(true))
-  }, [sessionId])
+    let live = true
+    api.taxSuggestions(sessionId, age).then((d) => live && setData(d)).catch(() => live && setFailed(true))
+    return () => {
+      live = false
+    }
+  }, [sessionId, age])
 
   if (failed) return null
   return (
-    <section className="mt-8" aria-labelledby="tax-sugg-h">
-      <h2 id="tax-sugg-h" className="section-label">Ways to pay less tax</h2>
+    <section aria-labelledby="tax-sugg-h">
+      <h2 id="tax-sugg-h" className="section-label">{t('ui.waysToSave')}</h2>
       <div className="card mt-3 p-4">
+        <label className="text-muted mb-3 flex items-center gap-2 text-sm">
+          {t('ui.yourAge')}
+          <select
+            value={age}
+            onChange={(e) => {
+              const v = e.target.value as AgeBand
+              setAge(v)
+              try {
+                localStorage.setItem('pp_age_band', v)
+              } catch {
+                /* remembered only for this visit */
+              }
+            }}
+            className="border-line bg-white text-ink min-h-11 rounded-xl border px-3 text-sm"
+          >
+            <option value="below_60">{t('ui.age.below60')}</option>
+            <option value="60_79">{t('ui.age.60to79')}</option>
+            <option value="80_plus">{t('ui.age.80plus')}</option>
+          </select>
+        </label>
         {!data && <div className="animate-pulse bg-slate-500/15 h-16 rounded-xl" aria-label="Loading" />}
         {data && (
           <>

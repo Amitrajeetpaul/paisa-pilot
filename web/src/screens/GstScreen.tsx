@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GstReconcile } from '../components/GstReconcile'
 import { ApiError, api, type GstAskResult, type GstDraftResult } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { useApp } from '../state/AppContext'
 
 const EXAMPLES = ['Can I claim GST credit on a laptop or a car?', 'Do I need GST as a freelancer?', 'What is the late fee for filing late?', 'How do I export services without paying GST?']
 
@@ -20,6 +21,27 @@ function Citations({ items }: { items: GstAskResult['citations'] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+function ItcDeadlineBanner() {
+  const { t } = useApp()
+  const [d, setD] = useState<{ date: string; days_left: number; detail: string } | null>(null)
+  useEffect(() => {
+    api
+      .gstDeadlines()
+      .then((r) => setD(r.deadlines.find((x) => x.id === 'itc_deadline' && x.days_left <= 45) ?? null))
+      .catch(() => undefined)
+  }, [])
+  if (!d) return null
+  const date = new Date(d.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+  return (
+    <div className="bg-amber-500/10 border-amber-500/30 mt-4 rounded-2xl border p-4" role="status">
+      <p className="text-ink text-sm font-bold">
+        {t('ui.gst.itcBanner')}: {date} · {d.days_left} {t('ui.daysLeft')}
+      </p>
+      <p className="text-muted mt-1 text-sm">{d.detail}</p>
+    </div>
   )
 }
 
@@ -84,6 +106,7 @@ export function GstScreen() {
       <p className="text-muted text-sm font-medium">GST</p>
       <h1 className="text-ink text-2xl font-extrabold leading-tight tracking-tight">GST help for your business</h1>
       <p className="text-muted mt-1 text-sm">Ask a GST question and get the rule with its section number. Or upload your invoices and we prepare your monthly GSTR-3B summary.</p>
+      <ItcDeadlineBanner />
 
       <section className="card mt-5 p-4" aria-labelledby="gst-ask">
         <h2 id="gst-ask" className="section-label">Ask about GST</h2>

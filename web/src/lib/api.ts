@@ -224,17 +224,22 @@ export const api = {
   gstDraft: (body: { csv_text: string; period?: string; annual_turnover?: number; business_type?: string }) =>
     request<GstDraftResult>('/gst/draft', { method: 'POST', body: JSON.stringify(body) }),
 
-  taxSuggestions: (sessionId: string) =>
+  taxSuggestions: (sessionId: string, ageBand: AgeBand = 'below_60') =>
     request<TaxSuggestionsResult>(`/sessions/${sessionId}/calculate/tax-suggestions`, {
       method: 'POST',
-      body: stateBody(sessionId),
+      body: stateBody(sessionId, { age_band: ageBand }),
     }),
+
+  planGoal: (sessionId: string, goal: { cost_today: number; years: number; goal_type: string; already_saved: number }) =>
+    request<GoalPlan>(`/sessions/${sessionId}/calculate/goal`, { method: 'POST', body: stateBody(sessionId, goal) }),
 
   spending: (sessionId: string) =>
     request<SpendingProfile>(`/sessions/${sessionId}/calculate/spending`, { method: 'POST', body: stateBody(sessionId) }),
 
   deadlines: (sessionId: string) =>
     request<DeadlinesResult>(`/sessions/${sessionId}/calculate/deadlines`, { method: 'POST', body: stateBody(sessionId, { days: 240 }) }),
+
+  gstDeadlines: () => request<{ deadlines: Deadline[] }>('/deadlines?gst=true&days=60'),
 
   gstReconcileSample: () => request<{ books_csv: string; gstr2b_csv: string }>('/gst/reconcile-sample'),
 
@@ -425,7 +430,21 @@ export interface TaxSuggestion {
   saving: number | null
   action: string
   caveat: string
-  law: { section: string; title: string; excerpt: string; source_url: string } | null
+  law: { section: string; new_act_section?: string; title: string; excerpt: string; source_url: string } | null
+}
+
+export type AgeBand = 'below_60' | '60_79' | '80_plus'
+
+export interface GoalPlan {
+  future_cost: number
+  monthly_needed: number
+  lump_sum_needed_today: number
+  assumed_return_percent: number
+  inflation_percent: number
+  category: string
+  note: string
+  left_over_per_month?: number
+  affordable?: boolean
 }
 
 export interface TaxSuggestionsResult {

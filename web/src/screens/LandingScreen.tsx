@@ -329,7 +329,7 @@ export function LandingScreen() {
 
       <footer className="text-muted px-6 py-8 text-center text-xs">
         © 2026 Paisa Pilot · git_happens · Sample data shown throughout this demo. ·{' '}
-        <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/terms" className="underline">Terms</Link>
+        <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/terms" className="underline">Terms</Link> · <Link to="/investors" className="underline">For investors</Link>
       </footer>
     </div>
   )

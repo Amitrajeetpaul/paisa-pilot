@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { BreakdownBar, type Segment } from '../components/BreakdownBar'
 import { FilingPack } from '../components/FilingPack'
 import { DeadlinesCard } from '../components/DeadlinesCard'
+import { HomeTabs } from '../components/HomeTabs'
+import { NextStep } from '../components/NextStep'
 import { ProgressCard } from '../components/ProgressCard'
 import { TaxSuggestions } from '../components/TaxSuggestions'
 import { CheckupCard } from '../components/CheckupCard'
@@ -108,6 +110,17 @@ export function HomeScreen() {
             )}
           </div>
 
+          {result && (
+            <NextStep
+              cards={result.cards}
+              onOpen={(c) => {
+                const full = result.cards.find((x) => x.card_id === c.card_id)
+                if (!full) return
+                setActive(full)
+                drawer.open(full.card_id)
+              }}
+            />
+          )}
           <QuickActions />
           <TrustStrip />
 
@@ -144,9 +157,15 @@ export function HomeScreen() {
           </div>
 
           <ProgressCard ready={!loading && !!result} />
-          {sessionId && !loading && result && <DeadlinesCard sessionId={sessionId} />}
-          {sessionId && !loading && result && <FilingPack sessionId={sessionId} />}
-          {sessionId && !loading && result && result.cards.length > 0 && <TaxSuggestions sessionId={sessionId} />}
+          {sessionId && !loading && result && (
+            <HomeTabs
+              tabs={[
+                { id: 'tax', label: t('ui.tab.tax'), content: <TaxSuggestions sessionId={sessionId} /> },
+                { id: 'file', label: t('ui.tab.file'), content: <FilingPack sessionId={sessionId} /> },
+                { id: 'dates', label: t('ui.tab.dates'), content: <DeadlinesCard sessionId={sessionId} /> },
+              ]}
+            />
+          )}
         </div>
 
         {/* Right Column: AI Tax Checkup & Documents (Sticky on Desktop) */}

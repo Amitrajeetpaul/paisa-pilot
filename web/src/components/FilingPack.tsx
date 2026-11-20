@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { api, type ItrPack } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { useApp } from '../state/AppContext'
 
 const MARK = { ok: ['✓', 'text-emerald-600'], missing: ['!', 'text-red-500'], check: ['•', 'text-amber-600'] } as const
 
 /** Everything needed to fill the income-tax portal, from the documents the person confirmed. Nothing is filed. */
 export function FilingPack({ sessionId }: { sessionId: string }) {
+  const { t } = useApp()
   const [p, setP] = useState<ItrPack | null>(null)
   const [failed, setFailed] = useState(false)
   const [note, setNote] = useState<string | null>(null)
@@ -43,8 +45,8 @@ export function FilingPack({ sessionId }: { sessionId: string }) {
 
   const r = p.result
   return (
-    <section className="card mt-6 p-4" aria-labelledby="pack-h">
-      <h2 id="pack-h" className="section-label">Your filing pack, FY {p.financial_year}</h2>
+    <section className="card p-4" aria-labelledby="pack-h">
+      <h2 id="pack-h" className="section-label">{t('ui.filingPack')}, FY {p.financial_year}</h2>
       <div className="bg-coral-tint mt-3 rounded-2xl p-3">
         <p className="text-muted text-xs font-semibold uppercase tracking-wide">{r.refund > 0 ? 'Estimated refund' : 'Estimated tax still to pay'} on the {r.regime} regime</p>
         <p className="tabular text-ink text-2xl font-extrabold">{formatINR(r.refund > 0 ? r.refund : r.still_to_pay)}</p>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, api, type SubscriptionUsageResult, type UsageApps } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { useApp } from '../state/AppContext'
 import { hasUsageAccess, isNativeAndroid, measureUsage, notifyOncePerDay, openUsageSettings } from '../lib/usageAccess'
 
 const LEVEL_STYLE: Record<string, string> = {
@@ -13,6 +14,7 @@ const LEVEL_LABEL: Record<string, string> = { unused: 'Not used', rare: 'Hardly 
 
 /** "Are you using what you pay for?" Real phone usage (Android) or an uploaded history file. */
 export function SubscriptionUsage({ sessionId }: { sessionId: string }) {
+  const { t } = useApp()
   const native = isNativeAndroid()
   const [apps, setApps] = useState<UsageApps | null>(null)
   const [granted, setGranted] = useState(false)
@@ -96,7 +98,7 @@ export function SubscriptionUsage({ sessionId }: { sessionId: string }) {
 
   return (
     <section className="mt-8" aria-labelledby="usage-h">
-      <h2 id="usage-h" className="section-label">Are you using what you pay for?</h2>
+      <h2 id="usage-h" className="section-label">{t('ui.usingWhatYouPay')}</h2>
       <div className="card mt-3 p-4">
         {native && !granted && (
           <>

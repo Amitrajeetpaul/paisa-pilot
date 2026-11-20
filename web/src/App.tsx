@@ -7,6 +7,7 @@ import { ConsentUploadScreen } from './screens/ConsentUploadScreen'
 import { DraftsScreen } from './screens/DraftsScreen'
 import { FixScreen } from './screens/FixScreen'
 import { GstScreen } from './screens/GstScreen'
+import { InvestorsScreen } from './screens/InvestorsScreen'
 import { HomeScreen } from './screens/HomeScreen'
 import { PrivacyScreen, TermsScreen } from './screens/LegalScreens'
 import { LandingScreen } from './screens/LandingScreen'
@@ -16,6 +17,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingScreen />} />
       <Route path="/login" element={<AuthScreen />} />
+      <Route path="/investors" element={<InvestorsScreen />} />
       <Route path="/privacy" element={<PrivacyScreen />} />
       <Route path="/terms" element={<TermsScreen />} />
       <Route path="/app/consent" element={<ConsentUploadScreen />} />

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api, type SpendingProfile } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { useApp } from '../state/AppContext'
 
 /** Where the money goes, read from the bank statement like an adviser would. */
 export function SpendingCard({ sessionId }: { sessionId: string }) {
+  const { t } = useApp()
   const [p, setP] = useState<SpendingProfile | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -17,7 +19,7 @@ export function SpendingCard({ sessionId }: { sessionId: string }) {
   const max = Math.max(1, ...(p?.categories.map((c) => c.monthly_average) ?? [1]))
   return (
     <section className="mt-8" aria-labelledby="spend-h">
-      <h2 id="spend-h" className="section-label">Where your money goes</h2>
+      <h2 id="spend-h" className="section-label">{t('ui.whereMoneyGoes')}</h2>
       <div className="card mt-3 p-4">
         {!p && <div className="animate-pulse bg-slate-500/15 h-16 rounded-xl" aria-label="Loading" />}
         {p && (

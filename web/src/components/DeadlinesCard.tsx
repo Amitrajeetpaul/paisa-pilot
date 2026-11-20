@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type Deadline } from '../lib/api'
 import { formatINR } from '../lib/format'
+import { useApp } from '../state/AppContext'
 import { isNativeAndroid, notifyOncePerDay } from '../lib/usageAccess'
 
 function when(d: Deadline) {
@@ -12,6 +13,7 @@ function when(d: Deadline) {
 
 /** The next tax dates for this person, so nothing is missed. Reminders only: nothing is filed or paid for you. */
 export function DeadlinesCard({ sessionId }: { sessionId: string }) {
+  const { t } = useApp()
   const [items, setItems] = useState<Deadline[] | null>(null)
   const [note, setNote] = useState('')
 
@@ -40,8 +42,8 @@ export function DeadlinesCard({ sessionId }: { sessionId: string }) {
 
   if (!items || items.length === 0) return null
   return (
-    <section className="card mt-6 p-4" aria-labelledby="deadlines-h">
-      <h2 id="deadlines-h" className="section-label">Dates to remember</h2>
+    <section className="card p-4" aria-labelledby="deadlines-h">
+      <h2 id="deadlines-h" className="section-label">{t('ui.datesToRemember')}</h2>
       <ul className="mt-2 divide-y divide-[color:var(--color-line)]">
         {items.map((d) => (
           <li key={d.id} className="py-2.5">
