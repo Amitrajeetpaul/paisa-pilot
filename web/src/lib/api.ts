@@ -202,6 +202,9 @@ export const api = {
       body: stateBody(sessionId),
     }),
 
+  spending: (sessionId: string) =>
+    request<SpendingProfile>(`/sessions/${sessionId}/calculate/spending`, { method: 'POST', body: stateBody(sessionId) }),
+
   getUsageApps: () => request<UsageApps>('/usage/apps'),
 
   calculateSubscriptionUsage: (sessionId: string, usage: { app_key: string; days_used: number }[], windowDays: number) =>
@@ -399,6 +402,18 @@ export interface TaxSuggestionsResult {
   notes_as_of: string
   reviewed_by_ca: boolean
   disclaimer: string
+}
+
+export interface SpendingProfile {
+  months_covered: number
+  income_per_month: number
+  spending_per_month: number
+  invested_per_month: number
+  left_over_per_month: number | null
+  savings_rate_percent: number | null
+  categories: { key: string; label: string; kind: string; total: number; monthly_average: number; share_percent: number }[]
+  flags: { id: string; text: string; level: string }[]
+  note: string
 }
 
 export interface UsageApps {

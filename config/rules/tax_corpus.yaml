@@ -175,3 +175,128 @@ passages:
       To receive a refund, file your return, e-verify it within 30 days, and make sure your bank account is
       pre-validated on the income-tax portal. The department processes the return and credits the refund with
       interest under Section 244A when it is due.
+  - id: presumptive-44ada
+    section: "Income-tax Act Sec 44ADA, 44AD"
+    title: Freelancers and professionals, presumptive tax
+    keywords: [freelancer, 44ADA, 44AD, presumptive, professional, consultant, self-employed, 50% profit, gross receipts, business income, books of accounts, ITR-4]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      A resident individual in a specified profession, such as a doctor, lawyer, architect, engineer, accountant or
+      technical consultant, with gross receipts up to Rs 50 lakh (Rs 75 lakh if cash receipts are 5% or less) can
+      declare 50% of receipts as income under Section 44ADA and skip detailed books of accounts. A small trader can
+      declare 6% (digital receipts) or 8% of turnover under Section 44AD. Both file ITR-4. Whether freelance work
+      such as design or content creation counts as a specified profession needs a CA's view.
+  - id: crypto-vda
+    section: "Income-tax Act Sec 115BBH, 194S"
+    title: Crypto and other virtual digital assets
+    keywords: [crypto, bitcoin, VDA, virtual digital asset, 30%, 194S, NFT, loss set off, ethereum]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Gains from selling crypto and other virtual digital assets are taxed at a flat 30% (plus cess), with no
+      deduction except the cost of acquisition. Losses cannot be set off against any other income or carried
+      forward. A buyer or exchange deducts 1% TDS on transfers above the threshold. The gains must be reported
+      under schedule VDA even if TDS was deducted.
+  - id: esop-rsu
+    section: "Income-tax Act Sec 17(2)(vi); Sec 112, 111A"
+    title: ESOPs and RSUs
+    keywords: [ESOP, RSU, stock options, perquisite, employee stock, exercise, vest, shares from employer]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      When you exercise ESOPs or RSUs vest, the difference between the market value on that day and the price you
+      paid is taxed as salary perquisite and your employer deducts TDS on it. When you later sell the shares, the
+      gain over that market value is capital gain: short term or long term depending on how long you held them. Shares
+      of unlisted companies are long term after 24 months.
+  - id: rental-income
+    section: "Income-tax Act Sec 22-24"
+    title: Income from a house you rent out
+    keywords: [rental income, rent received, let out, house property, tenant, municipal tax, 30% deduction, second house, property income]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Rent you receive is taxed as income from house property. From the rent, less municipal taxes you paid, you get a
+      flat 30% standard deduction without proof, and you can also deduct home-loan interest. A second self-occupied
+      house is treated as let out at a notional rent. If you own more than one house you generally file ITR-2.
+  - id: interest-tds
+    section: "Income-tax Act Sec 194A; Forms 15G, 15H"
+    title: TDS on bank and FD interest
+    keywords: [FD interest, fixed deposit, TDS on interest, 194A, 40000, 50000, 15G, 15H, bank interest TDS, recurring deposit]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      A bank deducts 10% TDS on interest when it crosses Rs 50,000 a year (Rs 1 lakh for senior citizens). If your total
+      income is below the taxable limit you can submit Form 15G (Form 15H for seniors) so that no TDS is cut. The
+      interest is still taxable income and shows in your AIS; if too much TDS was cut you get it back by filing.
+  - id: epf-withdrawal
+    section: "Income-tax Act Sec 10(12), 192A; Rule 8, Part A Schedule IV"
+    title: Withdrawing your provident fund
+    keywords: [EPF withdrawal, PF withdrawal, provident fund tax, 5 years, continuous service, 10% TDS, UAN, withdraw PF]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      An EPF withdrawal after 5 years of continuous service is tax free. If you withdraw before 5 years the amount is
+      taxable, and 10% TDS applies if the withdrawal is above Rs 50,000 (20% without PAN). Transferring your PF between
+      employers does not count as a withdrawal and keeps the years of service together.
+  - id: gratuity-leave
+    section: "Income-tax Act Sec 10(10), 10(10AA)"
+    title: Gratuity and leave encashment
+    keywords: [gratuity, leave encashment, retirement benefit, 20 lakh, 25 lakh, resign, notice pay, full and final]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Gratuity for private-sector employees covered by the Gratuity Act is tax free up to Rs 20 lakh, and you earn it
+      after 5 years with the employer. Leave encashment at retirement or resignation is tax free up to Rs 25 lakh for
+      non-government employees. Leave encashment while you are still working is taxed as salary.
+  - id: gifts
+    section: "Income-tax Act Sec 56(2)(x)"
+    title: Gifts and money from family
+    keywords: [gift, gifts, relative, parents, wedding gift, 50000, received money, family gift, inheritance]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Gifts from specified relatives, such as parents, spouse, siblings and their spouses, are tax free without any
+      limit. Gifts received at your wedding and inheritances are also tax free. Gifts from other people are taxable
+      in your hands if the total in a year exceeds Rs 50,000. Income that the gifted money later earns, such as
+      interest, is taxable for you.
+  - id: property-sale
+    section: "Income-tax Act Sec 112, 54, 54EC, 54F"
+    title: Selling a house or land
+    keywords: [sell house, sale of property, selling land, real estate, property capital gains, indexation, 54, 54EC, 24 months, flat sale, plot]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      A house or land held for more than 24 months gives long-term capital gain, taxed at 12.5% without indexation.
+      For property bought before 23 July 2024 a resident individual can choose 20% with indexation instead. You can
+      save the tax by reinvesting the gain in another residential house (Section 54), or in specified bonds within
+      6 months (Section 54EC, up to Rs 50 lakh). Capital gains need ITR-2 or higher.
+  - id: senior-citizen
+    section: "Income-tax Act, First Schedule"
+    title: Senior citizens
+    keywords: [senior citizen, super senior, 60 years, 80 years, parents tax, older, retired, pensioner]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      In the old regime the basic exemption limit is Rs 3 lakh for residents aged 60 to 79 and Rs 5 lakh for those 80
+      and above, against Rs 2.5 lakh for others. Senior citizens also get the higher 80D limit of Rs 50,000, and the
+      Rs 50,000 deposit-interest deduction under Section 80TTB. The new regime has the same slabs for everyone.
+  - id: notices
+    section: "Income-tax Act Sec 143(1), 139(8A), 234F"
+    title: Notices, mistakes and late fees
+    keywords: [notice, intimation, 143(1), mismatch, ITR-U, updated return, late fee 234F, 5000, penalty, missed deadline, rectification]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      An intimation under Section 143(1) is the department's computation of your return. If you disagree you can file
+      a rectification or respond online, usually within 30 days. A late return carries a fee of up to Rs 5,000 (Rs 1,000
+      if total income is up to Rs 5 lakh). If you missed even the belated deadline, an updated return (ITR-U) can be
+      filed within 24 months of the assessment year by paying extra tax. Notices that ask for reassessment or
+      scrutiny are serious, so get a CA's help.
+  - id: sec-80gg
+    section: "Income-tax Act Sec 80GG"
+    title: Rent deduction without HRA
+    keywords: [80GG, rent without HRA, no hra, self-employed rent, freelancer rent, 5000 a month, rent deduction]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      If you pay rent but do not get HRA, for example if you are self-employed, you can deduct the least of: Rs 5,000
+      a month, 25% of your total income, and rent paid minus 10% of income. You must file Form 10BA and cannot own a
+      house in the place where you live. It is available in the old regime only.
+  - id: nps-withdrawal
+    section: "Income-tax Act Sec 10(12A), 10(12B)"
+    title: Tax on NPS at retirement
+    keywords: [NPS withdrawal, NPS maturity, annuity, 60% lump sum, retire, pension tax, 40% annuity]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      At 60 you can withdraw up to 60% of the NPS corpus tax free, and the rest must buy an annuity. The pension you
+      later receive from the annuity is taxable as income. Your contributions get deductions as described under
+      Sections 80CCD(1), 80CCD(1B) and 80CCD(2).

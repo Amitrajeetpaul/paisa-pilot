@@ -9,7 +9,7 @@ client = TestClient(app)
 def test_ca_assistant_agent_defined():
     agent = build_ca_assistant_agent()
     assert agent.name == "ca_assistant"
-    assert len(agent.tools) == 12  # SkillToolset + 11 tools
+    assert len(agent.tools) == 15  # SkillToolset + 14 tools
 
 
 def test_ca_assistant_runs_checkup():
@@ -50,4 +50,4 @@ def test_ca_breakeven_figure_comes_from_the_tool():
     run = run_offline("ca_assistant", confirmed, "tax check-up")
     be = next(c for c in run.tool_calls if c["tool"] == "breakeven_deductions_tool")["result"]
     assert be["breakeven_deductions"] == 543_750
-    assert "₹543,750" in run.answer and f"₹{be['shortfall']:,.0f}" in run.answer
+    assert "₹5,43,750" in run.answer and "₹3,93,750" in run.answer and be["shortfall"] == 393_750

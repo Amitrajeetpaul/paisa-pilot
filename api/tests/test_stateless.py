@@ -72,7 +72,7 @@ def test_agents_and_consultant_use_the_browsers_values(monkeypatch):
     a = client.post(f"/sessions/{sid}/agents/ca_assistant/run", json={"confirmed": {"form16": FORM16}}).json()
     assert any(c["tool"] == "compare_tax_regimes" for c in a["tool_calls"])
     c = client.post(f"/sessions/{sid}/consultant/ask", json={"question": "How big should my emergency fund be?", "confirmed": {"payslip": PAYSLIP}})
-    assert c.status_code == 200 and "423,798" in c.json()["answer"]
+    assert c.status_code == 200 and "4,23,798" in c.json()["answer"]
 
 
 def test_extract_reads_in_one_request_and_stores_nothing(monkeypatch):

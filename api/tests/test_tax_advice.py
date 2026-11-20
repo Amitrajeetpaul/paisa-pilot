@@ -37,3 +37,21 @@ def test_consultant_suggests_ways_to_save_tax_from_the_documents():
 def test_consultant_explains_a_rule_from_the_law_notes():
     r = c.post(f"/sessions/{_sid()}/consultant/ask", json={"question": "What is Section 80D?"}).json()
     assert "80D" in r["answer"] and "25,000" in r["answer"]
+
+
+def test_spending_endpoint_and_open_questions_use_the_users_own_numbers():
+    sid = _sid()
+    p = c.post(f"/sessions/{sid}/calculate/spending", json={}).json()
+    assert p["income_per_month"] == 83133 and p["categories"][0]["monthly_average"] > 0
+    r = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "Should I buy a car on loan or pay cash?"}).json()
+    assert "₹83,133" in r["answer"]
+
+
+def test_new_calculators_through_the_chat():
+    sid = _sid()
+    a = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "I sold shares, profit 3 lakh after 8 months. Tax?"}).json()["answer"]
+    assert "₹62,400" in a
+    b = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "Can I withdraw my PF before 5 years?"}).json()["answer"]
+    assert "Sec 10(12)" in b
+    d = c.post(f"/sessions/{sid}/consultant/ask", json={"question": "Is gift money from my parents taxable?"}).json()["answer"]
+    assert "Sec 56(2)(x)" in d and "regime" not in d

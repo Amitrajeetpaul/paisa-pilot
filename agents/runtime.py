@@ -45,7 +45,19 @@ Summarize = Callable[[list[tuple[str, dict[str, Any]]]], str]
 # --- deterministic plans + summaries ------------------------------------------
 
 def _inr(x: float) -> str:
-    return f"₹{x:,.0f}"
+    """Rupees with Indian digit grouping: ₹3,00,000."""
+    n = int(round(abs(x)))
+    s = str(n)
+    if len(s) > 3:
+        head, tail = s[:-3], s[-3:]
+        parts: list[str] = []
+        while len(head) > 2:
+            parts.insert(0, head[-2:])
+            head = head[:-2]
+        if head:
+            parts.insert(0, head)
+        s = ",".join(parts) + "," + tail
+    return ("-" if x < 0 else "") + "₹" + s
 
 
 def _money_finder_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
@@ -101,6 +113,13 @@ def _leak_fixer_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     return "I need a confirmed bank statement to look for leaks."
 
 
+def _has(ql: str, words: tuple[str, ...]) -> bool:
+    """True if any word appears at the start of a word in the question ("rent" matches "rental", not "parents")."""
+    import re
+
+    return any(re.search(r"(?<![a-z0-9])" + re.escape(w), ql) for w in words)
+
+
 _DONATION_WORDS = ("donat", "charit", "80g", "ngo")
 _SAVE_TAX_WORDS = ("save tax", "saving tax", "reduce tax", "reduce my tax", "lower tax", "lower my tax", "tax saving", "tax-saving", "deduction", "suggest", "opportunit", "claim", "hra", "rent", "how can i save", "pay less tax", "less tax")
 _LAW_WORDS = ("section", "80c", "80d", "80g", "80e", "nps", "advance tax", "itr", "due date", "last date", "rebate", "standard deduction", "capital gain", "ltcg", "stcg", "refund", "gst", "e-invoice", "late fee", "mutual fund", "shares", "stock", "equity", "gains", "tds")
@@ -115,23 +134,77 @@ def _gross_and_via(c: dict[str, dict]) -> tuple[float, float] | None:
     return None
 
 
+def _amounts(text: str) -> list[float]:
+    """Rupee figures in a question: 3,00,000 / 300000 / 3 lakh / 2.5 lakh / 1 crore / 50k."""
+    import re
+
+    out: list[float] = []
+    for m in re.finditer(r"(\d[\d,]*(?:\.\d+)?)\s*(lakhs?|lacs?|crores?|cr|k)?\b", text.lower()):
+        raw = m.group(1).replace(",", "")
+        if not raw or raw == ".":
+            continue
+        v = float(raw)
+        unit = (m.group(2) or "").rstrip("s")
+        v *= {"lakh": 1e5, "lac": 1e5, "crore": 1e7, "cr": 1e7, "k": 1e3}.get(unit, 1)
+        if v >= 1000:
+            out.append(v)
+    return out
+
+
+def _months_held(ql: str) -> float | None:
+    import re
+
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(year|yr|month)", ql)
+    if not m:
+        return None
+    return float(m.group(1)) * (12 if m.group(2) in ("year", "yr") else 1)
+
+
+_SPEND_WORDS = ("spend", "expense", "where is my money", "where does my money", "budget", "saving rate", "savings rate", "overspend", "how much do i spend", "cut costs", "cut down")
+_OVERVIEW_WORDS = ("review my finances", "overall", "financial health", "my whole", "everything", "full picture", "what should i do", "check my finances", "improve my finances", "advice")
+
+
 def _tax_knowledge_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
-    """The CA-style questions: what can I claim, what does a donation save, what does the law say."""
+    """The CA-style questions: what can I claim, what do I owe on a sale, how is my money spent, what does the law say."""
     import re
 
     ql = q.lower()
     gv = _gross_and_via(c)
-    if any(k in ql for k in _DONATION_WORDS) and gv:
+    amounts = _amounts(q)
+    held = _months_held(ql)
+    asset = ("crypto" if any(k in ql for k in ("crypto", "bitcoin", "ethereum")) else
+             "property" if any(k in ql for k in ("house", "flat", "land", "plot", "property")) else
+             "equity" if any(k in ql for k in ("share", "stock", "mutual fund", "equity", "etf", "sip")) else None)
+    if asset and any(k in ql for k in ("sold", "sell", "profit", "gain", "booked")) and amounts and held is not None:
+        return [("capital_gains_tool", {"gain": amounts[0], "months_held": held, "asset": asset}), ("search_tax_law_tool", {"query": q})]
+    if any(k in ql for k in ("freelanc", "44ada", "presumptive", "self-employed", "self employed", "consultant income", "my business")) and amounts:
+        return [("presumptive_tax_tool", {"gross_receipts": amounts[0], "scheme": "44AD" if any(k in ql for k in ("trader", "shop", "44ad ")) else "44ADA"}), ("search_tax_law_tool", {"query": q})]
+    bank = c.get("bank_statement")
+    if bank and any(k in ql for k in _OVERVIEW_WORDS):
+        calls: list[tuple[str, dict[str, Any]]] = [("spending_profile_tool", {"transactions": bank["transactions"]})]
+        if gv:
+            calls.append(("tax_opportunities_tool", {"documents": c}))
+        return calls
+    if bank and any(k in ql for k in _SPEND_WORDS):
+        return [("spending_profile_tool", {"transactions": bank["transactions"]})]
+    if _has(ql, _DONATION_WORDS) and gv:
         m = re.search(r"(?:rs\.?|₹|inr)?\s*(\d[\d,]{2,})", ql)
         if m:
             amount = float(m.group(1).replace(",", ""))
             return [("donation_saving_tool", {"gross_salary_annual": gv[0], "deductions_chapter_via_total": gv[1], "donation_amount": amount})]
-    if gv and any(k in ql for k in _SAVE_TAX_WORDS + _DONATION_WORDS):
-        calls: list[tuple[str, dict[str, Any]]] = [("tax_opportunities_tool", {"documents": c})]
-        if any(k in ql for k in ("hra", "rent", "80g", "donat", "80d", "nps", "80c", "home loan")):
+    if gv and _has(ql, _SAVE_TAX_WORDS + _DONATION_WORDS):
+        calls = [("tax_opportunities_tool", {"documents": c})]
+        if _has(ql, ("hra", "rent", "80g", "donat", "80d", "nps", "80c", "home loan")):
             calls.append(("search_tax_law_tool", {"query": q}))  # also show the rule behind the answer
         return calls
-    if any(k in ql for k in _LAW_WORDS):
+    if _has(ql, _LAW_WORDS):
+        return [("search_tax_law_tool", {"query": q})]
+    # A question the law notes answer strongly (a rule, a limit, a deadline) goes to them, unless a
+    # computed answer below is the better fit (regime choice, salary, savings targets).
+    from agents.tax_knowledge import search_law
+
+    top = search_law(q, 1)
+    if top and top[0]["score"] >= 9.0 and top[0]["id"] not in ("regime-choice", "itc-conditions"):
         return [("search_tax_law_tool", {"query": q})]
     return []
 
@@ -169,7 +242,14 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
         if amt_m:
             return [("spare_money_plan_tool", {"amount": float(amt_m.group(1).replace(",", "")), "goal_years": years})]
         return [("goal_category_tool", {"goal_years": years})]
-    return []
+    # Anything else: ground the answer in the law notes when they clearly cover it. Otherwise fall back
+    # to the person's own money picture, so the answer is still about them and never a bare refusal.
+    from agents.tax_knowledge import search_law
+
+    top = search_law(q, 1)
+    if (not top or top[0]["score"] < 6.0) and c.get("bank_statement"):
+        return [("spending_profile_tool", {"transactions": c["bank_statement"]["transactions"]})]
+    return [("search_tax_law_tool", {"query": q})]
 
 
 def _opportunity_lines(opps: list[dict[str, Any]], limit: int = 4) -> list[str]:
@@ -189,7 +269,7 @@ def _opportunity_lines(opps: list[dict[str, Any]], limit: int = 4) -> list[str]:
 _NOT_A_FILING = "\n\nThese are estimates from this year's published rules, worked out from your own documents. Nothing has been filed for you, and a CA should confirm before you claim."
 
 
-def _knowledge_summary(name: str, r: dict[str, Any]) -> str | None:
+def _knowledge_summary(name: str, r: dict[str, Any], limit: int = 2) -> str | None:
     if name == "donation_saving_tool":
         head = f"A donation of {_inr(r['donation_amount'])} to an approved charity counts as about {_inr(r['eligible_deduction'])} of deduction under Section 80G."
         if r["annual_tax_saving"] > 0:
@@ -202,16 +282,43 @@ def _knowledge_summary(name: str, r: dict[str, Any]) -> str | None:
         if not opps:
             return "I need your Form 16 or payslip to look for tax-saving options."
         return "Here is what I found in your documents:\n" + "\n".join(f"• {ln}" for ln in _opportunity_lines(opps)) + _NOT_A_FILING
+    if name == "capital_gains_tool":
+        if r["tax"] is None:
+            return f"{r['note']}" + _NOT_A_FILING
+        return (f"Selling {r['asset']} for a gain of {_inr(r['gain'])} after {r['months_held']:g} months is a {r['kind']} gain. "
+                f"The taxable part is {_inr(r['taxable_gain'])} at {r['rate_percent']:g}% plus 4% cess, so the tax is about {_inr(r['tax'])}. {r['note']}") + _NOT_A_FILING
+    if name == "presumptive_tax_tool":
+        t = (f"On receipts of {_inr(r['gross_receipts'])}, Section {r['scheme']} treats {r['deemed_percent']:g}% as your profit: {_inr(r['deemed_income'])}. "
+             f"The tax on that is about {_inr(r['tax'])} under the new regime.")
+        if not r["eligible"]:
+            t += f" But your receipts are above the {_inr(r['receipts_limit'])} limit for this scheme, so you would need regular books of accounts."
+        elif r["advance_tax_needed"]:
+            t += " Because the tax is above ₹10,000 you must pay advance tax in instalments (15 June, 15 September, 15 December, 15 March)."
+        return t + f" {r['note']}" + _NOT_A_FILING
+    if name == "spending_profile_tool":
+        if not r["categories"]:
+            return "I need a confirmed bank statement to look at your spending."
+        top = ", ".join(f"{e['label']} {_inr(e['monthly_average'])}" for e in r["categories"][:4])
+        t = (f"You bring in about {_inr(r['income_per_month'])} a month and spend about {_inr(r['spending_per_month'])}. "
+             f"Your biggest costs a month: {top}.")
+        if r["savings_rate_percent"] is not None:
+            t += f" That leaves a savings rate of about {r['savings_rate_percent']:g}% of your salary."
+        if r["flags"]:
+            t += "\n" + "\n".join(f"• {f['text']}" for f in r["flags"])
+        return t + "\n\nThese labels are guesses from the bank descriptions, so correct any that look wrong."
     if name == "search_tax_law_tool":
         ps = r.get("passages", [])
         if not ps:
-            return "I could not find that in my tax and GST notes, so I will not guess. A CA can confirm it."
-        return "\n".join(f"• {p['section']}: {p['text']}" for p in ps[:2]) + "\n\nThese notes are plain-language summaries of the law, not legal advice."
+            return "I don't have enough information to answer that yet, and I could not find it in my tax and GST notes, so I will not guess. Try asking about your tax option, deductions, a sale of shares or property, your spending, or a GST rule. A CA can confirm anything else."
+        best = max(p.get("score", 0) for p in ps)
+        ps = [p for p in ps if p.get("score", best) >= 0.6 * best]  # drop loosely related passages
+        return "\n".join(f"• {p['section']}: {p['text']}" for p in ps[:limit]) + "\n\nThese notes are plain-language summaries of the law, not legal advice."
     return None
 
 
 def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
-    parts = [k for name, r in results if (k := _knowledge_summary(name, r))]
+    limit = 2 if len(results) == 1 else 1  # next to a calculation, show only the single best rule
+    parts = [k for name, r in results if (k := _knowledge_summary(name, r, limit))]
     if parts:
         # one closing disclaimer, not one per part
         cleaned = [x.replace(_NOT_A_FILING, "") for x in parts]

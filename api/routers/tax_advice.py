@@ -50,3 +50,17 @@ def tax_suggestions(session_id: str, body: TaxSuggestionBody | None = None) -> d
         "reviewed_by_ca": tax_corpus().reviewed_by_ca,
         "disclaimer": "Estimates from this year's published rules, worked out from your own documents. Nothing is filed for you. Confirm with your CA before you claim.",
     }
+
+
+@router.post("/calculate/spending")
+def spending(session_id: str, body: TaxSuggestionBody | None = None) -> dict:
+    """Where the money goes: income, spending by category, savings rate and warning flags."""
+    from rules_engine.spending import spending_profile
+
+    if not get_db().session_exists(session_id):
+        raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")
+    docs = load_confirmed(session_id, (body or TaxSuggestionBody()).confirmed)
+    bank = docs.get("bank_statement")
+    if bank is None:
+        raise HTTPException(status_code=400, detail="Confirm a bank statement first")
+    return {**spending_profile(bank["transactions"]), "note": "Labels are guesses from the bank descriptions. Correct any that look wrong."}

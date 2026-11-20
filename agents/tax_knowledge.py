@@ -13,6 +13,7 @@ from typing import Any
 
 from agents.gst_assistant import Corpus, corpus as gst_corpus
 from rules_engine.config import load_rules_config
+from rules_engine.spending import spending_profile
 from rules_engine.tax_suggestions import build_suggestions
 
 _TAX_PATH = Path(__file__).resolve().parent.parent / "config" / "rules" / "tax_corpus.yaml"
@@ -35,8 +36,8 @@ def search_law(query: str, k: int = 3) -> list[dict[str, Any]]:
     hits += [(p, s * (1.0 if wants_gst else 0.7), "gst") for p, s in gst_corpus().search(query, k)]
     hits.sort(key=lambda h: -h[1])
     return [
-        {"id": p.id, "domain": d, "section": p.section, "title": p.title, "text": p.text, "source_url": p.source_url}
-        for p, _, d in hits[:k]
+        {"id": p.id, "domain": d, "section": p.section, "title": p.title, "text": p.text, "source_url": p.source_url, "score": round(sc, 2)}
+        for p, sc, d in hits[:k]
     ]
 
 
@@ -72,4 +73,14 @@ def grounding(confirmed: dict[str, dict], question: str) -> tuple[str, dict[str,
             "Tax-saving opportunities already computed from this person's documents (quote these figures, never your own):\n"
             + "\n".join(f"- {o['title']}: {o['why']}" + (f" Saves about ₹{o['saving']:,.0f} a year." if o["saving"] else "") + (f" {o['caveat']}" if o["caveat"] else "") for o in opps)
         )
-    return "\n\n".join(parts), {"law": law, "opportunities": opps}
+    profile = None
+    bank = confirmed.get("bank_statement")
+    if bank and bank.get("transactions"):
+        profile = spending_profile(bank["transactions"])
+        top = ", ".join(f"{e['label']} ₹{e['monthly_average']:,.0f}/month" for e in profile["categories"][:5])
+        parts.append(
+            f"Spending profile computed from their bank statement ({profile['months_covered']} months): income about ₹{profile['income_per_month']:,.0f}/month, "
+            f"spending ₹{profile['spending_per_month']:,.0f}/month, savings rate {profile['savings_rate_percent']}%. Biggest costs: {top}. "
+            + " ".join(f["text"] for f in profile["flags"])
+        )
+    return "\n\n".join(parts), {"law": law, "opportunities": opps, "spending": profile}

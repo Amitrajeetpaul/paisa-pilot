@@ -1,0 +1,19 @@
+# Where money goes: keyword patterns on bank-statement debit descriptions (upper case regexes),
+# checked in order, first match wins. Heuristic labels, shown to the user for confirmation.
+categories:
+  - {key: rent, label: "Rent", kind: essential, patterns: ['\bRENT\b', 'NOBROKER', 'RENTOMOJO']}
+  - {key: loan_emi, label: "Loan EMIs", kind: essential, patterns: ['\bLOAN\b', '\bEMI\b', '\bLN0', 'NBFC']}
+  - {key: insurance, label: "Insurance", kind: essential, patterns: ['INSURANCE', '\bLIC\b', 'MEDICLAIM', 'TERM PLAN']}
+  - {key: investments, label: "Investments and savings", kind: saving, patterns: ['\bSIP\b', 'MUTUAL FUND', 'ZERODHA', 'GROWW', '\bPPF\b', '\bNPS\b', 'ELSS', '\bRD\b', 'RECURRING DEPOSIT']}
+  - {key: utilities, label: "Bills and utilities", kind: essential, patterns: ['ELECTRIC', 'BESCOM', 'WATER BILL', 'BROADBAND', 'FIBER', 'AIRTEL', '\bJIO\b', 'GAS', 'DTH', 'RECHARGE']}
+  - {key: groceries, label: "Groceries", kind: essential, patterns: ['BIGBASKET', 'BLINKIT', 'ZEPTO', 'GROFERS', 'DMART', 'GROCER', 'KIRANA', 'INSTAMART']}
+  - {key: medical, label: "Medical", kind: essential, patterns: ['HOSPITAL', 'PHARMA', 'MEDICAL', 'APOLLO', 'CLINIC', 'DIAGNOSTIC', '1MG', 'PHARMEASY']}
+  - {key: education, label: "Education", kind: essential, patterns: ['SCHOOL', 'COLLEGE', 'TUITION', 'UNIVERSITY', 'COURSE', 'UDEMY', 'COACHING']}
+  - {key: donations, label: "Donations", kind: other, patterns: ['DONATION', 'DONATE', 'CHARITY', '\bNGO\b', 'FOUNDATION', 'RELIEF FUND']}
+  - {key: food_delivery, label: "Eating out and delivery", kind: discretionary, patterns: ['SWIGGY', 'ZOMATO', 'RESTAURANT', 'CAFE', 'STARBUCKS', 'DOMINO', 'MCDONALD', 'DINING']}
+  - {key: subscriptions, label: "Subscriptions", kind: discretionary, patterns: ['NETFLIX', 'SPOTIFY', 'HOTSTAR', 'PRIME VIDEO', 'YOUTUBE', 'CLOUDNOTES', 'SONYLIV', 'AUDIBLE', 'APPLE.COM']}
+  - {key: fitness, label: "Gym and fitness", kind: discretionary, patterns: ['GYM', 'FITNESS', 'FITZONE', 'CULT']}
+  - {key: travel, label: "Travel and transport", kind: discretionary, patterns: ['UBER', '\bOLA\b', 'IRCTC', 'MAKEMYTRIP', 'INDIGO', 'REDBUS', 'PETROL', 'FUEL', 'FASTAG', 'METRO']}
+  - {key: shopping, label: "Shopping", kind: discretionary, patterns: ['AMAZON', 'FLIPKART', 'MYNTRA', 'AJIO', 'MEESHO', 'ELECTRONICS', 'MALL']}
+  - {key: cash, label: "Cash withdrawals", kind: other, patterns: ['ATM', 'CASH WDL', 'CASH WITHDRAWAL']}
+  - {key: transfers, label: "Money sent to people", kind: other, patterns: ['UPI-P2P', 'NEFT-', 'IMPS-', 'TRANSFER TO']}

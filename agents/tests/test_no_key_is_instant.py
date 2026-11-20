@@ -17,6 +17,6 @@ def test_live_mode_without_a_key_never_waits_on_gemini(monkeypatch):
     monkeypatch.setattr(rt, "_build", build)
     t = time.monotonic()
     run = rt.run_agent("consultant", CONFIRMED, "How big should my emergency fund be?", mode="live")
-    assert run.engine == "offline" and "423,798" in run.answer
+    assert run.engine == "offline" and "4,23,798" in run.answer
     assert all(m is not None for m in calls), "a Gemini-backed agent was built despite no key"
     assert time.monotonic() - t < rt.AGENT_TIMEOUT_SECONDS

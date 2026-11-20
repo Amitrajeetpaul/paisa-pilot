@@ -29,3 +29,21 @@ detectors:
   elss_ppf: ['\bPPF\b', 'ELSS', 'TAX SAVER']
   home_loan: ['HOME LOAN', 'HOUSING', 'HOME FIN']
   education_loan: ['EDU LOAN', 'EDUCATION LOAN', 'STUDENT LOAN']
+capital_gains:                    # corpus: capital-gains, property-sale, crypto-vda
+  equity_short_term_percent: 20
+  equity_long_term_percent: 12.5
+  equity_long_term_exempt: 125000
+  equity_long_term_months: 12
+  property_long_term_percent: 12.5
+  property_long_term_months: 24
+  crypto_percent: 30
+  cess_percent: 4
+presumptive:                      # corpus: presumptive-44ada
+  profession_deemed_percent: 50
+  profession_limit: 5000000
+  profession_limit_low_cash: 7500000
+  trader_deemed_percent_digital: 6
+  trader_deemed_percent_cash: 8
+  trader_limit: 20000000
+  trader_limit_low_cash: 30000000
+  advance_tax_threshold: 10000

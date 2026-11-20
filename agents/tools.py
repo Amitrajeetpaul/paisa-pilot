@@ -37,6 +37,8 @@ from rules_engine.savings import (
     term_cover_suggestion,
 )
 from rules_engine.tax import breakeven_chapter_via, compare_regimes, compute_tax
+from rules_engine.more_tax import capital_gains_tax, presumptive_tax
+from rules_engine.spending import spending_profile
 from rules_engine.deductions import donation_deduction, hra_exemption, load_tax_rules, saving_from_extra_deduction
 
 RULES_CONFIG = load_rules_config()
@@ -431,12 +433,55 @@ def tax_opportunities_tool(documents: dict) -> dict:
     return {"opportunities": opportunities(documents)}
 
 
+def capital_gains_tool(gain: float, months_held: float, asset: str = "equity") -> dict:
+    """Tax on selling shares, equity mutual funds, property or crypto.
+
+    Args:
+        gain: The profit (sale price minus purchase cost) in rupees.
+        months_held: How many months the asset was held before selling.
+        asset: equity (listed shares and equity funds), property, or crypto.
+
+    Returns:
+        kind (short/long term), taxable_gain, rate_percent, tax (None if it depends on your slab) and a note.
+    """
+    return capital_gains_tax(gain, months_held, asset, TAX_RULES)
+
+
+def presumptive_tax_tool(gross_receipts: float, scheme: str = "44ADA", cash_receipts_percent: float = 0.0) -> dict:
+    """Tax for a freelancer or professional (44ADA, 50% deemed profit) or small trader (44AD) on the new-regime slabs.
+
+    Args:
+        gross_receipts: Yearly gross receipts or turnover in rupees.
+        scheme: 44ADA for professionals and freelancers, 44AD for traders.
+        cash_receipts_percent: Share of receipts received in cash.
+
+    Returns:
+        deemed_income, eligible, tax, advance_tax_needed, note.
+    """
+    return presumptive_tax(gross_receipts, scheme, RULES_CONFIG, cash_receipts_percent, TAX_RULES)
+
+
+def spending_profile_tool(transactions: list[dict]) -> dict:
+    """Reads a bank statement like an adviser: income, spending by category, savings rate, EMI load and warning flags.
+
+    Args:
+        transactions: The confirmed bank-statement transactions.
+
+    Returns:
+        income_per_month, spending_per_month, savings_rate_percent, categories, flags.
+    """
+    return spending_profile(transactions)
+
+
 LEAK_FIXER_TOOLS = [
     FunctionTool(func=detect_recurring_charges_tool),
     FunctionTool(func=loan_switch_saving_tool),
 ]
 
 CA_ASSISTANT_TOOLS = [
+    FunctionTool(func=capital_gains_tool),
+    FunctionTool(func=presumptive_tax_tool),
+    FunctionTool(func=spending_profile_tool),
     FunctionTool(func=tax_opportunities_tool),
     FunctionTool(func=search_tax_law_tool),
     FunctionTool(func=donation_saving_tool),
@@ -451,6 +496,9 @@ CA_ASSISTANT_TOOLS = [
 ]
 
 CONSULTANT_TOOLS = [
+    FunctionTool(func=capital_gains_tool),
+    FunctionTool(func=presumptive_tax_tool),
+    FunctionTool(func=spending_profile_tool),
     FunctionTool(func=tax_opportunities_tool),
     FunctionTool(func=search_tax_law_tool),
     FunctionTool(func=donation_saving_tool),

@@ -5,7 +5,7 @@ CONFIRMED = {"form16": {"gross_salary_annual": 1_200_000, "deductions_chapter_vi
 
 def test_insurance_question_gives_term_cover():
     r = answer_question(CONFIRMED, "what insurance do I need?", mode="fixture")
-    assert "12,000,000" in r.answer and "Term insurance" in r.answer
+    assert "1,20,00,000" in r.answer and "Term insurance" in r.answer
 
 
 def test_spare_money_uses_amount():

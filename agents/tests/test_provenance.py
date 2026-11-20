@@ -44,7 +44,7 @@ def test_run_agent_discards_a_gemini_answer_with_an_invented_number(monkeypatch)
     monkeypatch.setattr(rt, "_drive", fake_drive)
     run = rt.run_agent("consultant", CONFIRMED, "How big should my emergency fund be?", mode="live")
     assert run.engine == "offline"
-    assert "2,700,000" not in run.answer and "423,798" in run.answer
+    assert "2,700,000" not in run.answer and "4,23,798" in run.answer
 
 
 def test_run_agent_falls_through_to_the_next_model_when_one_is_out_of_quota(monkeypatch):
