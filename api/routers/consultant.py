@@ -11,7 +11,6 @@ import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from agents.consultant import answer_question
 from api.confirmed import load_confirmed
 from api.db import get_db
 
@@ -38,6 +37,8 @@ def _require_session(session_id: str) -> None:
 
 @router.post("/ask", response_model=AskResponse)
 def ask_consultant(session_id: str, body: AskRequest) -> AskResponse:
+    from agents.consultant import answer_question  # heavy: loaded only when this route is used
+
     _require_session(session_id)
     confirmed = load_confirmed(session_id, body.confirmed)
 

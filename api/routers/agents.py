@@ -10,8 +10,6 @@ import os
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from agents.guardrail import check_guardrail
-from agents.runtime import AGENT_NAMES, run_agent
 from api.confirmed import load_confirmed
 from api.db import get_db
 
@@ -37,6 +35,11 @@ class RunResponse(BaseModel):
 
 @router.post("/{agent_name}/run", response_model=RunResponse)
 def run_agent_endpoint(session_id: str, agent_name: str, body: RunRequest | None = None) -> RunResponse:
+    # Imported here, not at the top: the agent toolkit is heavy, and routes that do not need it
+    # (document reading, calculations) should start fast on a cold serverless host.
+    from agents.guardrail import check_guardrail
+    from agents.runtime import AGENT_NAMES, run_agent
+
     db = get_db()
     if not db.session_exists(session_id):
         raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")

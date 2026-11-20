@@ -20,6 +20,8 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 
 _ATTEMPTS_PER_MODEL = 2
+_TOTAL_BUDGET_SECONDS = float(os.environ.get("GEMINI_TOTAL_BUDGET_SECONDS", "40"))  # stay inside a 60s serverless limit
+_PER_CALL_CAP_SECONDS = 25.0
 _DEFAULT_FALLBACK_MODELS = "gemini-3.5-flash-lite,gemini-flash-lite-latest,gemini-3.1-flash-lite"
 
 DEFAULT_READER_MODEL = "gemini-3.8-flash"
@@ -73,11 +75,18 @@ def generate_structured(
     )
     response = None
     last_error: Exception | None = None
+    deadline = time.monotonic() + _TOTAL_BUDGET_SECONDS
     for candidate in _model_chain(model):
         for attempt in range(1, _ATTEMPTS_PER_MODEL + 1):
+            remaining = deadline - time.monotonic()
+            if remaining < 3:
+                break  # out of budget: fail fast with a clear error instead of hitting the host's hard limit
+            call_config = config.model_copy(
+                update={"http_options": types.HttpOptions(timeout=int(min(_PER_CALL_CAP_SECONDS, remaining) * 1000))}
+            )
             try:
                 response = client.models.generate_content(
-                    model=candidate, contents=types.Content(role="user", parts=list(parts)), config=config
+                    model=candidate, contents=types.Content(role="user", parts=list(parts)), config=call_config
                 )
                 break
             except (genai_errors.ServerError, genai_errors.ClientError) as exc:
@@ -88,12 +97,13 @@ def generate_structured(
                     raise
                 last_error = exc
                 if attempt < _ATTEMPTS_PER_MODEL:
-                    time.sleep(2 * attempt)
-        if response is not None:
+                    time.sleep(1)
+            except Exception as exc:  # noqa: BLE001 - a per-call timeout or network error: try the next model
+                last_error = exc
+        if response is not None or deadline - time.monotonic() < 3:
             break
     if response is None:
-        assert last_error is not None
-        raise last_error
+        raise last_error or TimeoutError("The reader ran out of time")
     try:
         return response_schema.model_validate_json(response.text or "")
     except ValueError as exc:

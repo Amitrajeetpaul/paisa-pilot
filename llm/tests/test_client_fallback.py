@@ -57,3 +57,14 @@ def test_schema_has_no_additional_properties_and_uses_enum_for_const():
     text = str(schema)
     assert "additionalProperties" not in text and "'const'" not in text
     assert schema["properties"]["document_type"]["enum"] == ["pf_passbook"]
+
+
+def test_reading_gives_up_within_its_time_budget(monkeypatch):
+    # A host with a hard request limit needs a clear error before that limit, not a hung request.
+    fake = FakeClient({"primary", "fallback-a", "fallback-b"})
+    monkeypatch.setattr(client_mod, "_client", lambda: fake)
+    monkeypatch.setattr(client_mod, "_TOTAL_BUDGET_SECONDS", 0.0)
+    monkeypatch.setenv("GEMINI_FALLBACK_MODELS", "fallback-a,fallback-b")
+    with pytest.raises((genai_errors.ServerError, TimeoutError)):
+        client_mod.generate_structured(model="primary", system_instruction="x", parts=[], response_schema=Out)
+    assert fake.calls == []  # no budget left, so it never even starts a doomed call
