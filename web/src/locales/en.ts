@@ -145,7 +145,7 @@ const en = {
   'ui.nextStepWorth': 'worth',
   'ui.open': 'Open',
   'ui.tab.tax': 'Save tax',
-  'ui.tab.file': 'File your return',
+  'ui.tab.file': 'File ITR',
   'ui.tab.dates': 'Dates',
   'ui.waysToSave': 'Ways to pay less tax',
   'ui.yourAge': 'Your age',

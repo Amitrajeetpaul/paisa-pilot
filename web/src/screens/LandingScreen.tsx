@@ -106,7 +106,7 @@ export function LandingScreen() {
   return (
     <div className="text-ink">
       <header
-        className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6"
+        className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-6 sm:px-6"
         style={{ paddingTop: 'max(env(safe-area-inset-top), 1.5rem)' }}
       >
         <Wordmark />
@@ -121,13 +121,15 @@ export function LandingScreen() {
             Trust
           </a>
         </nav>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Link to="/login" className="px-2 text-sm font-semibold underline">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <span className="hidden sm:inline-flex">
+            <ThemeToggle />
+          </span>
+          <Link to="/login" className="min-h-11 whitespace-nowrap px-2 py-3 text-sm font-semibold underline">
             Sign in
           </Link>
           <Link to="/app/consent">
-            <Button variant="primary">Try it</Button>
+            <Button variant="primary" className="whitespace-nowrap">Try it</Button>
           </Link>
         </div>
       </header>
@@ -153,7 +155,7 @@ export function LandingScreen() {
             </a>
           </div>
           <p className="text-muted mt-4 flex items-center justify-center gap-2 text-sm md:justify-start">
-            <Icon name="lock" size={14} /> No sign-up. Delete your data anytime.
+            <Icon name="lock" size={14} /> No sign-up needed. Delete your data anytime.
           </p>
           <div className="text-muted mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold md:justify-start">
             <span>Built on</span>

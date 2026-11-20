@@ -10,7 +10,15 @@ server {
     # React Router (client-side routes like /app/home) -- fall back to
     # index.html for anything that isn't a real static file.
     location / {
+        # Always check for a new version of the page, so phones never keep showing an old app after a deploy.
+        add_header Cache-Control "no-cache" always;
         try_files $uri $uri/ /index.html;
+    }
+
+    # Built files have a content hash in their name, so they can be cached for a year safely.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
     }
 
     location = /favicon.svg {

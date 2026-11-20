@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '../components/Button'
 import { GoalPlanner } from '../components/GoalPlanner'
 import { Icon } from '../components/Icon'
@@ -24,6 +23,7 @@ const SUGGESTIONS = [
 ] as const
 
 export function AdviseScreen() {
+  const [showGoal, setShowGoal] = useState(false)
   const { t, sessionId } = useApp()
   const navigate = useNavigate()
   const [messages, setMessages] = useState<Message[]>([])
@@ -74,10 +74,19 @@ export function AdviseScreen() {
                   {t(q.key)}
                 </button>
               ))}
+              {sessionId && !showGoal && (
+                <button
+                  type="button"
+                  onClick={() => setShowGoal(true)}
+                  className="border-coral/40 text-coral-dark min-h-11 rounded-full border bg-white px-4 text-left text-sm font-semibold hover:bg-black/[0.03]"
+                >
+                  {t('ui.goal.title')} →
+                </button>
+              )}
             </div>
-            {sessionId && (
-              <div className="mt-6">
-                <GoalPlanner sessionId={sessionId} />
+            {sessionId && showGoal && (
+              <div className="mt-4">
+                <GoalPlanner sessionId={sessionId} startOpen />
               </div>
             )}
           </div>

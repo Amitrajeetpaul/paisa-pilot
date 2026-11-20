@@ -6,6 +6,7 @@ import { ThemeToggle } from '../components/ThemeToggle'
 import { api, rememberSavingOn } from '../lib/api'
 import { pushCurrentDocs, restoreFromAccount } from '../lib/account'
 import { AuthError, sendPasswordReset, signIn, signUp } from '../lib/auth'
+import { isSampleSession } from '../lib/clientSession'
 import { useApp } from '../state/AppContext'
 
 type Mode = 'in' | 'up' | 'reset'
@@ -36,16 +37,31 @@ export function AuthScreen() {
       else await signIn(email, password)
 
       const me = await api.me()
+      // The built-in sample profile belongs to nobody: never carry it into a real account.
+      const ownSession = sessionId && !isSampleSession(sessionId) ? sessionId : null
+      const startClean = () => {
+        setSessionId(null)
+        setSampleData(false)
+        setDisplayName('')
+      }
       if (mode === 'up' && save) {
         await api.meConsent(true)
         rememberSavingOn(true)
-        if (sessionId) await pushCurrentDocs(sessionId)
-        navigate(sessionId ? '/app/home' : '/app/consent')
+        if (ownSession) await pushCurrentDocs(ownSession)
+        else startClean()
+        navigate(ownSession ? '/app/home' : '/app/consent')
         return
       }
       rememberSavingOn(me.saving_on)
       const restored = await restoreFromAccount(me, { setSessionId, setSampleData, setDisplayName })
-      navigate(restored > 0 || sessionId ? '/app/home' : '/app/consent')
+      if (restored > 0) {
+        navigate('/app/home')
+      } else if (ownSession) {
+        navigate('/app/home')
+      } else {
+        startClean()
+        navigate('/app/consent')
+      }
     } catch (err) {
       setError(
         err instanceof AuthError

@@ -66,7 +66,7 @@ def _money_finder_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, 
         f = c["form16"]
         calls.append(("compare_tax_regimes", {
             "gross_salary_annual": f["gross_salary_annual"],
-            "deductions_chapter_via_total": f["deductions_chapter_via_total"],
+            "deductions_chapter_via_total": _old_regime_deductions(c, f["deductions_chapter_via_total"]),
         }))
     if "pf_passbook" in c:
         calls.append(("review_pf_accounts_tool", {"accounts": c["pf_passbook"]["accounts"]}))
@@ -123,6 +123,13 @@ def _has(ql: str, words: tuple[str, ...]) -> bool:
 _DONATION_WORDS = ("donat", "charit", "80g", "ngo")
 _SAVE_TAX_WORDS = ("save tax", "saving tax", "reduce tax", "reduce my tax", "lower tax", "lower my tax", "tax saving", "tax-saving", "deduction", "suggest", "opportunit", "claim", "hra", "rent", "how can i save", "pay less tax", "less tax")
 _LAW_WORDS = ("section", "80c", "80d", "80g", "80e", "nps", "advance tax", "itr", "due date", "last date", "rebate", "standard deduction", "capital gain", "ltcg", "stcg", "refund", "gst", "e-invoice", "late fee", "mutual fund", "shares", "stock", "equity", "gains", "tds")
+
+
+def _old_regime_deductions(c: dict[str, dict], via: float) -> float:
+    """Chapter VI-A plus professional tax (Sec 16(iii)), the same basis every screen uses."""
+    from rules_engine.deductions import professional_tax_deduction
+
+    return float(via) + professional_tax_deduction(c.get("payslip"))
 
 
 def _gross_and_via(c: dict[str, dict]) -> tuple[float, float] | None:
@@ -227,7 +234,7 @@ def _consultant_specific(c: dict[str, dict], q: str) -> list[tuple[str, dict[str
         return [("savings_target_tool", {"net_monthly_income": c["payslip"]["net_pay"]})]
     if "form16" in c and any(k in ql for k in ("regime", "tax option", "old or new", "new or old", "better for me", "should i switch", "which is better", "choose")):
         f = c["form16"]
-        return [("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]})]
+        return [("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": _old_regime_deductions(c, f["deductions_chapter_via_total"])})]
     if "pf" in ql and "pf_passbook" in c:
         return [("review_pf_accounts_tool", {"accounts": c["pf_passbook"]["accounts"]})]
     if "emergency" in ql and ("payslip" in c or "bank_statement" in c):
@@ -641,7 +648,7 @@ def _ca_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
     calls: list[tuple[str, dict[str, Any]]] = []
     if "form16" in c:
         f = c["form16"]
-        calls.append(("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": f["deductions_chapter_via_total"]}))
+        calls.append(("compare_tax_regimes", {"gross_salary_annual": f["gross_salary_annual"], "deductions_chapter_via_total": _old_regime_deductions(c, f["deductions_chapter_via_total"])}))
         if "ais" in c:
             calls.append(("tds_reconciliation_tool", {"form16_tds": f["tds_deducted_annual"], "ais_tds_entries": [e["tds_deducted"] for e in c["ais"]["tds_entries"]]}))
         calls.append(("breakeven_deductions_tool", {"gross_salary_annual": f["gross_salary_annual"], "deductions_claimed": f["deductions_chapter_via_total"]}))

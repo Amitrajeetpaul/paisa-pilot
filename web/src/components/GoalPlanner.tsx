@@ -15,7 +15,7 @@ const GOALS = [
 ] as const
 
 /** Goal planning a planner would accept: inflation in, conservative capped returns, category only. */
-export function GoalPlanner({ sessionId }: { sessionId: string }) {
+export function GoalPlanner({ sessionId, startOpen = false }: { sessionId: string; startOpen?: boolean }) {
   const { t } = useApp()
   const [goal, setGoal] = useState('education')
   const [cost, setCost] = useState('500000')
@@ -24,6 +24,7 @@ export function GoalPlanner({ sessionId }: { sessionId: string }) {
   const [plan, setPlan] = useState<GoalPlan | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [open, setOpen] = useState(startOpen)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -40,6 +41,18 @@ export function GoalPlanner({ sessionId }: { sessionId: string }) {
   }
 
   const field = 'border-line bg-white text-ink mt-1 min-h-11 w-full rounded-xl border px-3 text-base'
+  if (!open) {
+    // Compact until asked for, so the chat screen stays clean on a phone.
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="card press flex w-full items-center justify-between gap-3 p-4 text-left">
+        <span>
+          <span className="text-ink block text-[15px] font-bold">{t('ui.goal.title')}</span>
+          <span className="text-muted block text-sm">{t('ui.goal.sub')}</span>
+        </span>
+        <span className="text-coral-dark shrink-0 text-sm font-bold">{t('ui.goal.plan')} →</span>
+      </button>
+    )
+  }
   return (
     <section className="card p-4" aria-labelledby="goal-h">
       <h2 id="goal-h" className="section-label">{t('ui.goal.title')}</h2>

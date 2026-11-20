@@ -28,7 +28,7 @@ def test_ask_consultant_grounded_in_sample_session(client):
     r = client.post(f"/sessions/{session_id}/consultant/ask", json={"question": "Which tax option should I pick?"})
     assert r.status_code == 200
     body = r.json()
-    assert "75,400" in body["answer"] or "75400" in body["answer"]
+    assert "74,901" in body["answer"]  # 75,400 less the old-regime professional-tax deduction (2,400 x 20% x 1.04)
     assert body["guardrail_flagged"] is False
 
 

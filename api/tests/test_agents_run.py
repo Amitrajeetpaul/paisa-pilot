@@ -15,7 +15,7 @@ def test_money_finder_runs_through_adk_runner_and_calls_tools():
     assert r["engine"] == "offline"
     tools = {c["tool"] for c in r["tool_calls"]}
     assert {"compare_tax_regimes", "review_pf_accounts_tool", "find_refund_opportunities"} <= tools
-    assert "₹75,400" in r["answer"]  # figure comes from the tool result
+    assert "₹74,901" in r["answer"]  # figure comes from the tool result (professional tax counted)
     assert all(c["result"] is not None for c in r["tool_calls"])
 
 
