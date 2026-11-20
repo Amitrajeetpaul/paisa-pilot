@@ -1,0 +1,177 @@
+# Plain-language notes on Indian income tax for salaried people (FY 2025-26, AY 2026-27) that the
+# CA assistant retrieves from (RAG). Written by us as short summaries of the Income-tax Act 1961,
+# Income-tax Rules 1962 and Finance Act 2025. NOT legal advice; needs review by a practising CA
+# before launch and refreshing each Budget. Every passage names its section.
+as_of: "2026-11"
+reviewed_by_ca: false
+passages:
+  - id: regime-choice
+    section: "Income-tax Act Sec 115BAC"
+    title: New vs old tax regime
+    keywords: [regime, new regime, old regime, which is better, switch, default, 115BAC, deductions not allowed]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      The new regime is the default. It has lower slab rates but allows almost no deductions: no 80C, 80D, 80G, HRA,
+      home-loan interest on a self-occupied house or LTA. The old regime has higher rates but allows those deductions.
+      A salaried person can choose each year, so the right choice is whichever gives the lower tax after counting
+      the deductions you really have.
+  - id: std-deduction
+    section: "Income-tax Act Sec 16(ia)"
+    title: Standard deduction on salary
+    keywords: [standard deduction, 75000, 50000, salary, flat deduction]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Every salaried person gets a flat standard deduction without any proof: Rs 75,000 under the new regime and
+      Rs 50,000 under the old regime for FY 2025-26.
+  - id: rebate-87a
+    section: "Income-tax Act Sec 87A"
+    title: Tax rebate for lower incomes
+    keywords: [rebate, 87A, no tax, zero tax, 12 lakh, 7 lakh, taxable income limit]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the new regime, resident individuals with taxable income up to Rs 12 lakh pay no tax because of a rebate
+      of up to Rs 60,000. Under the old regime the rebate is up to Rs 12,500 and applies to taxable income up to
+      Rs 5 lakh.
+  - id: sec-80c
+    section: "Income-tax Act Sec 80C"
+    title: Section 80C, up to Rs 1.5 lakh
+    keywords: [80C, PPF, ELSS, EPF, provident fund, life insurance, LIC, tuition fees, home loan principal, tax saving, 1.5 lakh, NSC]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime you can deduct up to Rs 1.5 lakh a year for specified savings and payments: employee
+      provident fund contribution, PPF, ELSS funds, life insurance premium, children's tuition fees, the principal
+      part of a home-loan EMI, NSC and tax-saver fixed deposits. Your own EPF contribution already counts towards
+      the limit.
+  - id: sec-80d
+    section: "Income-tax Act Sec 80D"
+    title: Health insurance premium
+    keywords: [80D, health insurance, mediclaim, parents, senior citizen, premium, preventive health check-up, medical insurance]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime you can deduct health-insurance premium paid by cheque, card or online: up to Rs 25,000
+      for yourself, spouse and children, and another Rs 25,000 for parents (Rs 50,000 each if the person is a senior
+      citizen). Preventive health check-ups up to Rs 5,000 are inside these limits. Cash payment of premium is not
+      allowed.
+  - id: sec-80ccd1b
+    section: "Income-tax Act Sec 80CCD(1B)"
+    title: Extra deduction for NPS
+    keywords: [NPS, national pension, 80CCD, 50000, pension, retirement, additional deduction]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, your own contribution to the National Pension System gets an extra deduction of up to
+      Rs 50,000 a year, over and above the Rs 1.5 lakh limit of Section 80C.
+  - id: sec-80ccd2
+    section: "Income-tax Act Sec 80CCD(2)"
+    title: Employer's NPS contribution
+    keywords: [employer NPS, 80CCD(2), employer contribution, new regime deduction, 14%, 10% of basic]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      An employer's contribution to your NPS account is deductible up to 10% of basic salary (plus dearness
+      allowance) in the old regime and up to 14% in the new regime. It is one of the few deductions that still works
+      in the new regime, but it has to be set up through your employer.
+  - id: sec-80g
+    section: "Income-tax Act Sec 80G"
+    title: Donations to charity
+    keywords: [80G, donation, charity, NGO, trust, relief fund, PM CARES, 50%, 100%, 10% limit, receipt, 80G certificate, donate, charitable]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, donations to approved charities are deductible. Some funds, such as the PM National
+      Relief Fund, qualify for 100% of the amount. Most approved charities qualify for 50%, and for most of them the
+      deduction is capped: the qualifying amount cannot exceed 10% of your adjusted gross total income. Cash
+      donations above Rs 2,000 get no deduction, so pay by UPI, card or bank transfer. Keep the receipt showing the
+      charity's 80G registration. In the new regime donations give no tax benefit.
+  - id: sec-80e
+    section: "Income-tax Act Sec 80E"
+    title: Education-loan interest
+    keywords: [80E, education loan, student loan, interest, higher education, 8 years]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, the interest (not the principal) you pay on a loan taken for your own, your spouse's or
+      your children's higher education is fully deductible, with no upper limit, for up to 8 years from when
+      repayment starts or until the interest is paid, whichever is earlier. Your lender's interest certificate is
+      the proof.
+  - id: sec-24b
+    section: "Income-tax Act Sec 24(b)"
+    title: Home-loan interest
+    keywords: [24(b), home loan, housing loan, interest, self-occupied, 2 lakh, let out, property]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, interest on a loan for a self-occupied house can be deducted up to Rs 2 lakh a year. The
+      principal part of the EMI counts under Section 80C. For a let-out house the whole interest can be set off
+      against rent, but the loss you can set off against other income is capped at Rs 2 lakh a year. Your lender's
+      interest certificate is the proof.
+  - id: hra
+    section: "Income-tax Act Sec 10(13A); Rule 2A"
+    title: House rent allowance (HRA) exemption
+    keywords: [HRA, house rent, rent, rent receipt, landlord PAN, metro, exemption, 10(13A), tenant, paying rent]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, if you get HRA and pay rent, the exempt amount is the lowest of three: the HRA you
+      actually received, the rent you paid minus 10% of basic salary, and 50% of basic salary in Delhi, Mumbai,
+      Kolkata and Chennai (40% elsewhere). Basic salary includes dearness allowance that forms part of pay. Keep
+      rent receipts, and the landlord's PAN is needed if yearly rent is above Rs 1 lakh. Without HRA, rent can
+      still be claimed under Section 80GG.
+  - id: sec-80tta
+    section: "Income-tax Act Sec 80TTA, 80TTB"
+    title: Savings-account interest
+    keywords: [80TTA, 80TTB, savings interest, bank interest, 10000, senior citizen, interest income]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Under the old regime, interest on savings accounts is deductible up to Rs 10,000 a year (Section 80TTA).
+      Senior citizens get up to Rs 50,000 on deposit interest, including fixed deposits (Section 80TTB). Interest
+      is taxable income in both regimes and shows in your AIS.
+  - id: tds-salary
+    section: "Income-tax Act Sec 192; Form 16"
+    title: Tax deducted by your employer
+    keywords: [TDS, Form 16, employer, tax deducted, Form 26AS, AIS, refund, excess TDS, credit]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      Your employer deducts tax on salary every month (TDS) based on the regime you told them and issues Form 16
+      after the year ends. If more tax was deducted than you finally owe, the extra is refunded when you file your
+      return. Check Form 16 against your AIS and Form 26AS so that no TDS credit is missed.
+  - id: itr-forms
+    section: "Income-tax Rules 12"
+    title: Which ITR form to file
+    keywords: [ITR-1, ITR-2, ITR-3, which form, capital gains, business income, sahaj, return form]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      ITR-1 (Sahaj) is for a resident individual with income up to Rs 50 lakh from salary, one house property and
+      other sources, with limited long-term capital gains. If you have more capital gains, foreign assets or more than
+      one house you generally need ITR-2. Business or professional income, including freelancing, needs ITR-3 or ITR-4.
+  - id: due-dates
+    section: "Income-tax Act Sec 139(1), 139(4), 139(5)"
+    title: Due dates for filing your return
+    keywords: [due date, last date, 31 July, belated return, revised return, 31 December, deadline, file late]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      The usual due date for an individual who is not subject to audit is 31 July after the financial year. A late
+      (belated) return can be filed until 31 December of the assessment year, with a fee under Section 234F and
+      interest. A revised return can also be filed until 31 December to correct mistakes.
+  - id: advance-tax
+    section: "Income-tax Act Sec 208, 211"
+    title: Advance tax
+    keywords: [advance tax, advance tax due date, 10000, 15 June, 15 September, 15 December, 15 March, instalments, freelancer, interest 234B 234C]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      If your tax payable after TDS is Rs 10,000 or more in a year, you must pay advance tax in instalments: 15% by
+      15 June, 45% by 15 September, 75% by 15 December and 100% by 15 March. Salaried people whose employer deducts
+      enough TDS usually owe none, but freelancers, and people with large interest or capital gains, often do. Missing
+      it attracts interest under Sections 234B and 234C.
+  - id: capital-gains
+    section: "Income-tax Act Sec 111A, 112A"
+    title: Tax on shares and equity funds
+    keywords: [capital gains, shares, equity, mutual fund, LTCG, STCG, 1.25 lakh, 12.5%, 20%, sell, profit]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      For listed shares and equity mutual funds, gains on units sold within 12 months (short term) are taxed at 20%.
+      Gains on units held longer than 12 months (long term) are taxed at 12.5% on the part above Rs 1.25 lakh a
+      year. Capital gains need ITR-2 or higher in most cases.
+  - id: refund-process
+    section: "Income-tax Act Sec 143(1), 244A"
+    title: Getting a tax refund
+    keywords: [refund, how long, e-verify, bank account validate, processing, interest on refund, claim refund]
+    source_url: https://www.incometax.gov.in/iec/foportal/
+    text: >
+      To receive a refund, file your return, e-verify it within 30 days, and make sure your bank account is
+      pre-validated on the income-tax portal. The department processes the return and credits the refund with
+      interest under Section 244A when it is due.

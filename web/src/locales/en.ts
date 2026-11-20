@@ -41,6 +41,7 @@ const en = {
   'advise.s2': 'Where should my spare ₹8,000 go? My goal is 3 years away.',
   'advise.s3': 'How big should my emergency fund be?',
   'advise.s4': 'What insurance do I need?',
+  'advise.s5': 'I donate ₹20,000 a year to charity. What do I save in tax?',
 
   'checkup.tax.title': 'Your tax check-up',
   'checkup.tax.sub': 'Your tax picture in one place, with what to do next.',

@@ -56,6 +56,7 @@ const hi: Record<TranslationKey, string> = {
   'advise.s2': 'मेरे ₹8,000 बचत कहाँ लगाऊँ? लक्ष्य 3 साल दूर है।',
   'advise.s3': 'मेरा इमरजेंसी फ़ंड कितना बड़ा होना चाहिए?',
   'advise.s4': 'मुझे कौन सा बीमा चाहिए?',
+  'advise.s5': 'मेरा हर साल ₹20,000 का दान है। टैक्स में कितनी बचत होगी?',
   'common.source': 'स्रोत',
   'common.largeText': 'बड़ा टेक्स्ट',
   'common.language': 'English',

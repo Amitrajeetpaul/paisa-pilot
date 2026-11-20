@@ -58,7 +58,7 @@ def test_run_agent_falls_through_to_the_next_model_when_one_is_out_of_quota(monk
         seen.append(str(model))
         return real_build(name, model=model if not isinstance(model, str) else None) if model is None else object()
 
-    async def drive(agent, name, confirmed, question, engine):
+    async def drive(agent, name, confirmed, question, engine, ground=""):
         if engine != "gemini":
             return await real_drive(agent, name, confirmed, question, engine)
         if len(seen) == 1:  # first model: quota exhausted

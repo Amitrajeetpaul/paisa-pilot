@@ -19,6 +19,7 @@ const SUGGESTIONS = [
   { key: 'advise.s2', question: 'Where should my spare ₹8,000 go? My goal is 3 years away.' },
   { key: 'advise.s3', question: 'How big should my emergency fund be?' },
   { key: 'advise.s4', question: 'What insurance do I need?' },
+  { key: 'advise.s5', question: 'I donate Rs 20000 a year to charity. What do I save in tax?' },
 ] as const
 
 export function AdviseScreen() {

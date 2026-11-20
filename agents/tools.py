@@ -37,8 +37,10 @@ from rules_engine.savings import (
     term_cover_suggestion,
 )
 from rules_engine.tax import breakeven_chapter_via, compare_regimes, compute_tax
+from rules_engine.deductions import donation_deduction, hra_exemption, load_tax_rules, saving_from_extra_deduction
 
 RULES_CONFIG = load_rules_config()
+TAX_RULES = load_tax_rules()
 MERCHANT_CONFIG = load_merchant_categories()
 
 
@@ -362,12 +364,83 @@ MONEY_FINDER_TOOLS = [
     FunctionTool(func=find_refund_opportunities),
 ]
 
+def search_tax_law_tool(query: str) -> dict:
+    """Looks up the actual income-tax or GST law notes for a question and returns the best passages
+    with their section numbers. Use it to ground any explanation of a rule, a limit or a deadline.
+
+    Args:
+        query: What to look up, in plain words, e.g. "80G donation limit" or "HRA exemption".
+
+    Returns:
+        passages: list of {section, title, text, source_url}.
+    """
+    from agents.tax_knowledge import search_law
+
+    return {"passages": search_law(query, 3)}
+
+
+def donation_saving_tool(gross_salary_annual: float, deductions_chapter_via_total: float, donation_amount: float, category: str = "half_limit") -> dict:
+    """What a charity donation really saves in tax (Section 80G), after choosing the cheaper regime.
+
+    Args:
+        gross_salary_annual: Confirmed annual gross salary.
+        deductions_chapter_via_total: Chapter VI-A deductions already claimed (80C, 80D, ...).
+        donation_amount: The donation in rupees, paid by UPI, card or bank (not cash).
+        category: half_limit (most approved charities, default), full_limit, half_no_limit or full_no_limit.
+
+    Returns:
+        eligible_deduction, annual_tax_saving, regime_before, regime_after, note.
+    """
+    adjusted = max(0.0, gross_salary_annual - RULES_CONFIG.regimes["old"].standard_deduction - deductions_chapter_via_total)
+    ded = donation_deduction(donation_amount, category, adjusted, TAX_RULES)
+    r = saving_from_extra_deduction(gross_salary_annual, deductions_chapter_via_total, ded, RULES_CONFIG)
+    return {"donation_amount": donation_amount, "eligible_deduction": ded, "annual_tax_saving": r.saving,
+            "regime_before": r.regime_before, "regime_after": r.regime_after, "tax_before": r.tax_before, "tax_after": r.tax_after, "note": r.note}
+
+
+def hra_exemption_tool(basic_monthly: float, hra_monthly: float, rent_monthly: float, metro_city: bool = False) -> dict:
+    """The HRA exemption (Section 10(13A)) and what it saves, after choosing the cheaper regime.
+
+    Args:
+        basic_monthly: Monthly basic pay from the payslip.
+        hra_monthly: Monthly HRA from the payslip.
+        rent_monthly: Rent paid each month.
+        metro_city: True for Delhi, Mumbai, Kolkata or Chennai.
+
+    Returns:
+        annual_exemption, plus the three limbs it is the lowest of.
+    """
+    ex = hra_exemption(basic_monthly * 12, hra_monthly * 12, rent_monthly * 12, metro_city, TAX_RULES)
+    return {"annual_exemption": ex, "hra_received_annual": hra_monthly * 12, "rent_minus_10pct_basic": max(0.0, rent_monthly * 12 - basic_monthly * 12 * 0.10),
+            "pct_of_basic_limit": basic_monthly * 12 * (0.5 if metro_city else 0.4)}
+
+
+def tax_opportunities_tool(documents: dict) -> dict:
+    """Finds the ways this person can legally lower their tax, from their own confirmed documents:
+    regime choice, HRA, charity donations (80G), health insurance (80D), NPS, 80C and loan interest.
+    Each comes with the rupee saving after choosing the cheaper regime and the law section.
+
+    Args:
+        documents: The confirmed documents (payslip, form16, bank_statement) as given in the prompt.
+
+    Returns:
+        opportunities: list of {title, why, saving, action, caveat, law}.
+    """
+    from agents.tax_knowledge import opportunities
+
+    return {"opportunities": opportunities(documents)}
+
+
 LEAK_FIXER_TOOLS = [
     FunctionTool(func=detect_recurring_charges_tool),
     FunctionTool(func=loan_switch_saving_tool),
 ]
 
 CA_ASSISTANT_TOOLS = [
+    FunctionTool(func=tax_opportunities_tool),
+    FunctionTool(func=search_tax_law_tool),
+    FunctionTool(func=donation_saving_tool),
+    FunctionTool(func=hra_exemption_tool),
     FunctionTool(func=compare_tax_regimes),
     FunctionTool(func=compute_tax_for_regime),
     FunctionTool(func=tds_reconciliation_tool),
@@ -378,6 +451,10 @@ CA_ASSISTANT_TOOLS = [
 ]
 
 CONSULTANT_TOOLS = [
+    FunctionTool(func=tax_opportunities_tool),
+    FunctionTool(func=search_tax_law_tool),
+    FunctionTool(func=donation_saving_tool),
+    FunctionTool(func=hra_exemption_tool),
     FunctionTool(func=compare_tax_regimes),
     FunctionTool(func=compute_tax_for_regime),
     FunctionTool(func=review_pf_accounts_tool),

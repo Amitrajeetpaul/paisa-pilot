@@ -101,10 +101,48 @@ def _leak_fixer_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
     return "I need a confirmed bank statement to look for leaks."
 
 
+_DONATION_WORDS = ("donat", "charit", "80g", "ngo")
+_SAVE_TAX_WORDS = ("save tax", "saving tax", "reduce tax", "reduce my tax", "lower tax", "lower my tax", "tax saving", "tax-saving", "deduction", "suggest", "opportunit", "claim", "hra", "rent", "how can i save", "pay less tax", "less tax")
+_LAW_WORDS = ("section", "80c", "80d", "80g", "80e", "nps", "advance tax", "itr", "due date", "last date", "rebate", "standard deduction", "capital gain", "ltcg", "stcg", "refund", "gst", "e-invoice", "late fee", "mutual fund", "shares", "stock", "equity", "gains", "tds")
+
+
+def _gross_and_via(c: dict[str, dict]) -> tuple[float, float] | None:
+    f, p = c.get("form16"), c.get("payslip")
+    if f and f.get("gross_salary_annual"):
+        return float(f["gross_salary_annual"]), float(f.get("deductions_chapter_via_total") or 0)
+    if p and p.get("monthly_gross_salary"):
+        return float(p["monthly_gross_salary"]) * 12, min(150000.0, float(p.get("pf_employee_deduction") or 0) * 12)
+    return None
+
+
+def _tax_knowledge_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
+    """The CA-style questions: what can I claim, what does a donation save, what does the law say."""
+    import re
+
+    ql = q.lower()
+    gv = _gross_and_via(c)
+    if any(k in ql for k in _DONATION_WORDS) and gv:
+        m = re.search(r"(?:rs\.?|₹|inr)?\s*(\d[\d,]{2,})", ql)
+        if m:
+            amount = float(m.group(1).replace(",", ""))
+            return [("donation_saving_tool", {"gross_salary_annual": gv[0], "deductions_chapter_via_total": gv[1], "donation_amount": amount})]
+    if gv and any(k in ql for k in _SAVE_TAX_WORDS + _DONATION_WORDS):
+        calls: list[tuple[str, dict[str, Any]]] = [("tax_opportunities_tool", {"documents": c})]
+        if any(k in ql for k in ("hra", "rent", "80g", "donat", "80d", "nps", "80c", "home loan")):
+            calls.append(("search_tax_law_tool", {"query": q}))  # also show the rule behind the answer
+        return calls
+    if any(k in ql for k in _LAW_WORDS):
+        return [("search_tax_law_tool", {"query": q})]
+    return []
+
+
 def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
     import re
 
     ql = q.lower()
+    knowledge = _tax_knowledge_plan(c, q)
+    if knowledge:
+        return knowledge
     if "payslip" in c and any(k in ql for k in ("salary", "take home", "take-home", "in-hand", "in hand", "ctc", "gross", "payslip", "explain my finances")):
         p = c["payslip"]
         return [("explain_salary_tool", {
@@ -134,7 +172,51 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
     return []
 
 
+def _opportunity_lines(opps: list[dict[str, Any]], limit: int = 4) -> list[str]:
+    lines = []
+    for o in opps[:limit]:
+        text = f"{o['title']}: {o['why']}"
+        if o.get("saving"):
+            text += f" This could save about {_inr(o['saving'])} a year."
+        if o.get("caveat"):
+            text += f" {o['caveat']}"
+        if o.get("law"):
+            text += f" ({o['law']['section']})"
+        lines.append(text)
+    return lines
+
+
+_NOT_A_FILING = "\n\nThese are estimates from this year's published rules, worked out from your own documents. Nothing has been filed for you, and a CA should confirm before you claim."
+
+
+def _knowledge_summary(name: str, r: dict[str, Any]) -> str | None:
+    if name == "donation_saving_tool":
+        head = f"A donation of {_inr(r['donation_amount'])} to an approved charity counts as about {_inr(r['eligible_deduction'])} of deduction under Section 80G."
+        if r["annual_tax_saving"] > 0:
+            tail = f" For you that lowers your tax by about {_inr(r['annual_tax_saving'])} a year. {r['note']}"
+        else:
+            tail = f" {r['note']} Giving is still worthwhile, it just does not change your tax this year."
+        return head + tail + " Pay by UPI or bank transfer (cash above ₹2,000 gets no deduction) and keep the charity's 80G receipt." + _NOT_A_FILING
+    if name == "tax_opportunities_tool":
+        opps = r.get("opportunities", [])
+        if not opps:
+            return "I need your Form 16 or payslip to look for tax-saving options."
+        return "Here is what I found in your documents:\n" + "\n".join(f"• {ln}" for ln in _opportunity_lines(opps)) + _NOT_A_FILING
+    if name == "search_tax_law_tool":
+        ps = r.get("passages", [])
+        if not ps:
+            return "I could not find that in my tax and GST notes, so I will not guess. A CA can confirm it."
+        return "\n".join(f"• {p['section']}: {p['text']}" for p in ps[:2]) + "\n\nThese notes are plain-language summaries of the law, not legal advice."
+    return None
+
+
 def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
+    parts = [k for name, r in results if (k := _knowledge_summary(name, r))]
+    if parts:
+        # one closing disclaimer, not one per part
+        cleaned = [x.replace(_NOT_A_FILING, "") for x in parts]
+        footer = _NOT_A_FILING if any(_NOT_A_FILING in x for x in parts) else ""
+        return "\n\n".join(cleaned) + footer
     for name, r in results:
         if name == "compare_tax_regimes":
             if r["recommended_regime"] == "new":
@@ -183,6 +265,8 @@ def _ca_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, Any]]]:
         calls.append(("breakeven_deductions_tool", {"gross_salary_annual": f["gross_salary_annual"], "deductions_claimed": f["deductions_chapter_via_total"]}))
         calls.append(("deduction_limits_tool", {}))
         calls.append(("itr_form_tool", {}))
+    if "form16" in c or "payslip" in c:
+        calls.append(("tax_opportunities_tool", {"documents": c}))
     calls.append(("filing_readiness_tool", {"documents_present": list(c.keys())}))
     return calls
 
@@ -217,13 +301,16 @@ def _ca_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
         elif name == "deduction_limits_tool":
             if r["section_80c_limit_old_regime"]:
                 lines.append(f"Deductions: the old regime lets you deduct savings such as PF and insurance up to {_inr(r['section_80c_limit_old_regime'])} (Section 80C). The new regime does not allow these.")
+        elif name == "tax_opportunities_tool":
+            for ln in _opportunity_lines([o for o in r.get("opportunities", []) if o["id"] != "regime"], 3):
+                lines.append(f"Ways to save: {ln}")
         elif name == "filing_readiness_tool":
             if r["ready"]:
                 lines.append("Documents: Form 16, AIS and bank statement are all in. You have what you need to file.")
             else:
                 lines.append("Documents still needed: " + "; ".join(r["missing_descriptions"]) + ".")
     body = "\n".join(f"• {ln}" for ln in lines) or "I need your Form 16 to run a tax check-up."
-    return body + "\n\nNot covered here: HRA, home-loan interest, capital gains and business income. These are estimates from this year's published rules, not a filing, and nothing has been filed for you. For those cases or a tax notice, a CA's help is worth it."
+    return body + "\n\nChecked from your documents: regime, HRA, donations, health insurance, NPS and loan interest (home-loan and education-loan figures need your lender's certificate). Not covered: capital gains, business income and foreign assets. These are estimates from this year's published rules, not a filing, and nothing has been filed for you. For those cases or a tax notice, a CA's help is worth it."
 
 
 PLANS: dict[str, tuple[Plan, Summarize]] = {
@@ -298,7 +385,7 @@ def _build(agent_name: str, model: Any = None) -> Agent:
     return builders[agent_name](model=model)
 
 
-async def _drive(agent: Agent, agent_name: str, confirmed: dict[str, dict], question: str, engine: str) -> AgentRun:
+async def _drive(agent: Agent, agent_name: str, confirmed: dict[str, dict], question: str, engine: str, ground: str = "") -> AgentRun:
     import json
 
     from google.adk.runners import Runner
@@ -312,6 +399,7 @@ async def _drive(agent: Agent, agent_name: str, confirmed: dict[str, dict], ques
     prompt = (
         "The user's confirmed document fields (use these as the inputs to your tools):\n"
         + json.dumps(confirmed, default=str)
+        + (("\n\n" + ground) if ground else "")
         + "\n\nTask: "
         + question
     )
@@ -362,18 +450,27 @@ def run_agent(agent_name: str, confirmed: dict[str, dict], question: str | None 
         # chain: a 429 (quota) or 503 on one model says nothing about the next one. If every
         # model fails, or one invents a number, answer from the built-in model instead.
         deadline = time.monotonic() + AGENT_TIMEOUT_SECONDS
+        ground: str = ""
+        facts: dict[str, Any] = {}
+        if agent_name in ("consultant", "ca_assistant"):
+            try:
+                from agents.tax_knowledge import grounding
+
+                ground, facts = grounding(confirmed, q)  # RAG: retrieved law + the person's computed opportunities
+            except Exception:
+                logger.warning("Could not build tax grounding", exc_info=True)
         for candidate in _model_chain(explainer_model()):
             remaining = deadline - time.monotonic()
             if remaining < 2:
                 break
             try:
                 run = asyncio.run(
-                    asyncio.wait_for(_drive(_build(agent_name, model=candidate), agent_name, confirmed, q, "gemini"), timeout=remaining)
+                    asyncio.wait_for(_drive(_build(agent_name, model=candidate), agent_name, confirmed, q, "gemini", ground), timeout=remaining)
                 )
             except Exception:
                 logger.warning("Gemini model %s failed for %s; trying the next", candidate, agent_name, exc_info=True)
                 continue
-            problems = check_provenance(run.tool_calls, run.answer, confirmed, q)
+            problems = check_provenance(run.tool_calls, run.answer, {**confirmed, "_grounding": facts}, q)
             if not problems:
                 return run
             # The model used a number nobody gave it: never show that answer.

@@ -85,7 +85,7 @@ export function TermsScreen() {
         <li>It is not a registered tax, investment or insurance adviser. It does not replace a professional for complex situations.</li>
         <li>The tax and PF figures are <b>estimates from this year's published rules</b>, not a filing. A formal review of our tax rules by a chartered accountant is planned before any public launch.</li>
         <li>We name categories (such as an FD or a term plan), never specific funds, stocks or policies, and we never promise a refund or a return.</li>
-        <li>Some things are not covered, such as HRA, home-loan interest, capital gains and business income. A CA's help is worth it for those, and for any tax notice.</li>
+        <li>Some things are not covered, such as capital gains, business income and foreign assets, and the exact home-loan or education-loan interest (which needs your lender's certificate). A CA's help is worth it for those, and for any tax notice.</li>
       </ul>
       <H>You stay in control</H>
       <p>

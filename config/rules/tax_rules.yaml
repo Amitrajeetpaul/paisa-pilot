@@ -1,0 +1,31 @@
+# Figures and bank-statement patterns the tax-saving suggestions use (FY 2025-26).
+# Each figure names the passage in tax_corpus.yaml it comes from. NOT reviewed by a CA yet.
+as_of: "2026-11"
+limits:
+  section_80c: 150000          # corpus: sec-80c
+  section_80ccd1b: 50000       # corpus: sec-80ccd1b
+  section_80d_self: 25000      # corpus: sec-80d (non-senior)
+  section_80d_parents: 25000
+  section_24b_self_occupied: 200000   # corpus: sec-24b
+  donation_qualifying_limit_percent: 10   # corpus: sec-80g
+  donation_cash_limit: 2000
+hra:
+  metro_percent_of_basic: 50      # corpus: hra
+  non_metro_percent_of_basic: 40
+  rent_minus_percent_of_basic: 10
+# 80G categories: how much of the donation counts, and whether the 10% cap applies
+donation_categories:
+  full_no_limit: {label: "PM National Relief Fund and similar funds", percent: 100, limited: false}
+  half_no_limit: {label: "Certain national funds", percent: 50, limited: false}
+  full_limit: {label: "Certain approved bodies", percent: 100, limited: true}
+  half_limit: {label: "Most approved charities and NGOs", percent: 50, limited: true}
+# Patterns on bank-statement debit descriptions (regular expressions, matched on upper case)
+detectors:
+  rent: ['\bRENT\b', 'HOUSE RENT', 'NOBROKER', 'RENTOMOJO']
+  donation: ['DONATION', 'DONATE', 'CHARITY', '\bNGO\b', 'FOUNDATION', 'RELIEF FUND', '\bSEVA\b', 'CARES']
+  health_insurance: ['HEALTH', 'MEDICLAIM', 'NIVA BUPA', 'STAR HEALTH', 'CARE HEALTH']
+  life_insurance: ['\bLIC\b', 'LIFE INSURANCE', 'TERM PLAN', 'TERM INSURANCE']
+  nps: ['\bNPS\b', 'NATIONAL PENSION']
+  elss_ppf: ['\bPPF\b', 'ELSS', 'TAX SAVER']
+  home_loan: ['HOME LOAN', 'HOUSING', 'HOME FIN']
+  education_loan: ['EDU LOAN', 'EDUCATION LOAN', 'STUDENT LOAN']

@@ -9,7 +9,7 @@ client = TestClient(app)
 def test_ca_assistant_agent_defined():
     agent = build_ca_assistant_agent()
     assert agent.name == "ca_assistant"
-    assert len(agent.tools) == 8  # SkillToolset + 7 tools
+    assert len(agent.tools) == 12  # SkillToolset + 11 tools
 
 
 def test_ca_assistant_runs_checkup():
@@ -22,6 +22,7 @@ def test_ca_assistant_runs_checkup():
         "breakeven_deductions_tool",
         "deduction_limits_tool",
         "itr_form_tool",
+        "tax_opportunities_tool",
         "filing_readiness_tool",
     ]
     assert "₹2,500" in r["answer"]  # AIS extra TDS

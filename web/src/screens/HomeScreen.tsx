@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BreakdownBar, type Segment } from '../components/BreakdownBar'
+import { TaxSuggestions } from '../components/TaxSuggestions'
 import { CheckupCard } from '../components/CheckupCard'
 import { CountUp } from '../components/CountUp'
 import { DocumentsCard } from '../components/DocumentsCard'
@@ -138,6 +139,8 @@ export function HomeScreen() {
               />
             ))}
           </div>
+
+          {sessionId && !loading && result && result.cards.length > 0 && <TaxSuggestions sessionId={sessionId} />}
         </div>
 
         {/* Right Column: AI Tax Checkup & Documents (Sticky on Desktop) */}

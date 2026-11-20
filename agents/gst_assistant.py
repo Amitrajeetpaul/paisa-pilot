@@ -54,7 +54,7 @@ class Corpus:
         self.as_of: str = raw["as_of"]
         self.reviewed_by_ca: bool = bool(raw.get("reviewed_by_ca", False))
         self.passages = [
-            Passage(p["id"], p["section"], p["title"], " ".join(p["text"].split()), p["source_url"], tuple(p.get("keywords", [])))
+            Passage(p["id"], p["section"], p["title"], " ".join(p["text"].split()), p["source_url"], tuple(str(k) for k in p.get("keywords", [])))
             for p in raw["passages"]
         ]
         self._docs = [_tokens(f"{p.title} {p.title} {' '.join(p.keywords)} {p.section} {p.text}") for p in self.passages]
@@ -79,6 +79,9 @@ class Corpus:
                 if f:
                     score += self._idf[t] * f * 2.2 / (f + 1.2 * (0.25 + 0.75 * len(doc) / self._avg))
             if score >= _MIN_SCORE:
+                # A curated keyword phrase found in the question is the strongest signal we have.
+                ql = query.lower()
+                score += sum(1.5 * (k.count(" ") + 1) for k in p.keywords if k.lower() in ql)
                 scored.append((p, score))
         scored.sort(key=lambda x: -x[1])
         return scored[:k]

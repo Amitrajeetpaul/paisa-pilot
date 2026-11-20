@@ -17,6 +17,10 @@ const STEP_LABEL: Record<string, string> = {
   deduction_limits_tool: 'Looked up this year’s deduction limits',
   itr_form_tool: 'Picked the likely ITR form',
   filing_readiness_tool: 'Checked which documents you still need',
+  tax_opportunities_tool: 'Looked through your documents for ways to lower your tax',
+  search_tax_law_tool: 'Looked up the exact section of the law',
+  donation_saving_tool: 'Worked out what the donation saves after choosing the cheaper regime',
+  hra_exemption_tool: 'Worked out your HRA exemption',
   detect_recurring_charges_tool: 'Found payments that repeat every month',
 }
 
@@ -27,6 +31,7 @@ const LABEL_FOR: Record<string, string> = {
   Deductions: 'Deductions',
   Form: 'ITR form',
   Documents: 'Your documents',
+  'Ways to save': 'Ways to save tax',
 }
 
 const cache = new Map<string, AgentRunResult>()

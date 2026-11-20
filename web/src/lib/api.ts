@@ -196,6 +196,12 @@ export const api = {
   gstDraft: (body: { csv_text: string; period?: string; annual_turnover?: number; business_type?: string }) =>
     request<GstDraftResult>('/gst/draft', { method: 'POST', body: JSON.stringify(body) }),
 
+  taxSuggestions: (sessionId: string) =>
+    request<TaxSuggestionsResult>(`/sessions/${sessionId}/calculate/tax-suggestions`, {
+      method: 'POST',
+      body: stateBody(sessionId),
+    }),
+
   getUsageApps: () => request<UsageApps>('/usage/apps'),
 
   calculateSubscriptionUsage: (sessionId: string, usage: { app_key: string; days_used: number }[], windowDays: number) =>
@@ -365,6 +371,31 @@ export interface GstDraftResult {
   total_to_pay: number
   composition: null | { eligible: false; reasons: string[] } | { eligible: true; rate_percent: number; composition_tax: number; regular_cash_tax: number; cheaper: string; difference: number; note: string }
   steps: string[]
+  notes_as_of: string
+  reviewed_by_ca: boolean
+  disclaimer: string
+}
+
+export interface TaxSuggestion {
+  id: string
+  title: string
+  why: string
+  saving: number | null
+  action: string
+  caveat: string
+  law: { section: string; title: string; excerpt: string; source_url: string } | null
+}
+
+export interface TaxSuggestionsResult {
+  picture: {
+    gross_salary_annual: number
+    old_regime_tax: number
+    new_regime_tax: number
+    cheaper_regime: 'old' | 'new'
+    tax_now: number
+    documents_used: string[]
+  }
+  suggestions: TaxSuggestion[]
   notes_as_of: string
   reviewed_by_ca: boolean
   disclaimer: string
