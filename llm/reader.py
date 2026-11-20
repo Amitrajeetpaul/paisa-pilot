@@ -17,7 +17,6 @@ from pydantic import BaseModel
 
 from llm.client import generate_structured, reader_model
 from llm.consistency import apply_consistency_checks
-from llm.image_enhancer import enhance_document_image
 from llm.prompts import load_reader_prompt
 from llm.schemas import READER_OUTPUT_MODELS
 
@@ -58,9 +57,12 @@ def _read_fixture(document_type: str, model_cls: type[BaseModel]) -> BaseModel:
 
 
 def _read_live(document_type: str, file_bytes: bytes, mime_type: str, model_cls: type[BaseModel]) -> BaseModel:
-    enhanced_bytes, was_enhanced = (
-        enhance_document_image(file_bytes, mime_type or "") if _enhance_enabled() else (file_bytes, False)
-    )
+    if _enhance_enabled():
+        from llm.image_enhancer import enhance_document_image  # needs Pillow; only when the flag is on
+
+        enhanced_bytes, was_enhanced = enhance_document_image(file_bytes, mime_type or "")
+    else:
+        enhanced_bytes, was_enhanced = file_bytes, False
     active_mime = "image/jpeg" if was_enhanced else (mime_type or "application/octet-stream")
     system_prompt = load_reader_prompt(document_type)
     file_part = types.Part.from_bytes(data=enhanced_bytes, mime_type=active_mime)
