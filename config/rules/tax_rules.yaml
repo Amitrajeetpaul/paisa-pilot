@@ -3,6 +3,7 @@
 as_of: "2026-11"
 limits:
   section_80c: 150000          # corpus: sec-80c
+  professional_tax: 2500       # Sec 16(iii), old regime (state cap Rs 2,500 a year)
   section_80ccd1b: 50000       # corpus: sec-80ccd1b
   section_80d_self: 25000      # corpus: sec-80d (non-senior)
   section_80d_parents: 25000

@@ -56,6 +56,49 @@ tax_regimes:
     source_url: "https://www.incometax.gov.in/iec/foportal/"
     as_of: "2026-11-19"
 
+  old_senior:
+    label: "Old regime, age 60 to 79"
+    standard_deduction: 50000
+    slabs:
+      - { from: 0, to: 300000, rate_percent: 0 }
+      - { from: 300000, to: 500000, rate_percent: 5 }
+      - { from: 500000, to: 1000000, rate_percent: 20 }
+      - { from: 1000000, to: null, rate_percent: 30 }
+    rebate_87a:
+      taxable_income_threshold: 500000
+      max_rebate: 12500
+    chapter_via_allowed: true
+    chapter_via:
+      section_80c_limit: 150000
+      section_80d:
+        self_non_senior: 25000
+        self_senior: 50000
+        max_with_senior_parents: 100000
+    source_url: "https://www.incometax.gov.in/iec/foportal/"
+    as_of: "2026-11-19"
+
+
+  old_super_senior:
+    label: "Old regime, age 80 and above"
+    standard_deduction: 50000
+    slabs:
+      - { from: 0, to: 500000, rate_percent: 0 }
+      - { from: 500000, to: 1000000, rate_percent: 20 }
+      - { from: 1000000, to: null, rate_percent: 30 }
+    rebate_87a:
+      taxable_income_threshold: 500000
+      max_rebate: 12500
+    chapter_via_allowed: true
+    chapter_via:
+      section_80c_limit: 150000
+      section_80d:
+        self_non_senior: 25000
+        self_senior: 50000
+        max_with_senior_parents: 100000
+    source_url: "https://www.incometax.gov.in/iec/foportal/"
+    as_of: "2026-11-19"
+
+
 cess:
   health_education_cess_percent: 4
   source_url: "https://www.incometax.gov.in/iec/foportal/"

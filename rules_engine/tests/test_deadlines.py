@@ -29,7 +29,7 @@ def test_new_regime_people_do_not_get_the_old_regime_investment_reminder():
 def test_gst_dates_only_for_registered_people_and_roll_over_the_month():
     assert not any(d["domain"] == "gst" for d in upcoming_deadlines(date(2026, 11, 21), 60))
     dates = {d["id"].split("_")[0]: d["date"] for d in upcoming_deadlines(date(2026, 11, 21), 60, gst_registered=True) if d["domain"] == "gst"}
-    assert dates == {"gstr1": "2026-12-11", "gstr3b": "2026-12-20"}  # the 20 Nov date has passed, so the next one is in December
+    assert dates == {"gstr1": "2026-12-11", "gstr3b": "2026-12-20", "itc": "2026-11-30"}  # Sec 16(4) credit deadline is 9 days away  # the 20 Nov date has passed, so the next one is in December
 
 
 def test_sorted_soonest_first():

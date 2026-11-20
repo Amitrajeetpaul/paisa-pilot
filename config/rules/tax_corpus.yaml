@@ -4,9 +4,12 @@
 # before launch and refreshing each Budget. Every passage names its section.
 as_of: "2026-11"
 reviewed_by_ca: false
+# new_act_section: the matching section of the Income-tax Act 2025 (in force from 1 April 2026; applies from FY 2026-27).
+# Sources: incometax.gov.in FAQ for 139->263 and 234F->428; the others from secondary summaries (medium confidence).
 passages:
   - id: regime-choice
     section: "Income-tax Act Sec 115BAC"
+    new_act_section: "Income-tax Act 2025 Sec 202"
     title: New vs old tax regime
     keywords: [regime, new regime, old regime, which is better, switch, default, 115BAC, deductions not allowed]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -25,6 +28,7 @@ passages:
       Rs 50,000 under the old regime for FY 2025-26.
   - id: rebate-87a
     section: "Income-tax Act Sec 87A"
+    new_act_section: "Income-tax Act 2025 Sec 156"
     title: Tax rebate for lower incomes
     keywords: [rebate, 87A, no tax, zero tax, 12 lakh, 7 lakh, taxable income limit]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -34,6 +38,7 @@ passages:
       Rs 5 lakh.
   - id: sec-80c
     section: "Income-tax Act Sec 80C"
+    new_act_section: "Income-tax Act 2025 Sec 123"
     title: Section 80C, up to Rs 1.5 lakh
     keywords: [80C, PPF, ELSS, EPF, provident fund, life insurance, LIC, tuition fees, home loan principal, tax saving, 1.5 lakh, NSC]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -44,6 +49,7 @@ passages:
       the limit.
   - id: sec-80d
     section: "Income-tax Act Sec 80D"
+    new_act_section: "Income-tax Act 2025 Sec 126"
     title: Health insurance premium
     keywords: [80D, health insurance, mediclaim, parents, senior citizen, premium, preventive health check-up, medical insurance]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -54,6 +60,7 @@ passages:
       allowed.
   - id: sec-80ccd1b
     section: "Income-tax Act Sec 80CCD(1B)"
+    new_act_section: "Income-tax Act 2025 Sec 124"
     title: Extra deduction for NPS
     keywords: [NPS, national pension, 80CCD, 50000, pension, retirement, additional deduction]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -62,6 +69,7 @@ passages:
       Rs 50,000 a year, over and above the Rs 1.5 lakh limit of Section 80C.
   - id: sec-80ccd2
     section: "Income-tax Act Sec 80CCD(2)"
+    new_act_section: "Income-tax Act 2025 Sec 124"
     title: Employer's NPS contribution
     keywords: [employer NPS, 80CCD(2), employer contribution, new regime deduction, 14%, 10% of basic]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -71,6 +79,7 @@ passages:
       in the new regime, but it has to be set up through your employer.
   - id: sec-80g
     section: "Income-tax Act Sec 80G"
+    new_act_section: "Income-tax Act 2025 Sec 133"
     title: Donations to charity
     keywords: [80G, donation, charity, NGO, trust, relief fund, PM CARES, 50%, 100%, 10% limit, receipt, 80G certificate, donate, charitable]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -82,6 +91,7 @@ passages:
       charity's 80G registration. In the new regime donations give no tax benefit.
   - id: sec-80e
     section: "Income-tax Act Sec 80E"
+    new_act_section: "Income-tax Act 2025 Sec 129"
     title: Education-loan interest
     keywords: [80E, education loan, student loan, interest, higher education, 8 years]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -113,6 +123,7 @@ passages:
       still be claimed under Section 80GG.
   - id: sec-80tta
     section: "Income-tax Act Sec 80TTA, 80TTB"
+    new_act_section: "Income-tax Act 2025 Sec 153"
     title: Savings-account interest
     keywords: [80TTA, 80TTB, savings interest, bank interest, 10000, senior citizen, interest income]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -140,6 +151,7 @@ passages:
       one house you generally need ITR-2. Business or professional income, including freelancing, needs ITR-3 or ITR-4.
   - id: due-dates
     section: "Income-tax Act Sec 139(1), 139(4), 139(5)"
+    new_act_section: "Income-tax Act 2025 Sec 263"
     title: Due dates for filing your return
     keywords: [due date, last date, 31 July, belated return, revised return, 31 December, deadline, file late]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -273,6 +285,7 @@ passages:
       Rs 50,000 deposit-interest deduction under Section 80TTB. The new regime has the same slabs for everyone.
   - id: notices
     section: "Income-tax Act Sec 143(1), 139(8A), 234F"
+    new_act_section: "Income-tax Act 2025 Sec 263 and 428"
     title: Notices, mistakes and late fees
     keywords: [notice, intimation, 143(1), mismatch, ITR-U, updated return, late fee 234F, 5000, penalty, missed deadline, rectification]
     source_url: https://www.incometax.gov.in/iec/foportal/
@@ -284,6 +297,7 @@ passages:
       scrutiny are serious, so get a CA's help.
   - id: sec-80gg
     section: "Income-tax Act Sec 80GG"
+    new_act_section: "Income-tax Act 2025 Sec 134"
     title: Rent deduction without HRA
     keywords: [80GG, rent without HRA, no hra, self-employed rent, freelancer rent, 5000 a month, rent deduction]
     source_url: https://www.incometax.gov.in/iec/foportal/

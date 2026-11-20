@@ -51,10 +51,18 @@ def test_switch_not_worth_it_when_new_rate_is_higher():
 def test_foreclosure_charge_can_erase_the_saving():
     base = dict(outstanding_principal=226967, current_annual_rate_percent=24.0, current_monthly_emi=12000, remaining_tenure_months=24, new_annual_rate_percent=13.5, processing_fee_percent=1.5)
     assert loan_switch_saving(**base).worth_switching
-    heavy = loan_switch_saving(**base, foreclosure_charge_percent=12.0)
+    heavy = loan_switch_saving(**base, foreclosure_charge_percent=12.0, loan_type="fixed")
     assert heavy.foreclosure_charge == pytest.approx(27236.04) and heavy.worth_switching is False
 
 
 def test_inconsistent_emi_is_reported():
     r = loan_switch_saving(outstanding_principal=226967, current_annual_rate_percent=24.0, current_monthly_emi=15000, remaining_tenure_months=24, new_annual_rate_percent=13.5, processing_fee_percent=1.5)
     assert r.emi_mismatch_percent > 20  # the figures given do not describe the same loan
+
+
+def test_floating_rate_loans_carry_no_foreclosure_charge():
+    base = dict(outstanding_principal=226967, current_annual_rate_percent=24.0, current_monthly_emi=12000, remaining_tenure_months=24, new_annual_rate_percent=13.5, processing_fee_percent=1.5)
+    r = loan_switch_saving(**base, foreclosure_charge_percent=4.0, loan_type="floating")
+    assert r.foreclosure_charge == 0 and "RBI" in r.rule_note
+    with_costs = loan_switch_saving(**base, other_costs=5000)
+    assert with_costs.net_saving == pytest.approx(loan_switch_saving(**base).net_saving - 5000)

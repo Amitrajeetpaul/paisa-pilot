@@ -8,6 +8,8 @@ used, rule/formula, config version, and the official source link.
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
+from typing import Literal
+
 from pydantic import BaseModel
 
 from contextvars import ContextVar
@@ -78,6 +80,16 @@ def get_source_trail(session_id: str, card_id: str) -> dict:
     return entry
 
 
+def _regime_comparison(gross: float, via: float, payslip: dict | None):
+    """Old vs new on the same salary, counting professional tax in the old regime, so every screen shows one figure."""
+    from types import SimpleNamespace
+
+    from rules_engine.deductions import best_tax, professional_tax_deduction
+
+    t = best_tax(gross, via + professional_tax_deduction(payslip), RULES_CONFIG)
+    return SimpleNamespace(recommended_regime=t.regime, annual_saving_if_switch=round(abs(t.old.total_tax - t.new.total_tax), 2), old=t.old, new=t.new)
+
+
 @router.post("/calculate/money-finder")
 def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -> dict:
     _require_session(session_id)
@@ -94,11 +106,7 @@ def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -
     one_time_total = 0.0
 
     if form16 is not None:
-        comparison = compare_regimes(
-            gross_salary_annual=form16["gross_salary_annual"],
-            chapter_via_total_old_regime=form16["deductions_chapter_via_total"],
-            config=RULES_CONFIG,
-        )
+        comparison = _regime_comparison(float(form16["gross_salary_annual"]), float(form16["deductions_chapter_via_total"]), payslip)
         if comparison.recommended_regime == "new" and comparison.annual_saving_if_switch > 0:
             cards.append({
                 "card_id": "tax_regime_switch",
@@ -140,11 +148,7 @@ def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -
     elif payslip is not None and payslip.get("monthly_gross_salary"):
         gross_annual = float(payslip["monthly_gross_salary"]) * 12
         pf_deduction = float(payslip.get("pf_employee_deduction") or 0) * 12
-        comparison = compare_regimes(
-            gross_salary_annual=gross_annual,
-            chapter_via_total_old_regime=min(150000.0, pf_deduction),
-            config=RULES_CONFIG,
-        )
+        comparison = _regime_comparison(gross_annual, min(150000.0, pf_deduction), payslip)
         if comparison.recommended_regime == "new" and comparison.annual_saving_if_switch > 0:
             cards.append({
                 "card_id": "tax_regime_switch",
@@ -367,6 +371,8 @@ class LoanSwitchRequest(BaseModel):
     new_annual_rate_percent: float
     processing_fee_percent: float
     foreclosure_charge_percent: float = 0.0
+    loan_type: Literal["floating", "fixed"] = "floating"
+    other_costs: float = 0.0
 
 
 @router.post("/calculate/loan-switch")
@@ -384,4 +390,7 @@ def calculate_loan_switch(session_id: str, body: LoanSwitchRequest) -> dict:
         "net_saving": result.net_saving,
         "worth_switching": result.worth_switching,
         "processing_fee": result.processing_fee,
+        "foreclosure_charge": result.foreclosure_charge,
+        "emi_mismatch_percent": result.emi_mismatch_percent,
+        "rule_note": result.rule_note,
     }

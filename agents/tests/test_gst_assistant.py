@@ -47,7 +47,8 @@ def test_live_grounding_contains_law_and_computed_opportunities_and_passes_prove
     docs = {k: json.load(open(f"{gt}{f}.json")) for k, f in (("form16", "form16_riya_sharma_fy2025-26"), ("payslip", "payslip_riya_sharma_apr2026"))}
     text, facts = grounding(docs, "How can I save tax? What does 80D allow?")
     assert "Sec 80D" in text and "Tax-saving opportunities" in text
-    answer = "Switching regime saves about ₹75,400 a year, and 80D allows up to ₹25,000."
+    gap = next(o["saving"] for o in facts["opportunities"] if o["id"] == "regime")
+    answer = f"Switching regime saves about ₹{gap:,.0f} a year, and 80D allows up to ₹25,000."
     assert check_provenance([], answer, {**docs, "_grounding": facts}, "How can I save tax?") == []
     # an invented figure is still caught
     assert check_provenance([], "You will save ₹91,234.", {**docs, "_grounding": facts}, "q")

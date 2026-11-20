@@ -238,7 +238,8 @@ def _consultant_plan(c: dict[str, dict], q: str) -> list[tuple[str, dict[str, An
             sp = spending_profile(bank["transactions"])
             basis = sp["spending_per_month"] - sp["invested_per_month"]  # what you must keep paying, not what you save
             if basis > 0:
-                return [("emergency_fund_target_tool", {"monthly_expense_basis": float(basis), "basis": "spending"})]
+                income_type = "salaried" if ("payslip" in c or "form16" in c) else "variable"
+                return [("emergency_fund_target_tool", {"monthly_expense_basis": float(basis), "basis": "spending", "income_type": income_type})]
         if "payslip" in c:
             return [("emergency_fund_target_tool", {"monthly_expense_basis": c["payslip"]["net_pay"]})]
     if "insurance" in ql or "term cover" in ql:
@@ -359,13 +360,15 @@ def _consultant_summary(results: list[tuple[str, dict[str, Any]]]) -> str:
             )
         if name == "emergency_fund_target_tool":
             if r.get("basis") == "spending":
-                return (f"A common rule of thumb is {r['months']} months of expenses. Your bank statement shows about {_inr(r['monthly_expense_basis'])} a month of real spending "
+                why = " Because your income is uneven, we used 9 months instead of the usual 6." if r.get("income_type") == "variable" else ""
+                return (f"A common rule of thumb is {r['months']} months of expenses.{why} Your bank statement shows about {_inr(r['monthly_expense_basis'])} a month of real spending "
                         f"(rent, bills, EMIs and everyday costs, not what you invest), so aim for about {_inr(r['target_amount'])}. Keep it somewhere easy to reach, such as a savings account or liquid fund.")
             return f"A common rule of thumb is {r['months']} months of expenses: about {_inr(r['target_amount'])} using your net pay as a stand-in. Add a bank statement and we will use your real spending, which is usually lower."
         if name == "insurance_guide_tool":
             t = f"{r['term_explainer']} {r['health_explainer']}"
             if r["suggested_term_cover"]:
-                t += f" A rule of thumb is term cover of about {r['term_cover_multiple']}x yearly income — roughly {_inr(r['suggested_term_cover'])} for you."
+                t += (f" A quick check is term cover of {r['term_cover_multiple']} to 15 times yearly income, about {_inr(r['suggested_term_cover'])} to {_inr(r['term_cover_upper'])} for you. "
+                      + r.get("method_note", ""))
             return t + " This is education, not registered insurance advice."
         if name == "spare_money_plan_tool":
             return f"For {_inr(r['amount'])} with a goal {r['goal_years']:.0f} years out, {r['category']} tends to fit best. This is education, not registered investment advice."

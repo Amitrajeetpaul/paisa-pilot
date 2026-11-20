@@ -36,7 +36,7 @@ def search_law(query: str, k: int = 3) -> list[dict[str, Any]]:
     hits += [(p, s * (1.0 if wants_gst else 0.7), "gst") for p, s in gst_corpus().search(query, k)]
     hits.sort(key=lambda h: -h[1])
     return [
-        {"id": p.id, "domain": d, "section": p.section, "title": p.title, "text": p.text, "source_url": p.source_url, "score": round(sc, 2)}
+        {"id": p.id, "domain": d, "section": p.section, "new_act_section": p.new_act_section, "title": p.title, "text": p.text, "source_url": p.source_url, "score": round(sc, 2)}
         for p, sc, d in hits[:k]
     ]
 
@@ -44,18 +44,18 @@ def search_law(query: str, k: int = 3) -> list[dict[str, Any]]:
 def passage(law_id: str) -> dict[str, Any] | None:
     for p in tax_corpus().passages:
         if p.id == law_id:
-            return {"id": p.id, "section": p.section, "title": p.title, "text": p.text, "source_url": p.source_url}
+            return {"id": p.id, "section": p.section, "new_act_section": p.new_act_section, "title": p.title, "text": p.text, "source_url": p.source_url}
     return None
 
 
-def opportunities(documents: dict[str, dict], metro: bool = False) -> list[dict[str, Any]]:
+def opportunities(documents: dict[str, dict], metro: bool = False, age_band: str = "below_60") -> list[dict[str, Any]]:
     """Tax-saving suggestions computed from the confirmed documents, each tied to its law section."""
     out = []
-    for s in build_suggestions(documents, _CONFIG, metro=metro):
+    for s in build_suggestions(documents, _CONFIG, metro=metro, age_band=age_band):
         law = passage(s.law_id)
         out.append({
             "id": s.id, "title": s.title, "why": s.why, "saving": s.saving, "action": s.action, "caveat": s.caveat,
-            "law": {"section": law["section"], "title": law["title"], "excerpt": law["text"], "source_url": law["source_url"]} if law else None,
+            "law": {"section": law["section"], "new_act_section": law["new_act_section"], "title": law["title"], "excerpt": law["text"], "source_url": law["source_url"]} if law else None,
             "evidence": s.evidence,
         })
     return out

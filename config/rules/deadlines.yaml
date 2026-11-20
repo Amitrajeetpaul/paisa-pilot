@@ -14,6 +14,8 @@ yearly:
   - {id: itr_due, month: 7, day: 31, title: "File your income-tax return", fy_basis: previous, detail: "Last date for most individuals without an audit. A late return costs a fee under Section 234F.", law: due-dates, audience: everyone}
   - {id: itr_belated, month: 12, day: 31, title: "Last date for a late or revised return", fy_basis: previous, detail: "After this date you can no longer file a belated or revised return for last year (an updated return ITR-U is still possible).", law: due-dates, audience: everyone}
   - {id: tax_saving_last, month: 3, day: 31, title: "Last day to make tax-saving investments", fy_basis: previous, detail: "80C, 80D and NPS payments for this financial year must be made by 31 March (old regime).", law: sec-80c, audience: old_regime}
+yearly_gst:                       # corpus (gst): itc-time-limit
+  - {id: itc_deadline, month: 11, day: 30, title: "Last date to claim GST input credit", detail: "Input credit on last year's purchase invoices, and credit notes, must be claimed by 30 November (Sec 16(4)). After that the credit is lost.", law: itc-time-limit, fy_basis: previous}
 monthly_gst:                      # corpus (gst): due-dates-returns
   - {id: gstr1, day: 11, title: "GSTR-1 (your sales) is due", detail: "Monthly filers file GSTR-1 by the 11th.", law: due-dates-returns}
   - {id: gstr3b, day: 20, title: "GSTR-3B (summary and tax payment) is due", detail: "Monthly filers file GSTR-3B and pay by the 20th.", law: due-dates-returns}

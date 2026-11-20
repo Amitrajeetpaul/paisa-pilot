@@ -64,3 +64,23 @@ def test_itr_prefill_endpoint():
     assert "not the official ITR JSON" in r["disclaimer"]
     empty = c.post("/consent", json={"consent_given": True}).json()["session_id"]
     assert c.post(f"/sessions/{empty}/calculate/itr-prefill", json={}).status_code == 400
+
+
+def test_goal_endpoint_compares_with_what_is_left_each_month():
+    sid = _sid()
+    r = c.post(f"/sessions/{sid}/calculate/goal", json={"cost_today": 500000, "years": 3, "goal_type": "car"}).json()
+    assert r["future_cost"] > 500000 and r["monthly_needed"] > 0 and "affordable" in r
+    assert c.post(f"/sessions/{sid}/calculate/goal", json={"cost_today": 0, "years": 3}).status_code == 422
+
+
+def test_age_band_and_new_act_sections():
+    sid = _sid()
+    r = c.post(f"/sessions/{sid}/calculate/tax-suggestions", json={"age_band": "80_plus"}).json()
+    assert r["picture"]["age_band"] == "80_plus"
+    law = next(s["law"] for s in r["suggestions"] if s["id"] == "regime")
+    assert law["new_act_section"] == "Income-tax Act 2025 Sec 202"
+
+
+def test_gst_users_get_the_input_credit_deadline():
+    d = c.get("/deadlines?gst=true&days=400").json()["deadlines"]
+    assert any(x["id"] == "itc_deadline" for x in d)

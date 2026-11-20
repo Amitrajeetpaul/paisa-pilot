@@ -20,7 +20,8 @@ class LoanSwitchResult:
     net_saving: float
     worth_switching: bool
     foreclosure_charge: float = 0.0
-    emi_mismatch_percent: float = 0.0  # how far the EMI you gave is from what the rate and tenure imply
+    emi_mismatch_percent: float = 0.0
+    rule_note: str = ""  # how far the EMI you gave is from what the rate and tenure imply
 
 
 def monthly_emi(*, principal: float, annual_rate_percent: float, tenure_months: int) -> float:
@@ -42,6 +43,8 @@ def loan_switch_saving(
     processing_fee_percent: float,
     foreclosure_charge_percent: float = 0.0,
     gst_on_fee_percent: float = 18.0,
+    loan_type: str = "floating",
+    other_costs: float = 0.0,
 ) -> LoanSwitchResult:
     """Compares staying on the current loan vs refinancing the outstanding
     principal at a new rate for the same remaining tenure, net of a
@@ -54,8 +57,14 @@ def loan_switch_saving(
     total_if_stay = current_monthly_emi * remaining_tenure_months
     # Lenders charge GST (18%) on the processing fee, and some charge to close the old loan early.
     processing_fee = round(outstanding_principal * processing_fee_percent / 100 * (1 + gst_on_fee_percent / 100), 2)
+    rule_note = ""
+    if loan_type == "floating" and foreclosure_charge_percent > 0:
+        # RBI: no prepayment or foreclosure charge on floating-rate loans to individuals for non-business purposes.
+        foreclosure_charge_percent = 0.0
+        rule_note = "Your loan is floating-rate, so the lender cannot charge you for closing it early (RBI rules); we left that charge out."
     foreclosure = round(outstanding_principal * foreclosure_charge_percent / 100, 2)
-    total_if_switch = new_emi * remaining_tenure_months + processing_fee + foreclosure
+    # legal, valuation and mortgage-paperwork charges on the new loan, if the person knows them
+    total_if_switch = new_emi * remaining_tenure_months + processing_fee + foreclosure + max(0.0, other_costs)
     net_saving = round(total_if_stay - total_if_switch, 2)
     implied = monthly_emi(principal=outstanding_principal, annual_rate_percent=current_annual_rate_percent, tenure_months=remaining_tenure_months)
     mismatch = round(abs(implied - current_monthly_emi) / implied * 100, 1) if implied else 0.0
@@ -69,4 +78,5 @@ def loan_switch_saving(
         worth_switching=net_saving > 0,
         foreclosure_charge=foreclosure,
         emi_mismatch_percent=mismatch,
+        rule_note=rule_note,
     )

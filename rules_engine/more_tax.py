@@ -22,7 +22,7 @@ def capital_gains_tax(gain: float, months_held: float, asset: str, rules: dict |
             rate, kind = r["equity_long_term_percent"], "long term"
             note = f"The first ₹{r['equity_long_term_exempt']:,.0f} of long-term equity gains in a year is exempt."
         else:
-            taxable, rate, kind, note = gain, r["equity_short_term_percent"], "short term", "Sold within 12 months, so it is short-term."
+            taxable, rate, kind, note = gain, r["equity_short_term_percent"], "short term", "Sold within 12 months, so it is short-term. The Rs 12 lakh rebate (Sec 87A) does not cover these special-rate gains."
     elif asset == "property":
         if months_held > r["property_long_term_months"]:
             taxable, rate, kind = gain, r["property_long_term_percent"], "long term"

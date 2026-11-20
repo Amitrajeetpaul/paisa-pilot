@@ -75,6 +75,11 @@ def upcoming_deadlines(
                     "applies": True, "amount_so_far": None, "law": y["law"], "domain": "income_tax"})
 
     if gst_registered:
+        for y in cfg.get("yearly_gst", []):
+            d = _next_on_or_after(today, y["month"], y["day"])
+            fy = _fy_of(d, "previous")
+            out.append({"id": y["id"], "fy": fy, "title": f"{y['title']} (FY {fy} invoices)", "detail": y["detail"], "date": d.isoformat(),
+                        "days_left": (d - today).days, "applies": True, "amount_so_far": None, "law": y["law"], "domain": "gst"})
         for g in cfg["monthly_gst"]:
             d = _next_monthly(today, g["day"])
             out.append({"id": f"{g['id']}_{d.strftime('%Y%m')}", "fy": None, "title": g["title"], "detail": g["detail"], "date": d.isoformat(),

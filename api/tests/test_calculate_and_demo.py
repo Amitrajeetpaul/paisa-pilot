@@ -57,7 +57,8 @@ def test_money_finder_matches_riya_sharma_expected_results(client):
     assert body["yearly_total"] + body["one_time_total"] == pytest.approx(body["total_found"], abs=0.01)
 
     tax_card = next(c for c in body["cards"] if c["card_id"] == "tax_regime_switch")
-    assert tax_card["amount"] == pytest.approx(75400, abs=0.01)
+    # 75,400 before professional tax; the Rs 2,400 of professional tax lowers old-regime tax by 2,400 x 20% x 1.04 = 499.20
+    assert tax_card["amount"] == pytest.approx(75400 - 499.20, abs=0.01)
     assert tax_card["unit_label"] == "every year"
 
     pf_card = next(c for c in body["cards"] if c["card_id"] == "old_pf_accounts")

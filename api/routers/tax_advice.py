@@ -5,6 +5,8 @@ own confirmed documents. Numbers come from rules_engine; each suggestion cites t
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
+from typing import Literal
+
 from pydantic import BaseModel
 
 from agents.tax_knowledge import opportunities, tax_corpus
@@ -20,9 +22,10 @@ RULES_CONFIG = load_rules_config()
 class TaxSuggestionBody(BaseModel):
     confirmed: dict[str, dict] | None = None
     metro_city: bool = False
+    age_band: Literal["below_60", "60_79", "80_plus"] = "below_60"
 
 
-def tax_picture(docs: dict[str, dict]) -> dict | None:
+def tax_picture(docs: dict[str, dict], age_band: str = "below_60") -> dict | None:
     """Annual salary, tax under both regimes and which is cheaper, from the confirmed documents."""
     f16, pay = docs.get("form16"), docs.get("payslip")
     if f16 and f16.get("gross_salary_annual"):
@@ -31,8 +34,11 @@ def tax_picture(docs: dict[str, dict]) -> dict | None:
         gross, via = float(pay["monthly_gross_salary"]) * 12, min(150000.0, float(pay.get("pf_employee_deduction") or 0) * 12)
     else:
         return None
-    t = best_tax(gross, via, RULES_CONFIG)
+    from rules_engine.deductions import professional_tax_deduction
+
+    t = best_tax(gross, via + professional_tax_deduction(pay), RULES_CONFIG, age_band)
     return {
+        "age_band": age_band,
         "gross_salary_annual": gross, "old_regime_tax": t.old.total_tax, "new_regime_tax": t.new.total_tax,
         "cheaper_regime": t.regime, "tax_now": t.total_tax,
         "documents_used": sorted(k for k in docs if k in ("payslip", "form16", "bank_statement")),
@@ -47,9 +53,9 @@ def tax_suggestions(session_id: str, body: TaxSuggestionBody | None = None) -> d
     docs = load_confirmed(session_id, body.confirmed)
     if "form16" not in docs and "payslip" not in docs:
         raise HTTPException(status_code=400, detail="Confirm a payslip or Form 16 first")
-    opps = opportunities(docs, metro=body.metro_city)
+    opps = opportunities(docs, metro=body.metro_city, age_band=body.age_band)
 
-    picture = tax_picture(docs)
+    picture = tax_picture(docs, body.age_band)
     assert picture is not None
     return {
         "picture": picture,
@@ -81,8 +87,43 @@ def itr_prefill(session_id: str, body: TaxSuggestionBody | None = None) -> dict:
 
     if not get_db().session_exists(session_id):
         raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")
-    docs = load_confirmed(session_id, (body or TaxSuggestionBody()).confirmed)
-    pack = build_itr_prefill(docs, RULES_CONFIG)
+    body = body or TaxSuggestionBody()
+    docs = load_confirmed(session_id, body.confirmed)
+    pack = build_itr_prefill(docs, RULES_CONFIG, body.age_band)
     if pack is None:
         raise HTTPException(status_code=400, detail="Confirm a Form 16 or payslip first")
     return {**pack, "notes_as_of": tax_corpus().as_of, "reviewed_by_ca": tax_corpus().reviewed_by_ca}
+
+
+class GoalBody(BaseModel):
+    cost_today: float
+    years: float
+    goal_type: str = "other"
+    already_saved: float = 0.0
+    step_up_percent: float = 0.0
+    annual_return_percent: float | None = None
+    confirmed: dict[str, dict] | None = None
+
+
+@router.post("/calculate/goal")
+def goal(session_id: str, body: GoalBody) -> dict:
+    """Plan a goal and, when a bank statement is confirmed, compare the monthly amount with what is left over each month."""
+    from rules_engine.goals import plan_goal
+    from rules_engine.spending import spending_profile
+
+    if not get_db().session_exists(session_id):
+        raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")
+    try:
+        plan = plan_goal(body.cost_today, body.years, body.goal_type, annual_return_percent=body.annual_return_percent,
+                         already_saved=body.already_saved, step_up_percent=body.step_up_percent)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail={"code": "bad_goal", "message": str(exc)}) from None
+    docs = load_confirmed(session_id, body.confirmed)
+    bank = docs.get("bank_statement")
+    if bank and bank.get("transactions"):
+        sp = spending_profile(bank["transactions"])
+        left = sp.get("left_over_per_month")
+        if left is not None:
+            plan["left_over_per_month"] = left
+            plan["affordable"] = left >= plan["monthly_needed"]
+    return plan

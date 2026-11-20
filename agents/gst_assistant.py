@@ -46,6 +46,7 @@ class Passage:
     text: str
     source_url: str
     keywords: tuple[str, ...]
+    new_act_section: str = ""
 
 
 class Corpus:
@@ -54,7 +55,7 @@ class Corpus:
         self.as_of: str = raw["as_of"]
         self.reviewed_by_ca: bool = bool(raw.get("reviewed_by_ca", False))
         self.passages = [
-            Passage(p["id"], p["section"], p["title"], " ".join(p["text"].split()), p["source_url"], tuple(str(k) for k in p.get("keywords", [])))
+            Passage(p["id"], p["section"], p["title"], " ".join(p["text"].split()), p["source_url"], tuple(str(k) for k in p.get("keywords", [])), p.get("new_act_section", ""))
             for p in raw["passages"]
         ]
         self._docs = [_tokens(f"{p.title} {p.title} {' '.join(p.keywords)} {p.section} {p.text}") for p in self.passages]

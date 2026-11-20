@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from rules_engine.config import RulesConfig
 from rules_engine.tax import breakeven_chapter_via
 from rules_engine.deductions import (
-    best_tax, donation_deduction, hra_exemption, load_tax_rules, saving_from_extra_deduction,
+    best_tax, donation_deduction, hra_exemption, load_tax_rules, professional_tax_deduction, saving_from_extra_deduction,
 )
 
 _MONTHS_IN_YEAR = 12
@@ -66,7 +66,7 @@ def _profile(docs: dict[str, dict]) -> dict | None:
             "pf_annual": float(pay.get("pf_employee_deduction") or 0) * _MONTHS_IN_YEAR if pay else 0.0}
 
 
-def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = False) -> list[Suggestion]:
+def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = False, age_band: str = "below_60") -> list[Suggestion]:
     rules = load_tax_rules()
     p = _profile(docs)
     if p is None:
@@ -74,10 +74,15 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     det = rules["detectors"]
     lim = rules["limits"]
     debits = _debits(docs.get("bank_statement"))
-    gross, via = p["gross"], p["via"]
+    gross = p["gross"]
+    # Professional tax (Sec 16(iii), up to Rs 2,500) is an old-regime deduction too, so it belongs with Chapter VI-A here.
+    via = p["via"] + professional_tax_deduction(docs.get("payslip"), rules)
     out: list[Suggestion] = []
 
-    base = best_tax(gross, via, config)
+    def save(extra: float):
+        return saving_from_extra_deduction(gross, via, extra, config, age_band)
+
+    base = best_tax(gross, via, config, age_band)
 
     # 1. Regime
     gap = abs(base.old.total_tax - base.new.total_tax)
@@ -101,7 +106,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
         ex = hra_exemption(p["basic"], p["hra"], rent_annual, metro, rules)
         already = p["implied_other_exemptions"] >= ex * 0.9 and ex > 0
         if ex > 0 and not already:
-            r = saving_from_extra_deduction(gross, via, ex, config)
+            r = save(ex)
             out.append(Suggestion(
                 "hra", "Claim HRA on the rent you pay",
                 f"You pay about {_inr(monthly_rent)} rent a month and your payslip shows HRA of {_inr(p['hra'] / _MONTHS_IN_YEAR)} a month. The exempt part works out to {_inr(ex)} a year.",
@@ -118,7 +123,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
         total = round(sum(float(t["amount"]) for t in donations), 2)
         adjusted = max(0.0, gross - config.regimes["old"].standard_deduction - via)
         ded = donation_deduction(total, "half_limit", adjusted, rules)
-        r = saving_from_extra_deduction(gross, via, ded, config)
+        r = save(ded)
         names = sorted({re.sub(r"[-_/]+", " ", t["description"]).strip().title() for t in donations})[:3]
         out.append(Suggestion(
             "donation", "Claim your charity donations (80G)",
@@ -131,7 +136,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     health = [t for t in debits if _matches(t["description"], det["health_insurance"])]
     paid_health = round(sum(float(t["amount"]) for t in health), 2)
     if not health:
-        r = saving_from_extra_deduction(gross, via, lim["section_80d_self"], config)
+        r = save(lim["section_80d_self"])
         out.append(Suggestion(
             "80d", "Health insurance can lower your tax", "We see no health-insurance premium in your bank statement.",
             r.saving, "A health policy for you or your parents, paid online, can be deducted up to ₹25,000 each (80D). It protects you first and saves tax second.", "sec-80d",
@@ -140,7 +145,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     # 5. NPS (80CCD(1B))
     nps = [t for t in debits if _matches(t["description"], det["nps"])]
     if not nps:
-        r = saving_from_extra_deduction(gross, via, lim["section_80ccd1b"], config)
+        r = save(lim["section_80ccd1b"])
         out.append(Suggestion(
             "nps", "An extra ₹50,000 deduction through NPS", "We see no NPS contribution in your bank statement.",
             r.saving, "NPS is retirement money that is locked till 60, so only consider it if that suits you.", "sec-80ccd1b",
@@ -151,7 +156,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     used80c = min(lim["section_80c"], p["pf_annual"] + life * 4)  # statement covers about a quarter of the year
     head = max(0.0, lim["section_80c"] - max(used80c, min(via, lim["section_80c"])))
     if head >= 10000:
-        r = saving_from_extra_deduction(gross, via, head, config)
+        r = save(head)
         out.append(Suggestion(
             "80c", f"{_inr(head)} of your 80C limit is unused", f"Your PF and other 80C payments we can see add up to about {_inr(lim['section_80c'] - head)} of the ₹1.5 lakh limit.",
             r.saving, "ELSS, PPF, a term-life premium or children's tuition fees all count. We do not recommend a specific product.", "sec-80c",
@@ -173,7 +178,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     owned = [x for x in out if x.id in ("hra", "donation") and x.evidence]
     if len(owned) >= 2:
         extra = sum(float(x.evidence.get("hra_exempt") or x.evidence.get("deduction") or 0) for x in owned)
-        combo = saving_from_extra_deduction(gross, via, extra, config)
+        combo = save(extra)
         if combo.saving > 0 and all(not x.saving for x in owned):
             out.append(Suggestion(
                 "combined", "Your claims together make the old regime cheaper",
@@ -186,7 +191,7 @@ def build_suggestions(docs: dict[str, dict], config: RulesConfig, metro: bool = 
     dropped = [x for x in out if x.id in hypothetical and not x.saving]
     out = [x for x in out if not (x.id in hypothetical and not x.saving)]
     if dropped and base.regime == "new":
-        be = breakeven_chapter_via(gross_salary_annual=gross, config=config)
+        be = breakeven_chapter_via(gross_salary_annual=gross, config=config) if age_band == "below_60" else None
         why = f"The new regime already costs {_inr(gap)} less than the old one for you."
         if be:
             why += f" Deductions like 80C, 80D, NPS and HRA would have to add up to more than {_inr(be)} before the old regime wins."

@@ -3,7 +3,7 @@ from rules_engine.config import load_merchant_categories, load_rules_config
 
 def test_loads_both_regimes():
     config = load_rules_config()
-    assert set(config.regimes) == {"old", "new"}
+    assert set(config.regimes) == {"old", "new", "old_senior", "old_super_senior"}  # old regime has age-based exemptions
     assert config.regimes["new"].standard_deduction == 75000
     assert config.regimes["old"].standard_deduction == 50000
 

@@ -118,3 +118,15 @@ def test_new_regime_surcharge_is_capped_at_25_percent():
     r = compute_tax(regime_name="new", taxable_income=80_000_000, config=CONFIG)
     assert r.surcharge == pytest.approx(r.tax_after_rebate * 0.25)
     assert compute_tax(regime_name="old", taxable_income=80_000_000, config=CONFIG).surcharge > r.surcharge * 0.9  # old regime goes to 37%
+
+
+def test_senior_citizens_get_a_higher_old_regime_exemption():
+    # taxable 4,00,000: under 60 pays 5% on 1.5L (rebated to 0 anyway); check above the rebate line instead
+    base = compute_tax(regime_name="old", taxable_income=900_000, config=CONFIG).total_tax
+    senior = compute_tax(regime_name="old_senior", taxable_income=900_000, config=CONFIG).total_tax
+    super_senior = compute_tax(regime_name="old_super_senior", taxable_income=900_000, config=CONFIG).total_tax
+    assert base == pytest.approx((12_500 + 80_000) * 1.04)       # 2.5-5L at 5%, 5-9L at 20%
+    assert senior == pytest.approx((10_000 + 80_000) * 1.04)     # exemption up to 3L
+    assert super_senior == pytest.approx(80_000 * 1.04)          # exemption up to 5L
+    # surcharge bands still apply to seniors (they are on the old regime)
+    assert compute_tax(regime_name="old_senior", taxable_income=60_000_000, config=CONFIG).surcharge > 0

@@ -68,8 +68,9 @@ def _tax_after_rebate(taxable_income: float, regime: RegimeConfig) -> float:
 def _surcharge_rate(total_income: float, regime_name: str, config: RulesConfig) -> tuple[float, float]:
     """(rate percent, lower limit of the band). A band applies only to income ABOVE its lower limit."""
     rate, lower = 0.0, 0.0
+    base = regime_name.split("_")[0]  # "old_senior" and "old_super_senior" use the old regime's bands
     for band in config.surcharge_bands:
-        if band.regime is not None and band.regime != regime_name:
+        if band.regime is not None and band.regime != base:
             continue
         upper = band.total_income_to if band.total_income_to is not None else float("inf")
         if band.total_income_from < total_income <= upper and band.rate_percent >= rate:

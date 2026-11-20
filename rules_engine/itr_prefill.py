@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from rules_engine.ais import cross_check_tds
 from rules_engine.config import RulesConfig
-from rules_engine.deductions import best_tax
+from rules_engine.deductions import best_tax, professional_tax_deduction
 from rules_engine.itr import suggest_itr_form
 
 SCHEMA = "paisa-pilot-itr-prefill/1"
@@ -22,7 +22,7 @@ def _inr(x: float) -> str:
     return inr(x)
 
 
-def build_itr_prefill(docs: dict[str, dict], config: RulesConfig) -> dict | None:
+def build_itr_prefill(docs: dict[str, dict], config: RulesConfig, age_band: str = "below_60") -> dict | None:
     f16, pay, ais, bank = docs.get("form16"), docs.get("payslip"), docs.get("ais"), docs.get("bank_statement")
     if not (f16 and f16.get("gross_salary_annual")) and not (pay and pay.get("monthly_gross_salary")):
         return None
@@ -40,7 +40,8 @@ def build_itr_prefill(docs: dict[str, dict], config: RulesConfig) -> dict | None
     entries = list((ais or {}).get("tds_entries", []))
     interest = round(sum(float(e.get("amount_paid") or 0) for e in entries if str(e.get("section") or "").upper() in _INTEREST_SECTIONS), 2)
     gross_total = gross + interest
-    t = best_tax(gross_total, via, config)
+    prof_tax = professional_tax_deduction(pay)
+    t = best_tax(gross_total, via + prof_tax, config, age_band)
     chosen = t.old if t.regime == "old" else t.new
 
     f16_tds = float((f16 or {}).get("tds_deducted_annual") or 0)
@@ -89,7 +90,7 @@ def build_itr_prefill(docs: dict[str, dict], config: RulesConfig) -> dict | None
             "salary_gross": gross, "interest_from_deposits": interest, "gross_total_income": gross_total,
             "salary_source": source,
         },
-        "deductions": {"old_regime_chapter_vi_a": via, "standard_deduction_old": config.regimes["old"].standard_deduction, "standard_deduction_new": config.regimes["new"].standard_deduction},
+        "deductions": {"old_regime_chapter_vi_a": via, "professional_tax_old_regime": prof_tax, "age_band": age_band, "standard_deduction_old": config.regimes["old"].standard_deduction, "standard_deduction_new": config.regimes["new"].standard_deduction},
         "tax": {
             "old_regime_tax": t.old.total_tax, "new_regime_tax": t.new.total_tax, "cheaper_regime": t.regime,
             "tax_on_cheaper_regime": chosen.total_tax, "taxable_income_cheaper_regime": chosen.taxable_income,

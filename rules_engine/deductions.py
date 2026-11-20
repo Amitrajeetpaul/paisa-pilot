@@ -31,15 +31,20 @@ class BestTax:
     new: TaxResult
 
 
-def best_tax(gross_salary: float, old_regime_deductions: float, config: RulesConfig) -> BestTax:
+OLD_REGIME_BY_AGE = {"below_60": "old", "60_79": "old_senior", "80_plus": "old_super_senior"}
+
+
+def best_tax(gross_salary: float, old_regime_deductions: float, config: RulesConfig, age_band: str = "below_60") -> BestTax:
     """Tax under both regimes on the same salary; old_regime_deductions are Chapter VI-A
-    deductions plus exemptions such as HRA, which only the old regime allows."""
-    old_t = max(0.0, gross_salary - config.regimes["old"].standard_deduction - old_regime_deductions)
+    deductions plus exemptions such as HRA and professional tax, which only the old regime allows.
+    Senior citizens get a higher basic exemption in the old regime (the new regime is the same for all ages)."""
+    old_name = OLD_REGIME_BY_AGE.get(age_band, "old")
+    old_t = max(0.0, gross_salary - config.regimes[old_name].standard_deduction - old_regime_deductions)
     new_t = max(0.0, gross_salary - config.regimes["new"].standard_deduction)
-    old = compute_tax(regime_name="old", taxable_income=old_t, config=config)
+    old = compute_tax(regime_name=old_name, taxable_income=old_t, config=config)
     new = compute_tax(regime_name="new", taxable_income=new_t, config=config)
     winner = old if old.total_tax < new.total_tax else new
-    return BestTax(regime=winner.regime, total_tax=winner.total_tax, old=old, new=new)
+    return BestTax(regime="old" if winner is old else "new", total_tax=winner.total_tax, old=old, new=new)
 
 
 @dataclass(frozen=True)
@@ -53,9 +58,9 @@ class ExtraDeductionResult:
     note: str
 
 
-def saving_from_extra_deduction(gross_salary: float, current_old_deductions: float, extra: float, config: RulesConfig) -> ExtraDeductionResult:
-    before = best_tax(gross_salary, current_old_deductions, config)
-    after = best_tax(gross_salary, current_old_deductions + max(0.0, extra), config)
+def saving_from_extra_deduction(gross_salary: float, current_old_deductions: float, extra: float, config: RulesConfig, age_band: str = "below_60") -> ExtraDeductionResult:
+    before = best_tax(gross_salary, current_old_deductions, config, age_band)
+    after = best_tax(gross_salary, current_old_deductions + max(0.0, extra), config, age_band)
     saving = round(before.total_tax - after.total_tax, 2)
     old_saving = round(before.old.total_tax - after.old.total_tax, 2)
     if saving <= 0 and old_saving > 0:
@@ -88,3 +93,11 @@ def donation_deduction(amount: float, category: str, adjusted_gti: float, rules:
     if cat["limited"]:
         qualifying = min(amount, max(0.0, adjusted_gti) * rules["limits"]["donation_qualifying_limit_percent"] / 100)
     return round(qualifying * cat["percent"] / 100, 2)
+
+
+def professional_tax_deduction(payslip: dict | None, rules: dict | None = None) -> float:
+    """Sec 16(iii): professional tax paid is deductible from salary in the old regime, up to Rs 2,500 a year."""
+    if not payslip:
+        return 0.0
+    cap = float((rules or load_tax_rules())["limits"].get("professional_tax", 2500))
+    return round(min(cap, float(payslip.get("professional_tax") or 0) * 12), 2)

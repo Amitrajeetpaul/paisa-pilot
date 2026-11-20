@@ -171,6 +171,8 @@ def loan_switch_saving_tool(
     new_annual_rate_percent: float,
     processing_fee_percent: float,
     foreclosure_charge_percent: float = 0.0,
+    loan_type: str = "floating",
+    other_costs: float = 0.0,
 ) -> dict:
     """Compares staying on a current loan vs switching to a new rate for the
     same remaining tenure, net of the processing fee (with 18% GST) and any foreclosure charge.
@@ -186,8 +188,12 @@ def loan_switch_saving_tool(
         new_annual_rate_percent=new_annual_rate_percent,
         processing_fee_percent=processing_fee_percent,
         foreclosure_charge_percent=foreclosure_charge_percent,
+        loan_type=loan_type,
+        other_costs=other_costs,
     )
     return {
+        "loan_type": loan_type,
+        "rule_note": result.rule_note,
         "new_monthly_emi": result.new_monthly_emi,
         "processing_fee": result.processing_fee,
         "foreclosure_charge": result.foreclosure_charge,
@@ -207,11 +213,16 @@ def fd_maturity_tool(principal: float, annual_rate_percent: float, tenure_months
 def sip_future_value_tool(monthly_amount: float, annual_return_percent: float, tenure_months: int) -> dict:
     """Computes SIP future value for a monthly investment and an assumed
     annual return (always stated by the user, or clearly labeled hypothetical)."""
-    result = sip_future_value(monthly_amount=monthly_amount, annual_return_percent=annual_return_percent, tenure_months=tenure_months)
-    return {"future_value": result.future_value, "gain": result.gain, "total_invested": result.total_invested}
+    from rules_engine.goals import clamp_return
+
+    rate, capped = clamp_return(annual_return_percent)  # AMFI: calculators stay within 2%-13% a year
+    result = sip_future_value(monthly_amount=monthly_amount, annual_return_percent=rate, tenure_months=tenure_months)
+    return {"future_value": result.future_value, "gain": result.gain, "total_invested": result.total_invested,
+            "assumed_return_percent": rate, "return_was_capped": capped,
+            "disclaimer": "Returns are not guaranteed; past performance may or may not be sustained."}
 
 
-def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6, basis: str = "net pay") -> dict:
+def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6, basis: str = "net pay", income_type: str = "salaried") -> dict:
     """Computes an emergency fund target as months of expenses.
 
     Args:
@@ -219,8 +230,10 @@ def emergency_fund_target_tool(monthly_expense_basis: float, months: int = 6, ba
         months: Months of expenses to hold (default 6).
         basis: "spending" if the figure is real monthly spending, otherwise "net pay" (a rougher stand-in).
     """
+    if income_type != "salaried" and months == 6:
+        months = 9  # freelancers and business owners: income is uneven, so planners suggest 9-12 months
     result = emergency_fund_target(monthly_expense_basis, months=months)
-    return {"target_amount": result.target_amount, "months": result.months, "monthly_expense_basis": monthly_expense_basis, "basis": basis}
+    return {"target_amount": result.target_amount, "months": result.months, "monthly_expense_basis": monthly_expense_basis, "basis": basis, "income_type": income_type}
 
 
 def savings_target_tool(net_monthly_income: float, savings_rate_percent: float = 20) -> dict:
@@ -256,6 +269,8 @@ def insurance_guide_tool(annual_income: float) -> dict:
         "health_explainer": INSURANCE_TYPES["health"],
         "term_cover_multiple": cover.multiple,
         "suggested_term_cover": cover.suggested_cover,
+        "term_cover_upper": round(annual_income * 15, 2),
+        "method_note": "10 to 15 times yearly income is only a quick check. A better figure is your family's future needs plus any loans, minus savings and existing cover.",
     }
 
 
@@ -483,6 +498,21 @@ def spending_profile_tool(transactions: list[dict]) -> dict:
     return spending_profile(transactions)
 
 
+def goal_plan_tool(cost_today: float, years: float, goal_type: str = "other", already_saved: float = 0.0, annual_return_percent: float | None = None) -> dict:
+    """Plans a goal: its future cost after inflation, and the monthly amount needed (category-level only).
+
+    Args:
+        cost_today: What the goal would cost today, in rupees.
+        years: Years until the goal.
+        goal_type: education, medical, home, wedding, car, travel, retirement, emergency or other.
+        already_saved: Money already set aside for it.
+        annual_return_percent: Optional assumed return (kept within 2%-13%).
+    """
+    from rules_engine.goals import plan_goal
+
+    return plan_goal(cost_today, years, goal_type, annual_return_percent=annual_return_percent, already_saved=already_saved)
+
+
 LEAK_FIXER_TOOLS = [
     FunctionTool(func=detect_recurring_charges_tool),
     FunctionTool(func=loan_switch_saving_tool),
@@ -506,6 +536,7 @@ CA_ASSISTANT_TOOLS = [
 ]
 
 CONSULTANT_TOOLS = [
+    FunctionTool(func=goal_plan_tool),
     FunctionTool(func=capital_gains_tool),
     FunctionTool(func=presumptive_tax_tool),
     FunctionTool(func=spending_profile_tool),
@@ -526,3 +557,4 @@ CONSULTANT_TOOLS = [
     FunctionTool(func=sip_future_value_tool),
     FunctionTool(func=loan_switch_saving_tool),
 ]
+
