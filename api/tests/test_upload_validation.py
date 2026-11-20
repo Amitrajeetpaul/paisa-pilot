@@ -62,3 +62,14 @@ def test_live_read_failure_is_a_friendly_502_not_a_500(monkeypatch):
     ).json()["upload_key"]
     r = client.post(f"/sessions/{sid}/documents/payslip/read", json={"upload_key": key})
     assert r.status_code == 502 and r.json()["detail"]["code"] == "read_failed"
+
+
+def test_live_mode_without_a_gemini_key_says_so_plainly(monkeypatch):
+    monkeypatch.setenv("READER_MODE", "live")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    sid = _session()
+    key = client.post(
+        f"/sessions/{sid}/documents/payslip/upload", files={"file": ("a.pdf", b"%PDF-1.4 x", "application/pdf")}
+    ).json()["upload_key"]
+    r = client.post(f"/sessions/{sid}/documents/payslip/read", json={"upload_key": key})
+    assert r.status_code == 503 and r.json()["detail"]["code"] == "reader_unavailable"

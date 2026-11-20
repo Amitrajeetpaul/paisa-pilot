@@ -58,17 +58,19 @@ class SqliteDatabase(AppDatabase):
             self._conn.executescript(_SCHEMA)
             self._conn.commit()
 
-    def create_session(self) -> str:
-        session_id = str(uuid.uuid4())
+    def create_session(self, session_id: str | None = None) -> str:
+        session_id = session_id or str(uuid.uuid4())
         with self._lock:
-            self._conn.execute("INSERT INTO sessions (id) VALUES (?)", (session_id,))
+            self._conn.execute("INSERT OR IGNORE INTO sessions (id) VALUES (?)", (session_id,))
             self._conn.commit()
         return session_id
 
     def session_exists(self, session_id: str) -> bool:
         with self._lock:
             row = self._conn.execute("SELECT 1 FROM sessions WHERE id = ?", (session_id,)).fetchone()
-        return row is not None
+        if row is not None:
+            return True
+        return self._rebuild_if_sample(session_id)
 
     def save_confirmed_fields(self, session_id: str, document_type: str, fields: dict) -> None:
         with self._lock:

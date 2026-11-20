@@ -15,8 +15,8 @@ from abc import ABC, abstractmethod
 
 class AppDatabase(ABC):
     @abstractmethod
-    def create_session(self) -> str:
-        """Returns a new session_id. No auth system in this demo -- see
+    def create_session(self, session_id: str | None = None) -> str:
+        """Returns a new session_id (or creates the one given; creating an existing id is a no-op). No auth system in this demo -- see
         LIMITATIONS.md; a session_id is a bearer capability, not a login."""
 
     @abstractmethod
@@ -45,3 +45,13 @@ class AppDatabase(ABC):
     def save_record(self, kind: str, record: dict, key: str | None = None) -> None:
         """Append a small non-session record ("waitlist", "events", "feedback").
         With a key, saving the same key again replaces it (used to dedupe emails)."""
+
+    def _rebuild_if_sample(self, session_id: str) -> bool:
+        """A sample session this instance has not seen is recreated from the fixtures
+        (serverless instances do not share memory). Real sessions are never recreated."""
+        from api.sample import SAMPLE_PREFIX, seed_sample_session
+
+        if session_id.startswith(SAMPLE_PREFIX):
+            seed_sample_session(self, session_id)
+            return True
+        return False

@@ -76,6 +76,15 @@ def read_uploaded_document(session_id: str, document_type: str, body: dict) -> d
     if mode == "fixture":
         result = read_document(document_type, mode="fixture")
     else:
+        if not os.environ.get("GEMINI_API_KEY"):
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "code": "reader_unavailable",
+                    "message": "Reading uploaded documents isn't switched on in this demo yet. "
+                    "Try the sample profile to see the whole app.",
+                },
+            )
         try:
             content = get_storage().read(upload_key)
         except FileNotFoundError as exc:

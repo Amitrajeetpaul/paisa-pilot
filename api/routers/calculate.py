@@ -54,6 +54,15 @@ def get_source_trail(session_id: str, card_id: str) -> dict:
     _require_session(session_id)
     entry = get_db().get_source_trail_entry(session_id, card_id)
     if entry is None:
+        # Trails are written when a result is calculated. If this instance has not calculated
+        # it yet (serverless instances do not share memory), recalculate, then look again.
+        for recompute in (calculate_money_finder, calculate_leak_fixer):
+            try:
+                recompute(session_id)
+            except HTTPException:
+                pass
+        entry = get_db().get_source_trail_entry(session_id, card_id)
+    if entry is None:
         raise HTTPException(status_code=404, detail="No source trail for this card_id")
     return entry
 

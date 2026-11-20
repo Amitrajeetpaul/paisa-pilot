@@ -22,13 +22,15 @@ class FirestoreDatabase(AppDatabase):
 
         self._client = firestore.Client(project=project)
 
-    def create_session(self) -> str:
-        session_id = str(uuid.uuid4())
+    def create_session(self, session_id: str | None = None) -> str:
+        session_id = session_id or str(uuid.uuid4())
         self._client.collection("sessions").document(session_id).set({"created_at": _utc_now_iso(), "expire_at": _expiry()})
         return session_id
 
     def session_exists(self, session_id: str) -> bool:
-        return self._client.collection("sessions").document(session_id).get().exists
+        if self._client.collection("sessions").document(session_id).get().exists:
+            return True
+        return self._rebuild_if_sample(session_id)
 
     def save_confirmed_fields(self, session_id: str, document_type: str, fields: dict) -> None:
         (
