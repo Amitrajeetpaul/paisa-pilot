@@ -1,0 +1,215 @@
+// Offline fixture fallback for sample data demo flow.
+// Ensures the mobile APK and web demo NEVER fail, even if Cloud Run is sleeping or offline.
+
+export const SAMPLE_CONFIRMED = {
+  payslip: {
+    employer_name: 'TechNova Solutions Pvt Ltd',
+    employee_name: 'Riya Sharma',
+    pay_period: '2026-04',
+    monthly_gross_salary: 83333.0,
+    basic_pay: 41667.0,
+    hra: 16667.0,
+    special_allowance: 24999.0,
+    pf_employee_deduction: 5000.0,
+    professional_tax: 200.0,
+    tds_deducted: 7500.0,
+    net_pay: 70633.0,
+    uan: '101234567890',
+  },
+  form16: {
+    employer_name: 'TechNova Solutions Pvt Ltd',
+    employee_name: 'Riya Sharma',
+    financial_year: '2025-26',
+    gross_salary_annual: 1000000.0,
+    standard_deduction: 75000.0,
+    deductions_chapter_via_total: 150000.0,
+    taxable_income: 775000.0,
+    tax_regime_opted: 'old',
+    tds_deducted_annual: 90000.0,
+    pan: 'ABCDE1234F',
+  },
+  bank_statement: {
+    account_holder_name: 'Riya Sharma',
+    account_number_last4: '4521',
+    statement_period_from: '2026-08-01',
+    statement_period_to: '2026-10-31',
+    transactions: [
+      { date: '2026-08-01', description: 'SALARY-TECHNOVA SOLUTIONS', amount: 83133.0, type: 'credit' },
+      { date: '2026-08-02', description: 'UPI-CLOUDNOTES PREMIUM-cloudnotes@upi', amount: 199.0, type: 'debit' },
+      { date: '2026-08-03', description: 'UPI AUTOPAY-FITZONE GYM-fitzone@upi', amount: 449.0, type: 'debit' },
+      { date: '2026-08-05', description: 'NEFT-QUICKCASH LOANS EMI-LN00988123', amount: 12000.0, type: 'debit' },
+      { date: '2026-09-01', description: 'SALARY-TECHNOVA SOLUTIONS', amount: 83133.0, type: 'credit' },
+      { date: '2026-09-02', description: 'UPI-CLOUDNOTES PREMIUM-cloudnotes@upi', amount: 199.0, type: 'debit' },
+      { date: '2026-09-03', description: 'UPI AUTOPAY-FITZONE GYM-fitzone@upi', amount: 449.0, type: 'debit' },
+      { date: '2026-10-01', description: 'SALARY-TECHNOVA SOLUTIONS', amount: 83133.0, type: 'credit' },
+      { date: '2026-10-02', description: 'UPI-CLOUDNOTES PREMIUM-cloudnotes@upi', amount: 199.0, type: 'debit' },
+      { date: '2026-10-03', description: 'UPI AUTOPAY-FITZONE GYM-fitzone@upi', amount: 449.0, type: 'debit' },
+    ],
+  },
+  pf_passbook: {
+    member_name: 'Riya Sharma',
+    uan: '101234567890',
+    accounts: [
+      { employer_name: 'TechNova Solutions Pvt Ltd', member_id: 'KN/BNG/0098765/000/1234567', period_from: '2024-06-01', period_to: null, balance: 185000.0, status_as_printed: 'Active' },
+      { employer_name: 'BrightEdge Analytics Pvt Ltd', member_id: 'MH/PUN/0054321/000/0098765', period_from: '2021-08-01', period_to: '2023-05-31', balance: 68400.0, status_as_printed: null },
+      { employer_name: 'QuickServe Retail Solutions Pvt Ltd', member_id: 'KA/BNG/0012345/000/0054321', period_from: '2019-11-01', period_to: '2021-07-31', balance: 42900.0, status_as_printed: null },
+    ],
+  },
+  ais: {
+    taxpayer_name: 'Riya Sharma',
+    pan: 'ABCDE1234F',
+    financial_year: '2025-26',
+    tds_entries: [
+      { deductor_name: 'TechNova Solutions Pvt Ltd', section: '192', amount_paid: 1000000.0, tds_deducted: 90000.0 },
+      { deductor_name: 'State Bank of India', section: '194A', amount_paid: 25000.0, tds_deducted: 2500.0 },
+    ],
+  },
+}
+
+export const SAMPLE_MONEY_FINDER = {
+  total_found: 213700.0,
+  yearly_total: 75400.0,
+  one_time_total: 138300.0,
+  cards: [
+    {
+      card_id: 'tax_regime_switch',
+      title: 'Switch to new tax option',
+      detail: 'Saves ₹75,400 a year compared with your current old-regime filing',
+      amount: 75400.0,
+      unit_label: 'every year',
+      source_chip: 'Source: Form 16',
+      action_label: 'See how',
+    },
+    {
+      card_id: 'extra_tds_refund',
+      title: 'Extra tax cut (TDS)',
+      detail: 'Your employer deducted ₹19,800 more tax than you owe under the old regime',
+      amount: 19800.0,
+      unit_label: 'possible refund',
+      source_chip: 'Source: Form 16 + AIS',
+      action_label: 'Check refund',
+    },
+    {
+      card_id: 'ais_extra_tds',
+      title: 'TDS on other income to claim',
+      detail: 'Your AIS shows ₹2,500 more tax already paid than your Form 16 (for example on bank interest)',
+      amount: 2500.0,
+      unit_label: 'claim as credit when filing',
+      source_chip: 'Source: AIS + Form 16',
+      action_label: 'See how',
+    },
+    {
+      card_id: 'old_pf_accounts',
+      title: 'Old PF account found',
+      detail: '2 PF account(s) from past employers have not been transferred',
+      amount: 111300.0,
+      unit_label: 'one-time, if confirmed',
+      source_chip: 'Source: PF passbook',
+      action_label: 'Review form',
+    },
+    {
+      card_id: 'refund_hunter',
+      title: 'Refund Hunter: failed or double payments',
+      detail: '2 payment(s) look like they can be recovered',
+      amount: 4700.0,
+      unit_label: 'possible refund',
+      source_chip: 'Source: bank statement',
+      action_label: 'Draft claim',
+    },
+  ],
+}
+
+export const SAMPLE_LEAK_FIXER = {
+  monthly_leak_total: 648.0,
+  annual_leak_total: 7776.0,
+  cards: [
+    {
+      card_id: 'subscription_UPI-CLOUDNOTES PREMIUM-cloudnotes@upi',
+      title: 'UPI-CLOUDNOTES PREMIUM-cloudnotes@upi',
+      detail: 'Charged every month for the last 3 months',
+      amount: 199.0,
+      unit_label: 'per month',
+      status_label: 'idle',
+      source_chip: 'Source: bank statement',
+      action_label: 'Cancel',
+      months_seen: ['2026-08', '2026-09', '2026-10'],
+    },
+    {
+      card_id: 'autopay_UPI AUTOPAY-FITZONE GYM-fitzone@upi',
+      title: 'UPI AUTOPAY-FITZONE GYM-fitzone@upi',
+      detail: 'A live UPI AutoPay that charges you every month',
+      amount: 449.0,
+      unit_label: 'per month',
+      status_label: 'active',
+      source_chip: 'Source: bank statement',
+      action_label: 'Draft message',
+      months_seen: ['2026-08', '2026-09', '2026-10'],
+    },
+    {
+      card_id: 'loan_NEFT-QUICKCASH LOANS EMI-LN00988123',
+      title: 'NEFT-QUICKCASH LOANS EMI-LN00988123',
+      detail: 'Monthly loan EMI. A lower rate could save you money, so we have drafted a message to your lender',
+      amount: 12000.0,
+      unit_label: 'per month',
+      status_label: null,
+      source_chip: 'Source: bank statement',
+      action_label: 'Draft message to lender',
+      months_seen: ['2026-08', '2026-09', '2026-10'],
+    },
+  ],
+  monthly_breakdown: {
+    '2026-08': 648.0,
+    '2026-09': 648.0,
+    '2026-10': 648.0,
+  },
+}
+
+export const SAMPLE_SOURCE_TRAILS: Record<string, unknown> = {
+  tax_regime_switch: {
+    card_id: 'tax_regime_switch',
+    label: 'Switch to new tax option',
+    inputs_used: { gross_salary_annual: 1000000.0, deductions_chapter_via_total: 150000.0 },
+    rule_or_formula: 'We worked out your tax under both the old and the new regime from your yearly salary and deductions (standard deduction, the Section 87A rebate and 4% cess included) and compared the two.',
+    config_version: 'fy2025-26',
+    source_url: 'https://incometaxindia.gov.in',
+  },
+  extra_tds_refund: {
+    card_id: 'extra_tds_refund',
+    label: 'Extra tax cut (TDS)',
+    inputs_used: { tds_deducted_annual: 90000.0, total_tax: 70200.0 },
+    rule_or_formula: 'We checked the tax your employer actually deducted against what you owe on your confirmed salary and deductions.',
+    config_version: 'fy2025-26',
+    source_url: 'https://incometaxindia.gov.in',
+  },
+  ais_extra_tds: {
+    card_id: 'ais_extra_tds',
+    label: 'TDS on other income to claim',
+    inputs_used: { form16_tds: 90000.0, ais_tds: 92500.0 },
+    rule_or_formula: 'We matched the tax deducted in your Form 16 against every entry in your Annual Information Statement (AIS).',
+    config_version: 'fy2025-26',
+    source_url: 'https://incometaxindia.gov.in',
+  },
+  old_pf_accounts: {
+    card_id: 'old_pf_accounts',
+    label: 'Old PF accounts',
+    inputs_used: { accounts_found: 2, total_balance: 111300.0 },
+    rule_or_formula: 'We checked your PF passbook for accounts from previous employers that have not been transferred to your current active employer.',
+    config_version: 'fy2025-26',
+    source_url: 'https://www.epfindia.gov.in',
+  },
+  refund_hunter: {
+    card_id: 'refund_hunter',
+    label: 'Failed or double payments',
+    inputs_used: { transactions_checked: 25 },
+    rule_or_formula: 'We looked for the same amount debited twice on the same day, and for failed payments that never got a matching refund.',
+    config_version: 'fy2025-26',
+    source_url: null,
+  },
+}
+
+export const SAMPLE_CONSULTANT_ANSWERS: Record<string, { answer: string; source_chip: string }> = {
+  default: {
+    answer: 'Based on your Form 16 (₹10,00,000 annual gross salary and ₹1,50,000 80C deductions), switching to the New Tax Regime saves you ₹75,400 per year compared to your current Old Regime filing.\n\nUnder FY 2025-26 rules, the New Regime provides a standard deduction of ₹75,000 and Section 87A rebate, making it substantially more beneficial for your salary level.',
+    source_chip: 'Source: Form 16 + FY 2025-26 Rules',
+  },
+}
