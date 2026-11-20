@@ -125,7 +125,7 @@ function FieldConfirmScreen() {
         ))}
       </div>
 
-      <h1 className="text-ink mt-5 text-2xl font-extrabold">{t('confirm.title')}</h1>
+      <h1 className="text-ink mt-5 text-2xl font-extrabold">{documentType === 'form16' ? t('confirm.title.form16') : t('confirm.title')}</h1>
       <p className="text-muted mt-2 text-sm leading-relaxed">{t('confirm.calm')}</p>
       <ReadWarning
         warnings={readResult?.warnings ?? []}

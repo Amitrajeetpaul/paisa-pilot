@@ -12,6 +12,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from agents.consultant import answer_question
+from api.confirmed import load_confirmed
 from api.db import get_db
 
 router = APIRouter(prefix="/sessions/{session_id}/consultant", tags=["consultant"])
@@ -21,6 +22,7 @@ DOCUMENT_TYPES = ["payslip", "form16", "bank_statement", "pf_passbook", "ais"]
 
 class AskRequest(BaseModel):
     question: str
+    confirmed: dict[str, dict] | None = None
 
 
 class AskResponse(BaseModel):
@@ -37,12 +39,7 @@ def _require_session(session_id: str) -> None:
 @router.post("/ask", response_model=AskResponse)
 def ask_consultant(session_id: str, body: AskRequest) -> AskResponse:
     _require_session(session_id)
-    db = get_db()
-    confirmed = {}
-    for doc_type in DOCUMENT_TYPES:
-        fields = db.get_confirmed_fields(session_id, doc_type)
-        if fields is not None:
-            confirmed[doc_type] = fields
+    confirmed = load_confirmed(session_id, body.confirmed)
 
     result = answer_question(confirmed, body.question, mode=os.environ.get("READER_MODE", "fixture"))
     return AskResponse(answer=result.answer, guardrail_flagged=result.guardrail_flagged, source_chip=result.source_chip)

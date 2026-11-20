@@ -5,6 +5,15 @@ import {
   SAMPLE_SOURCE_TRAILS,
   SAMPLE_CONSULTANT_ANSWERS,
 } from './sampleFallback'
+import {
+  clearClientSession,
+  getConfirmedDocs,
+  getTrails,
+  isLocalSession,
+  isSampleSession,
+  saveConfirmedDoc,
+  saveTrails,
+} from './clientSession'
 
 // Local dev: Vite's dev-server proxy (vite.config.ts) forwards "/api" to
 // the FastAPI server, so the default is enough. Production (Cloud Run):
@@ -44,17 +53,20 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>
 }
 
+/** Values the browser holds for a stateless ("local-") session, sent with each request. */
+function stateBody(sessionId: string, extra: Record<string, unknown> = {}): string {
+  return JSON.stringify(isLocalSession(sessionId) ? { ...extra, confirmed: getConfirmedDocs(sessionId) } : extra)
+}
+
+/** The built-in offline sample may stand in ONLY for the sample profile, never for a person's own data. */
+const sampleOnly = (sessionId: string) => isSampleSession(sessionId)
+
 export const api = {
-  giveConsent: async (consentGiven: boolean) => {
-    try {
-      return await request<{ session_id: string }>('/consent', {
-        method: 'POST',
-        body: JSON.stringify({ consent_given: consentGiven }),
-      })
-    } catch {
-      return { session_id: `offline-session-${Date.now()}` }
-    }
-  },
+  giveConsent: (consentGiven: boolean) =>
+    request<{ session_id: string }>('/consent', {
+      method: 'POST',
+      body: JSON.stringify({ consent_given: consentGiven }),
+    }),
 
   createSampleSession: async () => {
     try {
@@ -64,58 +76,67 @@ export const api = {
       )
     } catch (e) {
       console.warn('Backend unavailable, using built-in offline sample fixture', e)
-      return {
-        session_id: 'sample-offline-riya-sharma',
-        sample_data: true,
-        confirmed: SAMPLE_CONFIRMED,
-      }
+      return { session_id: 'sample-offline-riya-sharma', sample_data: true, confirmed: SAMPLE_CONFIRMED }
     }
   },
 
-  uploadDocument: async (sessionId: string, documentType: string, file: File) => {
+  /** Upload and read in one request: the file is read in memory and never stored. */
+  extractDocument: async (sessionId: string, documentType: string, file: File) => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(`${BASE}/sessions/${sessionId}/documents/${documentType}/upload`, {
-      method: 'POST',
-      body: form,
-    })
+    const res = await fetch(`${BASE}/sessions/${sessionId}/documents/${documentType}/extract`, { method: 'POST', body: form })
     if (!res.ok) throw await apiError(res)
-    return res.json() as Promise<{ upload_key: string }>
+    return (await res.json()) as Record<string, unknown>
   },
 
-  readDocument: (sessionId: string, documentType: string, uploadKey: string) =>
-    request<Record<string, unknown>>(`/sessions/${sessionId}/documents/${documentType}/read`, {
-      method: 'POST',
-      body: JSON.stringify({ upload_key: uploadKey }),
-    }),
-
-  confirmDocument: (sessionId: string, documentType: string, fields: Record<string, unknown>) =>
-    request<{ status: string }>(`/sessions/${sessionId}/documents/${documentType}/confirm`, {
-      method: 'POST',
-      body: JSON.stringify(fields),
-    }),
+  confirmDocument: async (sessionId: string, documentType: string, fields: Record<string, unknown>) => {
+    const result = await request<{ status: string; fields?: Record<string, unknown> }>(
+      `/sessions/${sessionId}/documents/${documentType}/confirm`,
+      { method: 'POST', body: JSON.stringify(fields) },
+    )
+    if (isLocalSession(sessionId) && result.fields) saveConfirmedDoc(sessionId, documentType, result.fields)
+    return result
+  },
 
   getConfirmed: async (sessionId: string, documentType: string): Promise<Record<string, unknown>> => {
+    if (isLocalSession(sessionId)) {
+      const doc = getConfirmedDocs(sessionId)[documentType]
+      if (!doc) throw new Error('not confirmed yet')
+      return doc
+    }
     try {
       return await request<Record<string, unknown>>(`/sessions/${sessionId}/documents/${documentType}/confirmed`)
-    } catch {
-      return (SAMPLE_CONFIRMED as Record<string, Record<string, unknown>>)[documentType] ?? {}
+    } catch (e) {
+      if (sampleOnly(sessionId)) return (SAMPLE_CONFIRMED as Record<string, Record<string, unknown>>)[documentType] ?? {}
+      throw e
     }
   },
 
   calculateMoneyFinder: async (sessionId: string) => {
     try {
-      return await request<MoneyFinderResult>(`/sessions/${sessionId}/calculate/money-finder`, { method: 'POST' })
-    } catch {
-      return SAMPLE_MONEY_FINDER as MoneyFinderResult
+      const result = await request<MoneyFinderResult>(`/sessions/${sessionId}/calculate/money-finder`, {
+        method: 'POST',
+        body: stateBody(sessionId),
+      })
+      if (result.source_trails) saveTrails(sessionId, result.source_trails)
+      return result
+    } catch (e) {
+      if (sampleOnly(sessionId)) return SAMPLE_MONEY_FINDER as MoneyFinderResult
+      throw e
     }
   },
 
   calculateLeakFixer: async (sessionId: string) => {
     try {
-      return await request<LeakFixerResult>(`/sessions/${sessionId}/calculate/leak-fixer`, { method: 'POST' })
-    } catch {
-      return SAMPLE_LEAK_FIXER as LeakFixerResult
+      const result = await request<LeakFixerResult>(`/sessions/${sessionId}/calculate/leak-fixer`, {
+        method: 'POST',
+        body: stateBody(sessionId),
+      })
+      if (result.source_trails) saveTrails(sessionId, result.source_trails)
+      return result
+    } catch (e) {
+      if (sampleOnly(sessionId)) return SAMPLE_LEAK_FIXER as LeakFixerResult
+      throw e
     }
   },
 
@@ -123,9 +144,10 @@ export const api = {
     try {
       return await request<AgentRunResult>(`/sessions/${sessionId}/agents/${agent}/run`, {
         method: 'POST',
-        body: JSON.stringify({ question: question ?? null }),
+        body: stateBody(sessionId, { question: question ?? null }),
       })
-    } catch {
+    } catch (e) {
+      if (!sampleOnly(sessionId)) throw e
       return {
         agent,
         engine: 'offline',
@@ -152,22 +174,31 @@ export const api = {
       body: JSON.stringify({ card_id: cardId, note, session_id: sessionId }),
     }),
 
-  deleteMyData: (sessionId: string) =>
-    request<{ deleted: boolean; uploads_deleted: number }>(`/sessions/${sessionId}`, { method: 'DELETE' }),
+  deleteMyData: async (sessionId: string) => {
+    clearClientSession(sessionId)
+    try {
+      return await request<{ deleted: boolean; uploads_deleted: number }>(`/sessions/${sessionId}`, { method: 'DELETE' })
+    } catch {
+      return { deleted: true, uploads_deleted: 0 }
+    }
+  },
 
-  getSourceTrail: async (sessionId: string, cardId: string) => {
+  getSourceTrail: async (sessionId: string, cardId: string): Promise<SourceTrailEntry> => {
+    // Results carry their proof with them; use it first (works with no server memory).
+    const cached = getTrails(sessionId)[cardId]
+    if (cached) return cached as SourceTrailEntry
     try {
       return await request<SourceTrailEntry>(`/sessions/${sessionId}/source-trail/${cardId}`)
-    } catch {
-      const trail = (SAMPLE_SOURCE_TRAILS as Record<string, unknown>)[cardId] ?? {
+    } catch (e) {
+      if (!sampleOnly(sessionId)) throw e
+      return ((SAMPLE_SOURCE_TRAILS as Record<string, unknown>)[cardId] ?? {
         card_id: cardId,
         label: 'Calculation Details',
         inputs_used: {},
-        rule_or_formula: 'Calculated using audited FY 2025-26 rules engine.',
+        rule_or_formula: 'Calculated using the FY 2025-26 rules engine.',
         config_version: 'fy2025-26',
         source_url: 'https://incometaxindia.gov.in',
-      }
-      return trail as SourceTrailEntry
+      }) as SourceTrailEntry
     }
   },
 
@@ -175,9 +206,10 @@ export const api = {
     try {
       return await request<ConsultantAnswer>(`/sessions/${sessionId}/consultant/ask`, {
         method: 'POST',
-        body: JSON.stringify({ question }),
+        body: stateBody(sessionId, { question }),
       })
-    } catch {
+    } catch (e) {
+      if (!sampleOnly(sessionId)) throw e
       return {
         answer: SAMPLE_CONSULTANT_ANSWERS.default.answer,
         guardrail_flagged: false,
@@ -198,6 +230,7 @@ export interface MoneyFinderCard {
 }
 
 export interface MoneyFinderResult {
+  source_trails?: Record<string, unknown>
   total_found: number
   yearly_total: number
   one_time_total: number
@@ -217,6 +250,7 @@ export interface LeakFixerCard {
 }
 
 export interface LeakFixerResult {
+  source_trails?: Record<string, unknown>
   monthly_leak_total: number
   annual_leak_total: number
   cards: LeakFixerCard[]

@@ -70,8 +70,10 @@ def confirm_document(session_id: str, document_type: str, body: dict) -> dict:
             },
         )
 
-    get_db().save_confirmed_fields(session_id, document_type, confirmed.model_dump(mode="json"))
-    return {"status": "confirmed", "document_type": document_type}
+    fields = confirmed.model_dump(mode="json")
+    if not session_id.startswith("local-"):  # stateless sessions are held by the browser
+        get_db().save_confirmed_fields(session_id, document_type, fields)
+    return {"status": "confirmed", "document_type": document_type, "fields": fields}
 
 
 @router.get("/{document_type}/confirmed")

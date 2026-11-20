@@ -18,6 +18,7 @@ class Settings:
     sqlite_path: str
     gcs_bucket: str | None
     firestore_project: str | None
+    stateless_sessions: bool
 
 
 @lru_cache(maxsize=1)
@@ -30,4 +31,5 @@ def get_settings() -> Settings:
         sqlite_path=os.environ.get("SQLITE_PATH", "./.data/paisa_pilot.db"),
         gcs_bucket=os.environ.get("GCS_BUCKET"),
         firestore_project=os.environ.get("FIRESTORE_PROJECT"),
+        stateless_sessions=os.environ.get("STATELESS_SESSIONS", "0") == "1",
     )

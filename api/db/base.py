@@ -49,8 +49,11 @@ class AppDatabase(ABC):
     def _rebuild_if_sample(self, session_id: str) -> bool:
         """A sample session this instance has not seen is recreated from the fixtures
         (serverless instances do not share memory). Real sessions are never recreated."""
+        from api.confirmed import LOCAL_PREFIX
         from api.sample import SAMPLE_PREFIX, seed_sample_session
 
+        if session_id.startswith(LOCAL_PREFIX):
+            return True  # stateless session: the browser holds the data
         if session_id.startswith(SAMPLE_PREFIX):
             seed_sample_session(self, session_id)
             return True

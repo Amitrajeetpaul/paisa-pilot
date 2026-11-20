@@ -76,6 +76,12 @@ const en = {
 
   'confirm.stepLabel': 'Step 3 of 6 · Confirm',
   'confirm.title': 'Check your payslip',
+  'confirm.title.form16': 'Check your Form 16',
+  'confirm.field.gross_salary_annual': 'Gross salary (yearly)',
+  'confirm.field.standard_deduction': 'Standard deduction',
+  'confirm.field.deductions_chapter_via_total': 'Deductions claimed (80C, 80D and similar)',
+  'confirm.field.taxable_income': 'Taxable income',
+  'confirm.field.tds_deducted_annual': 'Tax deducted by your employer (TDS)',
   'confirm.title.pf_passbook': 'Check your PF accounts',
   'confirm.title.bank_statement': 'Check your transactions',
   'confirm.title.ais': 'Check your TDS entries',

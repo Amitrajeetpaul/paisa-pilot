@@ -10,6 +10,9 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from contextvars import ContextVar
+
+from api.confirmed import ConfirmedBody, load_confirmed
 from api.db import get_db
 from rules_engine.ais import cross_check_tds
 from rules_engine.config import load_merchant_categories, load_rules_config
@@ -34,19 +37,25 @@ def _require_session(session_id: str) -> None:
         raise HTTPException(status_code=404, detail="Unknown session -- call /consent first")
 
 
+# Source-trail entries produced while calculating one request; returned in the response so a
+# stateless client can show "how we worked it out" without the server remembering anything.
+_TRAILS: ContextVar[dict[str, dict]] = ContextVar("trails")
+
+
 def _save_trail(session_id: str, card_id: str, label: str, inputs_used: dict, rule: str, source_url: str | None = None) -> None:
-    get_db().save_source_trail_entry(
-        session_id,
-        card_id,
-        {
-            "card_id": card_id,
-            "label": label,
-            "inputs_used": inputs_used,
-            "rule_or_formula": rule,
-            "config_version": f"fy{RULES_CONFIG.fy}",
-            "source_url": source_url,
-        },
-    )
+    entry = {
+        "card_id": card_id,
+        "label": label,
+        "inputs_used": inputs_used,
+        "rule_or_formula": rule,
+        "config_version": f"fy{RULES_CONFIG.fy}",
+        "source_url": source_url,
+    }
+    _TRAILS.get({})[card_id] = entry
+    try:
+        get_db().save_source_trail_entry(session_id, card_id, entry)
+    except Exception:  # noqa: BLE001 - a missing store must never break a calculation
+        pass
 
 
 @router.get("/source-trail/{card_id}")
@@ -68,13 +77,14 @@ def get_source_trail(session_id: str, card_id: str) -> dict:
 
 
 @router.post("/calculate/money-finder")
-def calculate_money_finder(session_id: str) -> dict:
+def calculate_money_finder(session_id: str, body: ConfirmedBody | None = None) -> dict:
     _require_session(session_id)
-    db = get_db()
-    form16 = db.get_confirmed_fields(session_id, "form16")
-    pf_passbook = db.get_confirmed_fields(session_id, "pf_passbook")
-    bank_statement = db.get_confirmed_fields(session_id, "bank_statement")
-    ais = db.get_confirmed_fields(session_id, "ais")
+    _TRAILS.set({})
+    docs = load_confirmed(session_id, body.confirmed if body else None)
+    form16 = docs.get("form16")
+    pf_passbook = docs.get("pf_passbook")
+    bank_statement = docs.get("bank_statement")
+    ais = docs.get("ais")
 
     cards = []
     yearly_total = 0.0
@@ -187,6 +197,7 @@ def calculate_money_finder(session_id: str) -> dict:
         )
 
     return {
+        "source_trails": dict(_TRAILS.get({})),
         "total_found": round(yearly_total + one_time_total, 2),
         "yearly_total": round(yearly_total, 2),
         "one_time_total": round(one_time_total, 2),
@@ -195,9 +206,10 @@ def calculate_money_finder(session_id: str) -> dict:
 
 
 @router.post("/calculate/leak-fixer")
-def calculate_leak_fixer(session_id: str) -> dict:
+def calculate_leak_fixer(session_id: str, body: ConfirmedBody | None = None) -> dict:
     _require_session(session_id)
-    bank_statement = get_db().get_confirmed_fields(session_id, "bank_statement")
+    _TRAILS.set({})
+    bank_statement = load_confirmed(session_id, body.confirmed if body else None).get("bank_statement")
     if bank_statement is None:
         raise HTTPException(status_code=400, detail="Confirm a bank statement first")
 
@@ -256,6 +268,7 @@ def calculate_leak_fixer(session_id: str) -> dict:
     )
 
     return {
+        "source_trails": dict(_TRAILS.get({})),
         "monthly_leak_total": monthly_total,
         "annual_leak_total": round(monthly_total * 12, 2),  # the same recurring charges over twelve months
         "cards": cards,

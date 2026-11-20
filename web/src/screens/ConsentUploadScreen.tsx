@@ -63,9 +63,8 @@ export function ConsentUploadScreen() {
     setUploadingType(documentType)
     setError(null)
     try {
-      const { upload_key } = await api.uploadDocument(sessionId, documentType, file)
-      setUploadedKeys((prev) => ({ ...prev, [documentType]: upload_key }))
-      const readResult = await api.readDocument(sessionId, documentType, upload_key)
+      const readResult = await api.extractDocument(sessionId, documentType, file)
+      setUploadedKeys((prev) => ({ ...prev, [documentType]: file.name }))
       track('document_uploaded', documentType)
       navigate(`/app/confirm/${documentType}`, { state: { readResult } })
     } catch (e) {

@@ -81,6 +81,12 @@ const hi: Record<TranslationKey, string> = {
 
   'confirm.stepLabel': 'चरण 3 of 6 · पुष्टि करें',
   'confirm.title': 'अपनी पेस्लिप जाँचें',
+  'confirm.title.form16': 'अपना फ़ॉर्म 16 जाँचें',
+  'confirm.field.gross_salary_annual': 'कुल वार्षिक सैलरी',
+  'confirm.field.standard_deduction': 'स्टैंडर्ड डिडक्शन',
+  'confirm.field.deductions_chapter_via_total': 'दावा की गई कटौतियाँ (80C, 80D आदि)',
+  'confirm.field.taxable_income': 'कर योग्य आय',
+  'confirm.field.tds_deducted_annual': 'नियोक्ता द्वारा काटा गया टैक्स (TDS)',
   'confirm.title.pf_passbook': 'अपने PF खाते जाँचें',
   'confirm.title.bank_statement': 'अपने लेन-देन जाँचें',
   'confirm.title.ais': 'अपनी TDS प्रविष्टियाँ जाँचें',

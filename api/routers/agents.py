@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from agents.guardrail import check_guardrail
 from agents.runtime import AGENT_NAMES, run_agent
+from api.confirmed import load_confirmed
 from api.db import get_db
 
 router = APIRouter(prefix="/sessions/{session_id}/agents", tags=["agents"])
@@ -21,6 +22,7 @@ DOCUMENT_TYPES = ["payslip", "form16", "bank_statement", "pf_passbook", "ais"]
 
 class RunRequest(BaseModel):
     question: str | None = None
+    confirmed: dict[str, dict] | None = None
 
 
 class RunResponse(BaseModel):
@@ -39,11 +41,7 @@ def run_agent_endpoint(session_id: str, agent_name: str, body: RunRequest | None
     if agent_name not in AGENT_NAMES:
         raise HTTPException(status_code=404, detail=f"Unknown agent {agent_name!r}; choose from {list(AGENT_NAMES)}")
 
-    confirmed = {}
-    for doc_type in DOCUMENT_TYPES:
-        fields = db.get_confirmed_fields(session_id, doc_type)
-        if fields is not None:
-            confirmed[doc_type] = fields
+    confirmed = load_confirmed(session_id, body.confirmed if body else None)
 
     run = run_agent(agent_name, confirmed, body.question if body else None, mode=os.environ.get("READER_MODE", "fixture"))
     guardrail = check_guardrail(run.answer)

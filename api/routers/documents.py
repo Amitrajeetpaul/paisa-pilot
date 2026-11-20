@@ -34,12 +34,9 @@ def _require_document_type(document_type: str) -> None:
         raise HTTPException(status_code=400, detail=f"Unknown document_type: {document_type!r}")
 
 
-@router.post("/{document_type}/upload")
-async def upload_document(session_id: str, document_type: str, file: UploadFile) -> dict:
-    _require_session(session_id)
-    _require_document_type(document_type)
-    content = await file.read()
-    filename = (file.filename or "").lower()
+def _check_upload(filename_raw: str | None, content: bytes) -> str:
+    """Reject files we cannot or should not read, with a message a person can act on."""
+    filename = (filename_raw or "").lower()
     if not filename.endswith(ALLOWED_SUFFIXES):
         raise HTTPException(
             status_code=422,
@@ -59,9 +56,57 @@ async def upload_document(session_id: str, document_type: str, file: UploadFile)
                 "(open it, then save or print it as a new PDF) and upload it again.",
             },
         )
+    return filename
+
+
+def _read_bytes(document_type: str, content: bytes, filename: str) -> dict:
+    """Read one document. Fixture mode (tests, local dev) returns the sample; live mode asks Gemini."""
+    if os.environ.get("READER_MODE", "fixture") == "fixture":
+        return read_document(document_type, mode="fixture").model_dump(mode="json")
+    if not os.environ.get("GEMINI_API_KEY"):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "reader_unavailable",
+                "message": "Reading uploaded documents isn't switched on in this demo yet. "
+                "Try the sample profile to see the whole app.",
+            },
+        )
+    try:
+        result = read_document(document_type, file_bytes=content, mime_type=mime_type_for_filename(filename), mode="live")
+    except Exception as exc:
+        logger.exception("Document read failed for %s", document_type)
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "code": "read_failed",
+                "message": "We couldn't read this document right now. Please try again in a moment, "
+                "or upload a clearer copy.",
+            },
+        ) from exc
+    return result.model_dump(mode="json")
+
+
+@router.post("/{document_type}/upload")
+async def upload_document(session_id: str, document_type: str, file: UploadFile) -> dict:
+    _require_session(session_id)
+    _require_document_type(document_type)
+    content = await file.read()
+    _check_upload(file.filename, content)
     key = f"{session_id}/{document_type}/{file.filename}"
     get_storage().save(key, content)
     return {"upload_key": key}
+
+
+@router.post("/{document_type}/extract")
+def extract_document(session_id: str, document_type: str, file: UploadFile) -> dict:
+    """Upload and read in ONE request. The file is read in memory and never stored, so it works
+    on hosts where requests land on different servers, and nothing needs deleting afterwards."""
+    _require_session(session_id)
+    _require_document_type(document_type)
+    content = file.file.read()
+    filename = _check_upload(file.filename, content)
+    return _read_bytes(document_type, content, filename)
 
 
 @router.post("/{document_type}/read")
@@ -71,39 +116,12 @@ def read_uploaded_document(session_id: str, document_type: str, body: dict) -> d
     upload_key = body.get("upload_key")
     if not upload_key:
         raise HTTPException(status_code=400, detail="upload_key is required")
-
-    mode = os.environ.get("READER_MODE", "fixture")
-    if mode == "fixture":
-        result = read_document(document_type, mode="fixture")
-    else:
-        if not os.environ.get("GEMINI_API_KEY"):
-            raise HTTPException(
-                status_code=503,
-                detail={
-                    "code": "reader_unavailable",
-                    "message": "Reading uploaded documents isn't switched on in this demo yet. "
-                    "Try the sample profile to see the whole app.",
-                },
-            )
-        try:
-            content = get_storage().read(upload_key)
-        except FileNotFoundError as exc:
-            raise HTTPException(status_code=404, detail=str(exc)) from exc
-        try:
-            result = read_document(
-                document_type,
-                file_bytes=content,
-                mime_type=mime_type_for_filename(upload_key),
-                mode="live",
-            )
-        except Exception as exc:
-            logger.exception("Document read failed for %s", document_type)
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "code": "read_failed",
-                    "message": "We couldn't read this document right now. Please try again in a moment, "
-                    "or upload a clearer copy.",
-                },
-            ) from exc
-    return result.model_dump(mode="json")
+    if os.environ.get("READER_MODE", "fixture") == "fixture":
+        return _read_bytes(document_type, b"", upload_key)
+    if not os.environ.get("GEMINI_API_KEY"):
+        return _read_bytes(document_type, b"", upload_key)  # raises the plain "not switched on" message
+    try:
+        content = get_storage().read(upload_key)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return _read_bytes(document_type, content, upload_key)
