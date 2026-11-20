@@ -51,6 +51,7 @@ def test_live_read_failure_is_a_friendly_502_not_a_500(monkeypatch):
     import api.routers.documents as docs
 
     monkeypatch.setenv("READER_MODE", "live")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key-not-used")
 
     def boom(*a, **k):
         raise RuntimeError("model unavailable")
