@@ -141,19 +141,43 @@ def _parse_date(text: str) -> date | None:
     return None
 
 
+_DATE_COLUMNS = ("start time", "date watched", "watch date", "date", "time", "watched")
+_MIN_WATCH_SECONDS = 300  # trailers, previews and accidental plays under 5 minutes are not "using" the service
+
+
+def _duration_seconds(text: str) -> int | None:
+    parts = text.strip().split(":")
+    if len(parts) != 3 or not all(p.isdigit() for p in parts):
+        return None
+    return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+
+
 def days_used_from_history(csv_text: str, today: date, window_days: int) -> int:
-    """Distinct days with at least one viewing in the last window_days, from a
-    Netflix 'Viewing activity' / Prime 'Request my data' style CSV (a Date column)."""
+    """Distinct days with real viewing in the last window_days, from the account's own data export:
+    Netflix ViewingActivity.csv (Start Time, Duration, Supplemental Video Type) or a Prime-style
+    CSV with a date column. Plays under 5 minutes and trailers/previews are ignored."""
     reader = csv.DictReader(io.StringIO(csv_text))
     if not reader.fieldnames:
         return 0
-    date_col = next((c for c in reader.fieldnames if c and "date" in c.lower()), None)
+    cols = {(c or "").strip().lower(): c for c in reader.fieldnames}
+    date_col = next((cols[name] for name in _DATE_COLUMNS if name in cols), None)
+    if date_col is None:
+        date_col = next((c for lower, c in cols.items() if "date" in lower or "time" in lower), None)
     if date_col is None:
         raise ValueError("no date column")
+    duration_col = cols.get("duration")
+    type_col = cols.get("supplemental video type")
     start = today - timedelta(days=window_days)
     days: set[date] = set()
     for row in reader:
-        d = _parse_date(row.get(date_col) or "")
+        if type_col and (row.get(type_col) or "").strip():
+            continue  # HOOK / TRAILER / TEASER and similar are not viewing
+        if duration_col:
+            secs = _duration_seconds(row.get(duration_col) or "")
+            if secs is not None and secs < _MIN_WATCH_SECONDS:
+                continue
+        raw = (row.get(date_col) or "").strip().strip('"')
+        d = _parse_date(raw) or _parse_date(raw.split(" ")[0].split("T")[0])
         if d is not None and start < d <= today:
             days.add(d)
     return len(days)

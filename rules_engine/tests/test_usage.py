@@ -67,3 +67,17 @@ def test_short_window_is_judged_on_a_30_day_rate():
     v = evaluate_usage([_sub("NETFLIX", 649)], {"netflix": 1}, CFG, window_days=7)[0]
     assert v.level == "light" and "last 7" in v.message
     assert evaluate_usage([_sub("NETFLIX", 649)], {"netflix": 0}, CFG, window_days=7)[0].level == "unused"
+
+
+def test_real_netflix_export_format():
+    text = (
+        "Profile Name,Start Time,Duration,Attributes,Title,Supplemental Video Type,Device Type,Bookmark,Latest Bookmark,Country\n"
+        "Amit,2026-11-18 21:14:33,01:02:10,,Show S1: Ep 1,,Samsung TV,01:02:10,01:02:10,IN\n"
+        "Amit,2026-11-18 22:30:00,00:40:00,,Show S1: Ep 2,,Samsung TV,00:40:00,00:40:00,IN\n"
+        "Amit,2026-11-15 10:00:00,00:00:12,,Movie,TRAILER,Android,00:00:12,00:00:12,IN\n"
+        "Amit,2026-11-12 10:00:00,00:00:30,,Accidental play,,Android,00:00:30,00:00:30,IN\n"
+        "Amit,2026-11-05 20:00:00,01:30:00,,Film,,Laptop,01:30:00,01:30:00,IN\n"
+        "Amit,2026-08-05 20:00:00,01:30:00,,Old film,,Laptop,01:30:00,01:30:00,IN\n"
+    )
+    # 18 Nov (two plays, one day) + 5 Nov = 2 days; trailer, 30s play and the August play do not count
+    assert days_used_from_history(text, date(2026, 11, 20), 30) == 2
