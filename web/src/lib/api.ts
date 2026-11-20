@@ -15,12 +15,8 @@ import {
   saveTrails,
 } from './clientSession'
 
-// Local dev: Vite's dev-server proxy (vite.config.ts) forwards "/api" to
-// the FastAPI server, so the default is enough. Production (Cloud Run):
-// the web and api services get separate URLs with no shared domain by
-// default, so the built bundle needs the api service's URL baked in at
-// build time -- see infra/web.Dockerfile and infra/deploy.md.
-export const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api'
+// Production API default: live Vercel backend with new Gemini API key
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://paisa-pilot-api.vercel.app'
 
 /** The friendly message the API sends for expected problems (locked PDF, unreadable file, ...). */
 export class ApiError extends Error {
