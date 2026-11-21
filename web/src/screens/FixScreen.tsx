@@ -63,7 +63,7 @@ export function FixScreen() {
             <span className="text-xs font-semibold uppercase tracking-wider text-white/70">{t('fix.heroTitle')}</span>
             <div className="mt-1 flex items-end gap-2">
               <div className="tabular text-[44px] font-extrabold leading-none sm:text-5xl">
-                {result ? formatINR(result.monthly_leak_total) : <span className="animate-pulse bg-white/20 inline-block h-10 w-36 rounded-lg align-middle" aria-label="Loading" />}
+                {result ? formatINR(result.monthly_leak_total) : loading ? <span className="animate-pulse bg-white/20 inline-block h-10 w-36 rounded-lg align-middle" aria-label="Loading" /> : <span className="text-white/70">—</span>}
               </div>
               <span className="pb-1.5 text-sm font-semibold text-white/70">{t('fix.monthLabel')}</span>
             </div>
@@ -101,7 +101,14 @@ export function FixScreen() {
                 <CardSkeleton />
               </>
             )}
-            {errorMessage && <p className="text-muted p-4 text-sm">{errorMessage}</p>}
+            {errorMessage && (
+              <div className="p-4 text-sm">
+                <p className="text-muted">{errorMessage}</p>
+                <button type="button" className="text-ink mt-2 font-semibold underline" onClick={() => navigate('/app/consent')}>
+                  Add a bank statement
+                </button>
+              </div>
+            )}
             {!loading && result && result.cards.length === 0 && <p className="text-muted p-4 text-sm">{t('fix.empty')}</p>}
             {result?.cards.map((card) => {
               const l = look(card.card_id)
