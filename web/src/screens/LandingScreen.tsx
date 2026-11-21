@@ -148,7 +148,7 @@ export function LandingScreen() {
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
             <Link to="/app/consent">
-              <Button variant="primary">Try with sample data</Button>
+              <Button variant="primary">Try it without signing in</Button>
             </Link>
             <a href="#problems">
               <Button variant="outline">See the problem</Button>
@@ -317,10 +317,10 @@ export function LandingScreen() {
 
       <section className="bg-navy px-6 py-16 text-center text-white">
         <h2 className="text-3xl font-extrabold">See what you are missing</h2>
-        <p className="mt-2 text-white/80">Try it on a sample profile in one click, or add your own documents.</p>
+        <p className="mt-2 text-white/80">Try it in one click without signing in, or add your own documents.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to="/app/consent">
-            <Button variant="primary">Try with sample data</Button>
+            <Button variant="primary">Try it without signing in</Button>
           </Link>
           <Link to="/app/consent">
             <Button variant="outline">Use my own documents</Button>
