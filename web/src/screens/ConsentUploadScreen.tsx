@@ -58,6 +58,8 @@ export function ConsentUploadScreen() {
     }
   }
 
+  const [dragType, setDragType] = useState<string | null>(null)
+
   async function handleUpload(documentType: string, file: File) {
     if (!sessionId) return
     setUploadingType(documentType)
@@ -146,10 +148,27 @@ export function ConsentUploadScreen() {
         <div className="animate-card-entrance border-line rounded-[20px] border bg-white p-6">
           <h2 className="text-ink text-xl font-bold">{t('consent.uploadTitle')}</h2>
           <p className="text-muted mt-1 text-sm">{t('consent.uploadHint')}</p>
+          <p className="text-muted mt-1 text-xs">{t('upload.dragHint')}</p>
 
           <div className="mt-5 flex flex-col gap-3">
             {DOCUMENT_TYPES.map((doc) => (
-              <div key={doc.type} className="border-line flex items-center justify-between gap-3 rounded-2xl border p-3">
+              <div
+                key={doc.type}
+                className={`flex items-center justify-between gap-3 rounded-2xl border p-3 transition-colors ${dragType === doc.type ? 'border-coral-dark bg-icon-tile border-dashed' : 'border-line'}`}
+                onDragOver={(e) => {
+                  if (uploadedKeys[doc.type] || uploadingType !== null) return
+                  e.preventDefault()
+                  setDragType(doc.type)
+                }}
+                onDragLeave={() => setDragType((cur) => (cur === doc.type ? null : cur))}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDragType(null)
+                  if (uploadedKeys[doc.type] || uploadingType !== null) return
+                  const file = e.dataTransfer.files?.[0]
+                  if (file) handleUpload(doc.type, file)
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <span className="bg-icon-tile text-coral-dark flex h-10 w-10 items-center justify-center rounded-xl"><Icon name={doc.icon} size={20} /></span>
                   <span className="text-ink text-sm font-semibold">{t(doc.labelKey)}</span>

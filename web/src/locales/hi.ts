@@ -78,7 +78,8 @@ const hi: Record<TranslationKey, string> = {
   'upload.reading': 'आपका दस्तावेज़ पढ़ा जा रहा है। इसमें एक मिनट तक लग सकता है।',
   'upload.pfPassbook': 'PF पासबुक',
   'upload.ais': 'AIS (कर विवरण)',
-  'upload.choose': 'फ़ाइल चुनें',
+    'upload.dragHint': 'आप फ़ाइल को उसके दस्तावेज़ की पंक्ति पर खींचकर छोड़ भी सकते हैं।',
+'upload.choose': 'फ़ाइल चुनें',
   'upload.uploaded': 'अपलोड हो गया',
 
   'confirm.stepLabel': 'चरण 3 of 6 · पुष्टि करें',

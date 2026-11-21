@@ -73,7 +73,8 @@ const en = {
   'upload.reading': 'Reading your document. This can take up to a minute.',
   'upload.pfPassbook': 'PF passbook',
   'upload.ais': 'AIS (tax statement)',
-  'upload.choose': 'Choose file',
+    'upload.dragHint': 'You can also drag a file onto the document it belongs to.',
+'upload.choose': 'Choose file',
   'upload.uploaded': 'Uploaded',
 
   'confirm.stepLabel': 'Step 3 of 6 · Confirm',
